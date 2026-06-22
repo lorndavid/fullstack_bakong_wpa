@@ -12,7 +12,7 @@ router.use('/auth', authRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/products', productRoutes);
 router.use('/orders', orderRoutes);
-router.use('/payments', paymentRoutes);
+router.use('/payment', paymentRoutes);
 router.use('/users', userRoutes);
 
 // Health check

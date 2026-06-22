@@ -5,10 +5,14 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "seed": "ts-node src/seed.ts",
+    "seed:sample": "ts-node src/seed-sample.ts",
+    "clear:products": "ts-node src/clear-products.ts"
   },
   "dependencies": {
     "axios": "^1.7.7",
+    "bakong-khqr": "^1.0.20",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
@@ -17,6 +21,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.7.0",
     "multer": "^1.4.5-lts.1",
+    "qrcode": "^1.5.4",
+    "ts-node": "^10.9.2",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
@@ -26,6 +32,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.7.4",
+    "@types/qrcode": "^1.5.6",
     "@types/uuid": "^10.0.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.6.2"

@@ -154,6 +154,7 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
+import api from '@/services/api'
 
 const router = useRouter()
 const cart = useCartStore()
@@ -185,15 +186,34 @@ async function placeOrder() {
   }
   loading.value = true
   try {
+    // Create order via API
+    const res: any = await api.post('/orders', {
+      products: cart.items.map(item => ({
+        productId: item.productId,
+        name: item.name,
+        image: item.image || '',
+        price: item.originalPrice,
+        quantity: item.quantity,
+      })),
+      shippingAddress: { ...address },
+      paymentMethod: paymentMethod.value,
+    })
+
+    const order = res.order
+
     if (paymentMethod.value === 'khqr') {
-      router.push('/payment/demo-order-id')
+      // Navigate to payment with real order ID and amount
+      router.push({
+        path: `/payment/${order._id}`,
+        query: { amount: order.total.toString() },
+      })
     } else {
-      toast.success('Order placed successfully!')
+      toast.success('Order placed successfully! You will pay upon delivery.')
       cart.clearCart()
-      router.push('/orders')
+      router.push(`/order/${order._id}`)
     }
   } catch (err: any) {
-    toast.error(err.message || 'Failed to place order')
+    toast.error(err.message || err.error || 'Failed to place order')
   } finally {
     loading.value = false
   }

@@ -69,11 +69,11 @@ export interface IOrder {
 export interface ITransaction {
   _id: string;
   orderId: string;
-  bakongId?: string;
+  amount: number;
   tran?: string;
   md5?: string;
-  amount: number;
-  status: 'pending' | 'PAID' | 'expired' | 'failed';
+  qr?: string;
+  status: 'PENDING' | 'PAID' | 'EXPIRED' | 'failed';
   createdAt: Date;
   updatedAt: Date;
 }

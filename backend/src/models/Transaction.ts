@@ -1,12 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ITransactionDocument extends Document {
-  orderId: mongoose.Types.ObjectId;
-  bakongId?: string;
+  orderId: string;
+  amount: number;
   tran?: string;
   md5?: string;
-  amount: number;
-  status: 'pending' | 'PAID' | 'expired' | 'failed';
+  qr?: string;
+  status: 'PENDING' | 'PAID' | 'EXPIRED' | 'failed';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -14,12 +14,13 @@ export interface ITransactionDocument extends Document {
 const transactionSchema = new Schema<ITransactionDocument>(
   {
     orderId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Order',
+      type: String,
       required: [true, 'Order ID is required'],
     },
-    bakongId: {
-      type: String,
+    amount: {
+      type: Number,
+      required: [true, 'Amount is required'],
+      min: 0,
     },
     tran: {
       type: String,
@@ -27,15 +28,13 @@ const transactionSchema = new Schema<ITransactionDocument>(
     md5: {
       type: String,
     },
-    amount: {
-      type: Number,
-      required: true,
-      min: 0,
+    qr: {
+      type: String,
     },
     status: {
       type: String,
-      enum: ['pending', 'PAID', 'expired', 'failed'],
-      default: 'pending',
+      enum: ['PENDING', 'PAID', 'EXPIRED', 'failed'],
+      default: 'PENDING',
     },
   },
   {
