@@ -1,0 +1,40 @@
+import { Router } from 'express';
+import {
+  getProducts,
+  getProduct,
+  getFeaturedProducts,
+  getFlashSaleProducts,
+  getNewArrivals,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getRelatedProducts,
+} from '../controllers/productController';
+import { protect, authorize } from '../middlewares/auth';
+import { upload } from '../middlewares/upload';
+
+const router = Router();
+
+router.get('/', getProducts);
+router.get('/featured', getFeaturedProducts);
+router.get('/flash-sale', getFlashSaleProducts);
+router.get('/new-arrivals', getNewArrivals);
+router.get('/:id', getProduct);
+router.get('/:id/related', getRelatedProducts);
+router.post(
+  '/',
+  protect,
+  authorize('admin'),
+  upload.array('images', 5),
+  createProduct
+);
+router.put(
+  '/:id',
+  protect,
+  authorize('admin'),
+  upload.array('images', 5),
+  updateProduct
+);
+router.delete('/:id', protect, authorize('admin'), deleteProduct);
+
+export default router;

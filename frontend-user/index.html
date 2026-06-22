@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0055A4" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MY SHOP" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="MY SHOP" />
+    <link rel="apple-touch-startup-image" href="/icons/apple-splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#0055A4" />
+    <title>MY SHOP - Cambodian E-commerce</title>
+    <style>
+      /* Splash Screen */
+      .splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #0055A4;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.3s ease;
+      }
+      .splash-screen.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .splash-logo {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        font-weight: bold;
+        color: #0055A4;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      }
+      .splash-title {
+        color: white;
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+      }
+      .splash-loader {
+        margin-top: 30px;
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255,255,255,0.2);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="splash" class="splash-screen">
+      <div class="splash-logo">M</div>
+      <div class="splash-title">MY SHOP</div>
+      <div class="splash-loader"></div>
+    </div>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+    <script>
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          document.getElementById('splash')?.classList.add('hidden');
+        }, 800);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,122 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{vue,js,ts,jsx,tsx}",
+  ],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#e6f0ff',
+          100: '#b3d4ff',
+          200: '#80b8ff',
+          300: '#4d9cff',
+          400: '#1a80ff',
+          500: '#0055A4',
+          600: '#004080',
+          700: '#003366',
+          800: '#00264d',
+          900: '#001a33',
+        },
+        accent: {
+          50: '#e6ffe6',
+          100: '#b3ffb3',
+          200: '#80ff80',
+          300: '#4dff4d',
+          400: '#1aff1a',
+          500: '#00C853',
+          600: '#00a843',
+          700: '#008033',
+          800: '#006626',
+          900: '#004d1a',
+        },
+        surface: {
+          50: '#F5F7FA',
+          100: '#EBEEF3',
+          200: '#D5DBE5',
+          300: '#A9B4C8',
+          400: '#7D8DA8',
+          500: '#5C6B89',
+          600: '#43506C',
+          700: '#2E3950',
+          800: '#1C2438',
+          900: '#0F1422',
+        },
+      },
+      fontFamily: {
+        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+      },
+      fontSize: {
+        'dynamic': 'clamp(0.875rem, 2.5vw, 1rem)',
+        'dynamic-lg': 'clamp(1rem, 3vw, 1.25rem)',
+        'dynamic-xl': 'clamp(1.25rem, 4vw, 1.5rem)',
+        'dynamic-2xl': 'clamp(1.5rem, 5vw, 2rem)',
+      },
+      spacing: {
+        'xs': '4px',
+        'sm': '8px',
+        'md': '16px',
+        'lg': '24px',
+        'xl': '32px',
+        '2xl': '48px',
+        '3xl': '64px',
+      },
+      borderRadius: {
+        'card': '12px',
+        'button': '8px',
+        'pill': '50px',
+      },
+      boxShadow: {
+        'card': '0 2px 8px rgba(0, 0, 0, 0.08)',
+        'card-hover': '0 8px 24px rgba(0, 0, 0, 0.12)',
+        'glass': '0 8px 32px rgba(0, 0, 0, 0.06)',
+        'modal': '0 20px 60px rgba(0, 0, 0, 0.15)',
+      },
+      animation: {
+        'fade-in': 'fadeIn 150ms ease-out',
+        'slide-up': 'slideUp 250ms ease-out',
+        'slide-down': 'slideDown 250ms ease-out',
+        'scale-in': 'scaleIn 150ms ease-out',
+        'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+        'spin-slow': 'spin 3s linear infinite',
+        'bounce-in': 'bounceIn 300ms ease-out',
+        'progress-ring': 'progressRing 2s linear',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        scaleIn: {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        pulseSoft: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.8' },
+        },
+        bounceIn: {
+          '0%': { transform: 'scale(0.3)', opacity: '0' },
+          '50%': { transform: 'scale(1.05)' },
+          '70%': { transform: 'scale(0.95)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        progressRing: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+      },
+    },
+  },
+  plugins: [],
+}

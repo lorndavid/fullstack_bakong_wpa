@@ -1,0 +1,16 @@
+{
+  "name": "bakong-ecommerce",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:user\" \"npm run dev:admin\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:user": "cd frontend-user && npm run dev",
+    "dev:admin": "cd frontend-admin && npm run dev",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend-user && npm install && cd ../frontend-admin && npm install",
+    "build": "cd backend && npm run build && cd ../frontend-user && npm run build && cd ../frontend-admin && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

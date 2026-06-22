@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base */
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-surface-50 dark:bg-surface-900 text-surface-800 dark:text-surface-200;
+    overflow-x: hidden;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-300 dark:bg-surface-600 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-surface-400 dark:bg-surface-500;
+  }
+
+  /* Smooth scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Components */
+@layer components {
+  /* Skeleton loader */
+  .skeleton {
+    @apply bg-surface-200 dark:bg-surface-700 rounded animate-pulse;
+  }
+
+  /* Glassmorphism */
+  .glass {
+    @apply bg-white/80 dark:bg-surface-800/80 backdrop-blur-lg border border-white/20 dark:border-surface-700/50;
+  }
+
+  /* Card base */
+  .card {
+    @apply bg-white dark:bg-surface-800 rounded-2xl shadow-card border border-surface-100 dark:border-surface-700/50;
+  }
+
+  /* Safe area padding for mobile */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}
+
+/* Transitions */
+@layer utilities {
+  .transition-default {
+    @apply transition-all duration-150 ease-out;
+  }
+  .transition-smooth {
+    @apply transition-all duration-250 ease-out;
+  }
+
+  /* Responsive text */
+  .text-responsive {
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
+  }
+  .text-responsive-lg {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+  }
+  .text-responsive-xl {
+    font-size: clamp(1.25rem, 4vw, 1.5rem);
+  }
+  .text-responsive-2xl {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+  }
+}
