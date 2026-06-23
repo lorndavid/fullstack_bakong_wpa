@@ -3,9 +3,9 @@
     <h1 class="text-xl sm:text-2xl font-bold text-surface-800 dark:text-white mb-6">{{ $t('category.title') }}</h1>
 
     <!-- Loading -->
-    <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-      <div v-for="i in 8" :key="i" class="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-card animate-pulse">
-        <div class="w-20 h-20 mx-auto bg-surface-200 dark:bg-surface-700 rounded-2xl mb-4"></div>
+    <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+      <div v-for="i in 8" :key="i" class="bg-white dark:bg-surface-800 rounded-xl xs:rounded-2xl p-4 xs:p-6 shadow-card animate-pulse">
+        <div class="w-16 h-16 xs:w-20 xs:h-20 mx-auto bg-surface-200 dark:bg-surface-700 rounded-xl xs:rounded-2xl mb-3 xs:mb-4"></div>
         <div class="h-4 w-24 mx-auto bg-surface-200 dark:bg-surface-700 rounded mb-2"></div>
         <div class="h-3 w-16 mx-auto bg-surface-200 dark:bg-surface-700 rounded"></div>
       </div>
@@ -30,14 +30,14 @@
     </div>
 
     <!-- Categories Grid -->
-    <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+    <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
       <div
         v-for="cat in categories"
         :key="cat._id"
         @click="goToCategory(cat._id)"
-        class="group bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-all duration-250 cursor-pointer hover:-translate-y-1 text-center"
+        class="group bg-white dark:bg-surface-800 rounded-xl xs:rounded-2xl p-4 xs:p-6 shadow-card hover:shadow-card-hover transition-all duration-250 cursor-pointer hover:-translate-y-1 text-center"
       >
-        <div class="w-20 h-20 mx-auto bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900/50 dark:to-accent-900/50 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-250 text-3xl">
+        <div class="w-16 h-16 xs:w-20 xs:h-20 mx-auto bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900/50 dark:to-accent-900/50 rounded-xl xs:rounded-2xl flex items-center justify-center mb-3 xs:mb-4 group-hover:scale-110 transition-transform duration-250 text-2xl xs:text-3xl">
           {{ cat.icon }}
         </div>
         <h3 class="font-semibold text-surface-800 dark:text-white">{{ cat.name }}</h3>

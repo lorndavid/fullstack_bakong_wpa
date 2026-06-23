@@ -27,24 +27,24 @@
     </div>
 
     <!-- Order List -->
-    <div v-else class="space-y-3">
-      <div v-for="order in orders" :key="order._id" class="bg-white dark:bg-surface-800 rounded-2xl p-4 shadow-card hover:shadow-card-hover transition-all cursor-pointer"
+    <div v-else class="space-y-2 xs:space-y-3">
+      <div v-for="order in orders" :key="order._id" class="bg-white dark:bg-surface-800 rounded-xl xs:rounded-2xl p-3 xs:p-4 shadow-card hover:shadow-card-hover transition-all cursor-pointer"
         @click="viewOrder(order._id)">
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-sm font-medium text-surface-500">#{{ order._id?.slice(-8) }}</span>
-          <span class="px-2.5 py-1 rounded-full text-xs font-semibold" :class="statusClass(order.status)">
+        <div class="flex items-center justify-between mb-2 xs:mb-3">
+          <span class="text-xs xs:text-sm font-medium text-surface-500">#{{ order._id?.slice(-8) }}</span>
+          <span class="px-2 xs:px-2.5 py-0.5 xs:py-1 rounded-full text-[10px] xs:text-xs font-semibold" :class="statusClass(order.status)">
             {{ $t('order.status.' + order.status) }}
           </span>
         </div>
-        <div class="flex items-center gap-3">
-          <div class="w-16 h-16 bg-surface-100 dark:bg-surface-700 rounded-lg flex-shrink-0"></div>
+        <div class="flex items-center gap-2 xs:gap-3">
+          <div class="w-12 h-12 xs:w-16 xs:h-16 bg-surface-100 dark:bg-surface-700 rounded-lg flex-shrink-0"></div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-surface-800 dark:text-white truncate">{{ order.products?.[0]?.name || 'Order' }}</p>
+            <p class="text-xs xs:text-sm font-medium text-surface-800 dark:text-white truncate">{{ order.products?.[0]?.name || 'Order' }}</p>
             <p class="text-xs text-surface-500">{{ order.products?.length || 0 }} {{ $t('order.items') }}</p>
           </div>
-          <div class="text-right">
-            <p class="font-bold text-primary-500">${{ order.total?.toFixed(2) }}</p>
-            <p class="text-xs text-surface-400">{{ formatDate(order.createdAt) }}</p>
+          <div class="text-right flex-shrink-0">
+            <p class="text-sm xs:font-bold text-primary-500">${{ order.total?.toFixed(2) }}</p>
+            <p class="text-[10px] xs:text-xs text-surface-400">{{ formatDate(order.createdAt) }}</p>
           </div>
         </div>
       </div>

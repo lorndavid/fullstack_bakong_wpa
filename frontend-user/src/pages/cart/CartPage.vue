@@ -20,7 +20,7 @@
         <div v-for="item in cart.items" :key="item.productId" 
           class="bg-white dark:bg-surface-800 rounded-2xl p-4 shadow-card animate-fade-in">
           <div class="flex gap-4">
-            <div class="w-20 h-20 sm:w-24 sm:h-24 bg-surface-100 dark:bg-surface-700 rounded-xl flex-shrink-0 overflow-hidden">
+            <div class="w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 bg-surface-100 dark:bg-surface-700 rounded-xl flex-shrink-0 overflow-hidden">
               <img v-if="item.image" :src="item.image" :alt="item.name" class="w-full h-full object-cover" />
               <div v-else class="w-full h-full flex items-center justify-center">
                 <svg class="w-8 h-8 text-surface-300 dark:text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,17 +31,17 @@
             <div class="flex-1 min-w-0">
               <h3 class="font-semibold text-surface-800 dark:text-white truncate">{{ item.name }}</h3>
               <p class="text-sm text-surface-500 mt-0.5">${{ item.price.toFixed(2) }}</p>
-              <div class="flex items-center justify-between mt-3">
-                <div class="flex items-center space-x-2">
-                  <button @click="cart.updateQuantity(item.productId, item.quantity - 1)" class="w-8 h-8 flex items-center justify-center bg-surface-100 dark:bg-surface-700 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors">
+              <div class="flex items-center justify-between mt-2 xs:mt-3">
+                <div class="flex items-center space-x-1.5 xs:space-x-2">
+                  <button @click="cart.updateQuantity(item.productId, item.quantity - 1)" class="w-7 h-7 xs:w-8 xs:h-8 flex items-center justify-center bg-surface-100 dark:bg-surface-700 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors">
                     <svg class="w-3 h-3 text-surface-600 dark:text-surface-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
                   </button>
-                  <span class="w-8 text-center font-medium text-surface-800 dark:text-white text-sm">{{ item.quantity }}</span>
-                  <button @click="cart.updateQuantity(item.productId, item.quantity + 1)" class="w-8 h-8 flex items-center justify-center bg-surface-100 dark:bg-surface-700 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors">
+                  <span class="w-7 xs:w-8 text-center font-medium text-surface-800 dark:text-white text-sm">{{ item.quantity }}</span>
+                  <button @click="cart.updateQuantity(item.productId, item.quantity + 1)" class="w-7 h-7 xs:w-8 xs:h-8 flex items-center justify-center bg-surface-100 dark:bg-surface-700 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors">
                     <svg class="w-3 h-3 text-surface-600 dark:text-surface-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                   </button>
                 </div>
-                <button @click="cart.removeItem(item.productId)" class="text-red-500 hover:text-red-600 p-1">
+                <button @click="cart.removeItem(item.productId)" class="text-red-500 hover:text-red-600 p-1.5 xs:p-1">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </button>
               </div>

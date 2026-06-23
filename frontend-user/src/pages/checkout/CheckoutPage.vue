@@ -104,33 +104,33 @@
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
         <h2 class="text-lg font-bold text-surface-800 dark:text-white mb-4">{{ $t('checkout.choosePayment') }}</h2>
         <div class="space-y-3">
-          <label class="flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
+          <label class="flex items-center p-3 xs:p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
             :class="paymentMethod === 'khqr' 
               ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
               : 'border-surface-200 dark:border-surface-600 hover:border-primary-300'">
             <input type="radio" v-model="paymentMethod" value="khqr" class="w-4 h-4 text-primary-500 focus:ring-primary-500" />
             <div class="ml-3 flex items-center gap-3">
-              <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+              <div class="w-10 h-10 xs:w-12 xs:h-12 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 xs:w-6 xs:h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
               </div>
-              <div>
-                <p class="font-semibold text-surface-800 dark:text-white">{{ $t('checkout.khqr') }}</p>
+              <div class="min-w-0">
+                <p class="font-semibold text-surface-800 dark:text-white text-sm xs:text-base">{{ $t('checkout.khqr') }}</p>
                 <p class="text-xs text-surface-500">{{ $t('checkout.khqrDesc') }}</p>
               </div>
             </div>
           </label>
 
-          <label class="flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
+          <label class="flex items-center p-3 xs:p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
             :class="paymentMethod === 'cod' 
               ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
               : 'border-surface-200 dark:border-surface-600 hover:border-primary-300'">
             <input type="radio" v-model="paymentMethod" value="cod" class="w-4 h-4 text-primary-500 focus:ring-primary-500" />
             <div class="ml-3 flex items-center gap-3">
-              <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              <div class="w-10 h-10 xs:w-12 xs:h-12 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 xs:w-6 xs:h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
               </div>
-              <div>
-                <p class="font-semibold text-surface-800 dark:text-white">{{ $t('checkout.cod') }}</p>
+              <div class="min-w-0">
+                <p class="font-semibold text-surface-800 dark:text-white text-sm xs:text-base">{{ $t('checkout.cod') }}</p>
                 <p class="text-xs text-surface-500">{{ $t('checkout.codDesc') }}</p>
               </div>
             </div>

@@ -2,27 +2,27 @@
   <div class="space-y-6 sm:space-y-8 pb-6">
     <!-- Hero Banner Carousel with Slides from API -->
     <section class="relative overflow-hidden">
-      <div class="relative max-w-[80%] mx-auto rounded-2xl overflow-hidden shadow-2xl">
+      <div class="relative max-w-full sm:max-w-[90%] lg:max-w-[80%] mx-auto sm:rounded-2xl overflow-hidden shadow-2xl">
         <div v-for="(slide, idx) in heroSlides" :key="idx"
           class="transition-all duration-700 ease-in-out"
           :class="idx === currentHeroSlide ? 'opacity-100' : 'opacity-0 absolute inset-0'">
           <div v-if="slide.image" class="relative">
-            <img :src="slide.image.secure_url" :alt="slide.title || 'Slide ' + (idx + 1)" class="w-full h-[280px] sm:h-[380px] lg:h-[450px] object-cover" />
+            <img :src="slide.image.secure_url" :alt="slide.title || 'Slide ' + (idx + 1)" class="w-full h-[200px] xs:h-[260px] sm:h-[380px] lg:h-[450px] object-cover" />
             <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
             <div class="absolute inset-0 flex items-center">
               <div class="max-w-7xl mx-auto px-4 sm:px-6 w-full">
-                <div class="max-w-lg space-y-3 sm:space-y-4 animate-slide-up">
+                <div class="max-w-lg space-y-2 xs:space-y-3 sm:space-y-4 animate-slide-up">
                   <span v-if="slide.subtitle" class="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold rounded-full">{{ slide.subtitle }}</span>
-                  <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                  <h1 class="text-xl xs:text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
                     {{ slide.title || 'Welcome to MY SHOP' }}
                   </h1>
-                  <p v-if="slide.description" class="text-white/80 text-sm sm:text-base">{{ slide.description }}</p>
-                  <div class="flex items-center space-x-3">
-                    <router-link :to="slide.link || '/search'" class="inline-flex items-center px-5 py-2.5 bg-white text-primary-500 font-semibold rounded-lg hover:bg-primary-50 transition-all text-sm sm:text-base shadow-lg">
+                  <p v-if="slide.description" class="text-white/80 text-xs xs:text-sm sm:text-base leading-relaxed">{{ slide.description }}</p>
+                  <div class="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 xs:gap-3">
+                    <router-link :to="slide.link || '/search'" class="inline-flex items-center justify-center px-4 xs:px-5 py-2.5 bg-white text-primary-500 font-semibold rounded-lg hover:bg-primary-50 transition-all text-xs xs:text-sm sm:text-base shadow-lg">
                       {{ $t('home.shopNow') }}
                       <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                     </router-link>
-                    <router-link to="/categories" class="inline-flex items-center px-5 py-2.5 text-white border border-white/30 font-medium rounded-lg hover:bg-white/10 transition-all text-sm sm:text-base backdrop-blur-sm">
+                    <router-link to="/categories" class="inline-flex items-center justify-center px-4 xs:px-5 py-2.5 text-white border border-white/30 font-medium rounded-lg hover:bg-white/10 transition-all text-xs xs:text-sm sm:text-base backdrop-blur-sm">
                       {{ $t('home.browseCategories') }}
                     </router-link>
                   </div>
@@ -33,7 +33,7 @@
         </div>
 
         <!-- Loading state for hero -->
-        <div v-if="heroSlides.length === 0 && !heroSlidesError" class="bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-800 dark:to-primary-900 h-[280px] sm:h-[380px] lg:h-[450px] max-w-[80%] mx-auto rounded-2xl flex items-center">
+        <div v-if="heroSlides.length === 0 && !heroSlidesError" class="bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-800 dark:to-primary-900 h-[200px] xs:h-[260px] sm:h-[380px] lg:h-[450px] max-w-full sm:max-w-[90%] lg:max-w-[80%] mx-auto sm:rounded-2xl flex items-center">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 w-full animate-pulse">
             <div class="max-w-lg space-y-4">
               <div class="h-6 w-24 bg-white/20 rounded-full"></div>
@@ -44,17 +44,17 @@
         </div>
 
         <!-- Hero Slide Dots -->
-        <div v-if="heroSlides.length > 1" class="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-10">
+        <div v-if="heroSlides.length > 1" class="absolute bottom-3 xs:bottom-4 sm:bottom-6 left-0 right-0 flex justify-center gap-1.5 xs:gap-2 z-10">
           <button
             v-for="(_, idx) in heroSlides"
             :key="idx"
             @click="currentHeroSlide = idx"
-            class="h-2 rounded-full transition-all duration-300"
-            :class="idx === currentHeroSlide ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/70'"
+            class="h-1.5 xs:h-2 rounded-full transition-all duration-300"
+            :class="idx === currentHeroSlide ? 'w-6 xs:w-8 bg-white' : 'w-1.5 xs:w-2 bg-white/50 hover:bg-white/70'"
           ></button>
         </div>
       </div>
-      <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-surface-50 dark:from-surface-900 pointer-events-none" style="max-width: 80%; margin: 0 auto; right: 0;"></div>
+      <div class="absolute bottom-0 left-0 right-0 h-10 sm:h-16 bg-gradient-to-t from-surface-50 dark:from-surface-900 pointer-events-none max-w-full sm:max-w-[90%] lg:max-w-[80%] mx-auto" style="right: 0;"></div>
     </section>
 
     <!-- Categories -->

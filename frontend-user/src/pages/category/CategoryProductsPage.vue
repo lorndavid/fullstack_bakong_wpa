@@ -1,15 +1,15 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
     <!-- Breadcrumb -->
-    <nav class="flex items-center space-x-2 text-sm text-surface-500 mb-4">
-      <router-link to="/" class="hover:text-primary-500">{{ $t('nav.home') }}</router-link>
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-      <router-link to="/categories" class="hover:text-primary-500">{{ $t('nav.categories') }}</router-link>
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-      <span class="text-surface-800 dark:text-white">{{ categoryName }}</span>
+    <nav class="flex items-center space-x-1.5 xs:space-x-2 text-xs xs:text-sm text-surface-500 mb-4 overflow-x-auto scrollbar-hide whitespace-nowrap">
+      <router-link to="/" class="hover:text-primary-500 flex-shrink-0">{{ $t('nav.home') }}</router-link>
+      <svg class="w-3 h-3 xs:w-4 xs:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <router-link to="/categories" class="hover:text-primary-500 flex-shrink-0">{{ $t('nav.categories') }}</router-link>
+      <svg class="w-3 h-3 xs:w-4 xs:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <span class="text-surface-800 dark:text-white truncate max-w-[120px] xs:max-w-[200px]">{{ categoryName }}</span>
     </nav>
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between gap-2 mb-6 flex-wrap">
       <h1 class="text-xl sm:text-2xl font-bold text-surface-800 dark:text-white">{{ categoryName }}</h1>
       <select v-model="sortBy" class="px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50">
         <option value="latest">{{ $t('search.sortLatest') }}</option>
@@ -84,20 +84,20 @@
     <!-- Pagination -->
     <div v-if="totalPages > 1" class="flex items-center justify-center space-x-2 mt-8">
       <button @click="prevPage" :disabled="currentPage <= 1"
-        class="w-10 h-10 flex items-center justify-center border border-surface-200 dark:border-surface-600 rounded-lg text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors disabled:opacity-50">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        class="w-9 h-9 xs:w-10 xs:h-10 flex items-center justify-center border border-surface-200 dark:border-surface-600 rounded-lg text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors disabled:opacity-50">
+        <svg class="w-3.5 h-3.5 xs:w-4 xs:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </button>
       <button
         v-for="p in totalPages"
         :key="p"
         @click="goToPage(p)"
-        class="w-10 h-10 rounded-lg text-sm font-medium transition-all"
+        class="w-9 h-9 xs:w-10 xs:h-10 rounded-lg text-xs xs:text-sm font-medium transition-all"
         :class="p === currentPage ? 'bg-primary-500 text-white' : 'border border-surface-200 dark:border-surface-600 text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700'">
         {{ p }}
       </button>
       <button @click="nextPage" :disabled="currentPage >= totalPages"
-        class="w-10 h-10 flex items-center justify-center border border-surface-200 dark:border-surface-600 rounded-lg text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors disabled:opacity-50">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        class="w-9 h-9 xs:w-10 xs:h-10 flex items-center justify-center border border-surface-200 dark:border-surface-600 rounded-lg text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors disabled:opacity-50">
+        <svg class="w-3.5 h-3.5 xs:w-4 xs:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
       </button>
     </div>
   </div>

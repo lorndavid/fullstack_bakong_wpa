@@ -21,9 +21,9 @@
     </div>
 
     <template v-else-if="order">
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-6">
+      <div class="bg-white dark:bg-surface-800 rounded-xl xs:rounded-2xl p-4 xs:p-5 sm:p-6 shadow-card space-y-4 xs:space-y-6">
         <!-- Header -->
-        <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-start sm:items-center justify-between flex-wrap gap-2 xs:gap-3">
           <div>
             <h1 class="text-xl font-bold text-surface-800 dark:text-white">{{ $t('order.detail') }} #{{ order._id?.slice(-8) }}</h1>
             <p class="text-sm text-surface-500">{{ $t('order.placed') }} {{ formatDate(order.createdAt) }}</p>
@@ -34,17 +34,17 @@
         </div>
 
         <!-- Status Timeline -->
-        <div class="space-y-3">
-          <div v-for="(step, idx) in timeline" :key="idx" class="flex items-start gap-3">
+        <div class="space-y-2 xs:space-y-3">
+          <div v-for="(step, idx) in timeline" :key="idx" class="flex items-start gap-2 xs:gap-3">
             <div class="flex flex-col items-center">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300"
+              <div class="w-7 h-7 xs:w-8 xs:h-8 rounded-full flex items-center justify-center transition-all duration-300"
                 :class="step.done ? 'bg-accent-500' : 'bg-surface-200 dark:bg-surface-700'">
-                <svg v-if="step.done" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                <div v-else class="w-2 h-2 bg-surface-400 rounded-full"></div>
+                <svg v-if="step.done" class="w-3.5 h-3.5 xs:w-4 xs:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                <div v-else class="w-1.5 h-1.5 xs:w-2 xs:h-2 bg-surface-400 rounded-full"></div>
               </div>
-              <div v-if="idx < timeline.length - 1" class="w-0.5 h-8 bg-surface-200 dark:bg-surface-700"></div>
+              <div v-if="idx < timeline.length - 1" class="w-0.5 h-6 xs:h-8 bg-surface-200 dark:bg-surface-700"></div>
             </div>
-            <div class="pt-1.5">
+            <div class="pt-1 xs:pt-1.5">
               <p class="text-sm font-medium" :class="step.done ? 'text-surface-800 dark:text-white' : 'text-surface-400'">{{ step.label }}</p>
               <p v-if="step.done && step.time" class="text-xs text-surface-500 mt-0.5">{{ step.time }}</p>
             </div>
@@ -54,9 +54,9 @@
         <!-- Order Items -->
         <div>
           <h3 class="font-semibold text-surface-800 dark:text-white mb-3">{{ $t('checkout.orderItems') }}</h3>
-          <div v-for="item in order.products" :key="item.productId" class="flex items-center gap-3 py-3 border-b border-surface-100 dark:border-surface-700 last:border-0">
-            <img v-if="item.image" :src="item.image" :alt="item.name" class="w-14 h-14 bg-surface-100 dark:bg-surface-700 rounded-lg flex-shrink-0 object-cover" />
-            <div v-else class="w-14 h-14 bg-surface-100 dark:bg-surface-700 rounded-lg flex-shrink-0 flex items-center justify-center">
+          <div v-for="item in order.products" :key="item.productId" class="flex items-center gap-2 xs:gap-3 py-2.5 xs:py-3 border-b border-surface-100 dark:border-surface-700 last:border-0">
+            <img v-if="item.image" :src="item.image" :alt="item.name" class="w-12 h-12 xs:w-14 xs:h-14 bg-surface-100 dark:bg-surface-700 rounded-lg flex-shrink-0 object-cover" />
+            <div v-else class="w-12 h-12 xs:w-14 xs:h-14 bg-surface-100 dark:bg-surface-700 rounded-lg flex-shrink-0 flex items-center justify-center">
               <svg class="w-6 h-6 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>

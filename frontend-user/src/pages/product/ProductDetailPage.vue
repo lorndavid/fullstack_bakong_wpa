@@ -29,12 +29,12 @@
 
     <template v-else-if="product">
       <!-- Breadcrumb -->
-      <nav class="flex items-center space-x-2 text-sm text-surface-500 dark:text-surface-400">
-        <router-link to="/" class="hover:text-primary-500">{{ $t('nav.home') }}</router-link>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        <router-link v-if="categoryName" :to="`/category/${categoryId}`" class="hover:text-primary-500">{{ categoryName }}</router-link>
-        <svg v-if="categoryName" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        <span class="text-surface-800 dark:text-white font-medium truncate max-w-[200px]">{{ product.name }}</span>
+      <nav class="flex items-center space-x-1.5 xs:space-x-2 text-xs xs:text-sm text-surface-500 dark:text-surface-400 overflow-x-auto scrollbar-hide whitespace-nowrap pb-1">
+        <router-link to="/" class="hover:text-primary-500 flex-shrink-0">{{ $t('nav.home') }}</router-link>
+        <svg class="w-3 h-3 xs:w-4 xs:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <router-link v-if="categoryName" :to="`/category/${categoryId}`" class="hover:text-primary-500 flex-shrink-0">{{ categoryName }}</router-link>
+        <svg v-if="categoryName" class="w-3 h-3 xs:w-4 xs:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <span class="text-surface-800 dark:text-white font-medium truncate max-w-[120px] xs:max-w-[200px]">{{ product.name }}</span>
       </nav>
 
       <!-- Product Main -->
@@ -86,7 +86,7 @@
             {{ product.name }}
           </h1>
 
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center flex-wrap gap-y-1 space-x-4">
             <div class="flex items-center">
               <div class="flex">
                 <svg v-for="s in 5" :key="s" class="w-4 h-4" :class="s <= Math.round(product.rating) ? 'text-yellow-400' : 'text-surface-300 dark:text-surface-600'" fill="currentColor" viewBox="0 0 20 20">
@@ -101,7 +101,7 @@
 
           <!-- Price -->
           <div class="flex items-baseline space-x-3">
-            <span class="text-3xl sm:text-4xl font-bold" :class="product.discount > 0 ? 'text-accent-500' : 'text-primary-500'">
+            <span class="text-2xl xs:text-3xl sm:text-4xl font-bold" :class="product.discount > 0 ? 'text-accent-500' : 'text-primary-500'">
               ${{ displayPrice.toFixed(2) }}
             </span>
             <span v-if="product.discount > 0" class="text-lg text-surface-400 line-through">${{ product.price.toFixed(2) }}</span>
@@ -146,7 +146,7 @@
           </div>
 
           <!-- Shipping Info -->
-          <div class="grid grid-cols-2 gap-3 p-4 bg-surface-50 dark:bg-surface-800 rounded-xl">
+          <div class="grid grid-cols-1 xs:grid-cols-2 gap-3 p-4 bg-surface-50 dark:bg-surface-800 rounded-xl">
             <div class="flex items-center space-x-2">
               <svg class="w-5 h-5 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
               <span class="text-sm text-surface-600 dark:text-surface-300">{{ $t('product.shipping') }}</span>
