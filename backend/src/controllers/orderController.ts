@@ -124,10 +124,7 @@ const getOrder = async (
       return;
     }
 
-    if (
-      order.userId.toString() !== req.user!.id &&
-      req.user!.role !== 'admin'
-    ) {
+    if (order.userId.toString() !== req.user!.id) {
       res.status(403).json({
         success: false,
         message: 'Not authorized to view this order',

@@ -22,6 +22,7 @@ async function seed() {
       existingAdmin.password = adminPassword;
       existingAdmin.role = 'admin';
       existingAdmin.name = adminName;
+      existingAdmin.provider = 'local';
       await existingAdmin.save();
       console.log(`✅ Admin user updated: ${adminEmail} (role: admin)`);
     } else {
@@ -31,6 +32,7 @@ async function seed() {
         email: adminEmail,
         password: adminPassword,
         role: 'admin',
+        provider: 'local',
       });
       console.log(`✅ Admin user created: ${adminEmail} (role: admin)`);
     }

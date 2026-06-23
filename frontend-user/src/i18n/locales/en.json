@@ -134,8 +134,16 @@
     "registerTitle": "Create Account",
     "loginSubtitle": "Sign in to your account",
     "registerSubtitle": "Join us today",
+    "welcomeTitle": "Welcome to MY SHOP",
+    "welcomeSubtitle": "Continue with Google to shop easily",
     "or": "or",
     "continueWithGoogle": "Continue with Google",
+    "secureLogin": "Secured with Google",
+    "encrypted": "Encrypted connection",
+    "secure": "Google protected",
+    "termsNotice": "By continuing, you agree to our Terms of Service and Privacy Policy.",
+    "noPasswordNeeded": "No password needed. Secure & fast.",
+    "missingClientId": "Google Client ID is not configured. Please set VITE_GOOGLE_CLIENT_ID.",
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot password?",
     "passwordsDoNotMatch": "Passwords do not match",
@@ -143,7 +151,7 @@
     "hasAccount": "Already have an account?",
     "logout": "Sign Out",
     "invalidCredentials": "Invalid email or password",
-    "googleLoginFailed": "Google login failed"
+    "googleLoginFailed": "Google login failed. Please try again."
   },
   "common": {
     "loading": "Loading...",

@@ -3,66 +3,49 @@ import { ref, computed } from 'vue'
 import api from '@/services/api'
 
 interface User {
-  id: string
+  _id: string
+  googleId: string
   name: string
   email: string
-  role: string
   avatar?: string
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<User | null>(JSON.parse(localStorage.getItem('user') || 'null'))
-  const token = ref<string | null>(localStorage.getItem('token'))
+  const user = ref<User | null>(null)
+  const accessToken = ref<string | null>(null)
+  const refreshTokenValue = ref<string | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const isAuthenticated = computed(() => !!token.value && !!user.value)
-  const isAdmin = computed(() => user.value?.role === 'admin')
+  const isAuthenticated = computed(() => !!accessToken.value && !!user.value)
 
-  function setAuth(userData: User, tokenValue: string) {
+  function setAuth(userData: User, access: string, refresh: string) {
     user.value = userData
-    token.value = tokenValue
+    accessToken.value = access
+    refreshTokenValue.value = refresh
     localStorage.setItem('user', JSON.stringify(userData))
-    localStorage.setItem('token', tokenValue)
+    localStorage.setItem('accessToken', access)
+    localStorage.setItem('refreshToken', refresh)
     error.value = null
   }
 
-  async function login(email: string, password: string) {
-    loading.value = true
-    error.value = null
-    try {
-      const data: any = await api.post('/auth/login', { email, password })
-      setAuth(data.user, data.token)
-      return data
-    } catch (err: any) {
-      error.value = err.message || 'Login failed'
-      throw err
-    } finally {
-      loading.value = false
+  function loadFromStorage() {
+    const storedUser = localStorage.getItem('user')
+    const storedAccess = localStorage.getItem('accessToken')
+    const storedRefresh = localStorage.getItem('refreshToken')
+    if (storedUser && storedAccess && storedRefresh) {
+      user.value = JSON.parse(storedUser)
+      accessToken.value = storedAccess
+      refreshTokenValue.value = storedRefresh
     }
   }
 
-  async function register(name: string, email: string, password: string) {
+  async function googleLogin(credential: string) {
     loading.value = true
     error.value = null
     try {
-      const data: any = await api.post('/auth/register', { name, email, password })
-      setAuth(data.user, data.token)
-      return data
-    } catch (err: any) {
-      error.value = err.message || 'Registration failed'
-      throw err
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function googleLogin(googleData: { email: string; name: string; googleId: string; avatar?: string }) {
-    loading.value = true
-    error.value = null
-    try {
-      const data: any = await api.post('/auth/google', googleData)
-      setAuth(data.user, data.token)
+      const data: any = await api.post('/auth/google', { credential })
+      setAuth(data.user, data.accessToken, data.refreshToken)
       return data
     } catch (err: any) {
       error.value = err.message || 'Google login failed'
@@ -77,29 +60,56 @@ export const useAuthStore = defineStore('auth', () => {
       const data: any = await api.get('/auth/me')
       user.value = data.user
       localStorage.setItem('user', JSON.stringify(data.user))
+      return data
     } catch {
-      logout()
+      // Token expired or invalid, try refresh
+      const refreshed = await attemptRefresh()
+      if (!refreshed) {
+        logout()
+      }
+    }
+  }
+
+  async function attemptRefresh(): Promise<boolean> {
+    const refresh = localStorage.getItem('refreshToken')
+    if (!refresh) return false
+
+    try {
+      const data: any = await api.post('/auth/refresh', { refreshToken: refresh })
+      accessToken.value = data.accessToken
+      refreshTokenValue.value = data.refreshToken
+      localStorage.setItem('accessToken', data.accessToken)
+      localStorage.setItem('refreshToken', data.refreshToken)
+      return true
+    } catch {
+      return false
     }
   }
 
   function logout() {
+    // Attempt to notify backend (fire and forget)
+    if (accessToken.value) {
+      api.post('/auth/logout').catch(() => {})
+    }
     user.value = null
-    token.value = null
+    accessToken.value = null
+    refreshTokenValue.value = null
     localStorage.removeItem('user')
-    localStorage.removeItem('token')
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
   }
 
   return {
     user,
-    token,
+    accessToken,
+    refreshToken: refreshTokenValue,
     loading,
     error,
     isAuthenticated,
-    isAdmin,
-    login,
-    register,
     googleLogin,
     fetchMe,
+    attemptRefresh,
     logout,
+    loadFromStorage,
   }
 })

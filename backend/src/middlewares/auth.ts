@@ -1,12 +1,6 @@
 import { Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { verifyAccessToken } from '../utils/generateToken';
 import { AuthRequest } from '../types';
-import User from '../models/User';
-
-interface JwtPayload {
-  id: string;
-  role: string;
-}
 
 const protect = async (
   req: AuthRequest,
@@ -31,26 +25,14 @@ const protect = async (
       return;
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET!
-    ) as JwtPayload;
+    const decoded = verifyAccessToken(token);
 
-    const user = await User.findById(decoded.id);
-    if (!user) {
-      res.status(401).json({
-        success: false,
-        message: 'User not found',
-      });
-      return;
-    }
-
-    req.user = { id: decoded.id, role: decoded.role };
+    req.user = { id: decoded.id, role: decoded.role || 'user' };
     next();
   } catch (error) {
     res.status(401).json({
       success: false,
-      message: 'Not authorized, token invalid',
+      message: 'Not authorized, token invalid or expired',
     });
   }
 };

@@ -97,7 +97,7 @@ export async function saveTransaction(params: {
 
 export async function updateTransactionStatus(
   md5: string,
-  status: 'PAID' | 'EXPIRED',
+  status: 'PAID' | 'EXPIRED' | 'CANCELLED',
   extra?: { transactionId?: string; paidTime?: string }
 ): Promise<void> {
   await api.put(`/payment/status/${md5}`, { status, ...extra })

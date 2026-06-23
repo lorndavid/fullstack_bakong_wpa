@@ -19,8 +19,9 @@ app.use(i18n)
 
 app.mount('#app')
 
-// Restore auth session after mount
+// Restore auth session from storage after mount
 const authStore = useAuthStore()
-if (authStore.token) {
+authStore.loadFromStorage()
+if (authStore.accessToken) {
   authStore.fetchMe()
 }

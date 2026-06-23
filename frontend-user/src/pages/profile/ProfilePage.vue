@@ -12,8 +12,8 @@
         <div>
           <h2 class="text-xl font-bold text-surface-800 dark:text-white">{{ auth.user?.name }}</h2>
           <p class="text-sm text-surface-500">{{ auth.user?.email }}</p>
-          <span class="inline-block mt-1 px-2.5 py-0.5 bg-primary-50 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400 text-xs font-medium rounded-full">
-            {{ auth.user?.role }}
+          <span class="inline-block mt-1 px-2.5 py-0.5 bg-green-50 dark:bg-green-900/50 text-green-600 dark:text-green-400 text-xs font-medium rounded-full">
+            Google Account
           </span>
         </div>
       </div>

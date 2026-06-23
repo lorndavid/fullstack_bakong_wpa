@@ -59,7 +59,7 @@
     "signInDesc": "ចូលដើម្បីគ្រប់គ្រងហាងរបស់អ្នក",
     "email": "អ៊ីមែល",
     "password": "ពាក្យសម្ងាត់",
-    "emailPlaceholder": "admin@example.com",
+    "emailPlaceholder": "admin{'@'}example.com",
     "passwordPlaceholder": "••••••••",
     "invalidCredentials": "ព័ត៌មានចូលមិនត្រឹមត្រូវ"
   },

@@ -59,7 +59,7 @@
     "signInDesc": "Sign in to manage your store",
     "email": "Email",
     "password": "Password",
-    "emailPlaceholder": "admin@example.com",
+    "emailPlaceholder": "admin{'@'}example.com",
     "passwordPlaceholder": "••••••••",
     "invalidCredentials": "Invalid credentials"
   },

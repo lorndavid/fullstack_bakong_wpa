@@ -17,8 +17,8 @@
       </div>
 
       <!-- Footer -->
-      <p class="text-center mt-6 text-sm text-white/60">
-        By continuing, you agree to our Terms of Service and Privacy Policy
+      <p class="text-center mt-6 text-xs text-white/50">
+        {{ $t('auth.secureLogin') }}
       </p>
     </div>
   </div>

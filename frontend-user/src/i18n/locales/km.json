@@ -134,8 +134,16 @@
     "registerTitle": "បង្កើតគណនី",
     "loginSubtitle": "ចូលគណនីរបស់អ្នក",
     "registerSubtitle": "ចុះឈ្មោះថ្ងៃនេះ",
+    "welcomeTitle": "សូមស្វាគមន៍មកកាន់ MY SHOP",
+    "welcomeSubtitle": "បន្តជាមួយ Google ដើម្បីទិញទំនិញយ៉ាងងាយស្រួល",
     "or": "ឬ",
     "continueWithGoogle": "បន្តជាមួយ Google",
+    "secureLogin": "មានសុវត្ថិភាពជាមួយ Google",
+    "encrypted": "ការតភ្ជាប់ដែលបានអ៊ិនគ្រីប",
+    "secure": "ការពារដោយ Google",
+    "termsNotice": "ដោយការបន្ត អ្នកយល់ព្រមតាមលក្ខខណ្ឌនៃសេវាកម្ម និងគោលការណ៍ឯកជនភាពរបស់យើង។",
+    "noPasswordNeeded": "មិនត្រូវការពាក្យសម្ងាត់។ មានសុវត្ថិភាព និងលឿន។",
+    "missingClientId": "មិនមានការកំណត់ Google Client ID ទេ។ សូមកំណត់ VITE_GOOGLE_CLIENT_ID។",
     "rememberMe": "ចងចាំខ្ញុំ",
     "forgotPassword": "ភ្លេចពាក្យសម្ងាត់?",
     "passwordsDoNotMatch": "ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ",
@@ -143,7 +151,7 @@
     "hasAccount": "មានគណនីរួចហើយ?",
     "logout": "ចាកចេញ",
     "invalidCredentials": "អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ",
-    "googleLoginFailed": "ការចូលតាម Google បរាជ័យ"
+    "googleLoginFailed": "ការចូលតាម Google បរាជ័យ។ សូមព្យាយាមម្តងទៀត។"
   },
   "common": {
     "loading": "កំពុងផ្ទុក...",

@@ -4,10 +4,12 @@ export interface IUser {
   _id: string;
   name: string;
   email: string;
-  password: string;
+  password?: string;
   role: 'user' | 'admin';
   googleId?: string;
   avatar?: string;
+  provider: string;
+  isVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
