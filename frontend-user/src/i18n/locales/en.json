@@ -175,7 +175,25 @@
   "profile": {
     "title": "My Profile",
     "saveChanges": "Save Changes",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "saved": "Profile saved successfully",
+    "memberSince": "Member since {date}",
+    "totalOrders": "Total Orders",
+    "tabProfile": "Profile",
+    "tabOrders": "Orders",
+    "tabSettings": "Settings",
+    "recentOrders": "Recent Orders",
+    "viewAllOrders": "View All Orders",
+    "noRecentOrders": "No orders yet",
+    "settingsTitle": "Preferences",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "language": "Language",
+    "accountInfo": "Account Information",
+    "connectedWithGoogle": "Connected with Google",
+    "orderValue": "Total spent: ${amount}",
+    "appearance": "Appearance"
   },
   "banner": {
     "freeShipping": "Free Shipping on all orders — No minimum required!"

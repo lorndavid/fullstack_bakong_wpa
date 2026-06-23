@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import User from '../models/User';
 import Order from '../models/Order';
 import Product from '../models/Product';
+import LoginHistory from '../models/LoginHistory';
 import { AuthRequest } from '../types';
 
 const getUsers = async (
@@ -14,13 +15,32 @@ const getUsers = async (
     const limit = parseInt(_req.query.limit as string) || 20;
     const skip = (page - 1) * limit;
 
-    const [users, total] = await Promise.all([
-      User.find()
-        .select('-password')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
+    const [total, users] = await Promise.all([
       User.countDocuments(),
+      User.aggregate([
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: 'orders',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'orders',
+          },
+        },
+        {
+          $addFields: {
+            ordersCount: { $size: '$orders' },
+          },
+        },
+        {
+          $project: {
+            password: 0,
+            orders: 0,
+          },
+        },
+      ]),
     ]);
 
     res.json({
@@ -45,12 +65,21 @@ const getUser = async (
       return;
     }
 
-    const ordersCount = await Order.countDocuments({ userId: user._id });
+    const [ordersCount, totalSpentResult] = await Promise.all([
+      Order.countDocuments({ userId: user._id }),
+      Order.aggregate([
+        { $match: { userId: user._id, status: { $ne: 'cancelled' } } },
+        { $group: { _id: null, total: { $sum: '$total' } } },
+      ]),
+    ]);
+
+    const totalSpent = totalSpentResult[0]?.total || 0;
 
     res.json({
       success: true,
       user,
       ordersCount,
+      totalSpent,
     });
   } catch (error) {
     next(error);
@@ -76,6 +105,42 @@ const updateUser = async (
     }
 
     res.json({ success: true, user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getUserOrders = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+
+    // Verify user exists
+    const user = await User.findById(id);
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    const [orders, total] = await Promise.all([
+      Order.find({ userId: id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Order.countDocuments({ userId: id }),
+    ]);
+
+    res.json({
+      success: true,
+      orders,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
   } catch (error) {
     next(error);
   }
@@ -170,4 +235,40 @@ const getDashboardStats = async (
   }
 };
 
-export { getUsers, getUser, updateUser, deleteUser, getDashboardStats };
+const getUserLoginHistory = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 50;
+    const skip = (page - 1) * limit;
+
+    // Verify user exists
+    const user = await User.findById(id);
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    const [events, total] = await Promise.all([
+      LoginHistory.find({ userId: id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      LoginHistory.countDocuments({ userId: id }),
+    ]);
+
+    res.json({
+      success: true,
+      events,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { getUsers, getUser, updateUser, deleteUser, getUserOrders, getUserLoginHistory, getDashboardStats };

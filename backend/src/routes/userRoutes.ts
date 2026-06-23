@@ -4,6 +4,8 @@ import {
   getUser,
   updateUser,
   deleteUser,
+  getUserOrders,
+  getUserLoginHistory,
   getDashboardStats,
 } from '../controllers/userController';
 import { protect, authorize } from '../middlewares/auth';
@@ -14,6 +16,9 @@ router.get('/stats', protect, authorize('admin'), getDashboardStats);
 router.get('/', protect, authorize('admin'), getUsers);
 router.get('/:id', protect, authorize('admin'), getUser);
 router.put('/:id', protect, authorize('admin'), updateUser);
+router.get('/:id/orders', protect, authorize('admin'), getUserOrders);
+router.put('/:id', protect, authorize('admin'), updateUser);
+router.get('/:id/login-history', protect, authorize('admin'), getUserLoginHistory);
 router.delete('/:id', protect, authorize('admin'), deleteUser);
 
 export default router;

@@ -8,6 +8,7 @@ import {
   verifyRefreshToken,
 } from '../utils/generateToken';
 import { AuthRequest } from '../types';
+import { recordLoginEvent } from '../services/loginHistory';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -63,6 +64,9 @@ const login = async (
     }
 
     const token = generateToken(user._id.toString(), user.role);
+
+    // Record login event (fire-and-forget)
+    recordLoginEvent(user._id.toString(), 'login', req);
 
     res.json({
       success: true,
@@ -147,6 +151,9 @@ const googleLogin = async (
     // Generate tokens
     const accessToken = generateAccessToken(user._id.toString());
     const refreshToken = generateRefreshToken(user._id.toString());
+
+    // Record Google login event (fire-and-forget)
+    recordLoginEvent(user._id.toString(), 'google_login', req);
 
     res.json({
       success: true,
@@ -257,11 +264,15 @@ const refreshToken = async (
 };
 
 const logout = async (
-  _req: Request,
+  req: AuthRequest,
   res: Response
 ): Promise<void> => {
+  // Record logout event
+  if (req.user?.id) {
+    recordLoginEvent(req.user.id, 'logout', req);
+  }
+
   // With stateless JWT, logout is handled client-side by deleting tokens.
-  // In the future, you could add a token blacklist here.
   res.json({
     success: true,
     message: 'Logged out successfully',

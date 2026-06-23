@@ -174,8 +174,26 @@
   },
   "profile": {
     "title": "ប្រវត្តិរូបរបស់ខ្ញុំ",
-    "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
-    "signOut": "ចាកចេញ"
+    "saveChanges": "រក្សាទុក",
+    "signOut": "ចាកចេញ",
+    "saved": "រក្សាទុកប្រវត្តិរូបដោយជោគជ័យ",
+    "memberSince": "សមាជិកតាំងពី {date}",
+    "totalOrders": "ការបញ្ជាទិញសរុប",
+    "tabProfile": "ប្រវត្តិរូប",
+    "tabOrders": "ការបញ្ជាទិញ",
+    "tabSettings": "ការកំណត់",
+    "recentOrders": "ការបញ្ជាទិញថ្មីៗ",
+    "viewAllOrders": "មើលការបញ្ជាទិញទាំងអស់",
+    "noRecentOrders": "មិនទាន់មានការបញ្ជាទិញ",
+    "settingsTitle": "ចំណូលចិត្ត",
+    "theme": "ប្រធានបទ",
+    "themeLight": "ភ្លឺ",
+    "themeDark": "ងងឹត",
+    "language": "ភាសា",
+    "accountInfo": "ព័ត៌មានគណនី",
+    "connectedWithGoogle": "ភ្ជាប់ជាមួយ Google",
+    "orderValue": "បានចំណាយសរុប: ${amount}",
+    "appearance": "រូបរាង"
   },
   "banner": {
     "freeShipping": "ដឹកជញ្ជូនឥតគិតថ្លៃ — មិនតម្រូវឱ្យមានការបញ្ជាទិញអប្បបរមា!"
