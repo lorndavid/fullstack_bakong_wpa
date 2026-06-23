@@ -109,7 +109,7 @@ const checkTransactionStatus = async (md5: string): Promise<CheckStatusResult> =
   }
 
   try {
-    console.log(`[Bakong] 🔍 Checking payment status for md5=${md5.slice(0, 12)}...`);
+    // console.log(`[Bakong] 🔍 Checking payment status for md5=${md5.slice(0, 12)}...`);
 
     const response = await fetch(`${BAKONG_API_URL}/v1/check_transaction_by_md5`, {
       method: 'POST',

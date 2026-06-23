@@ -58,8 +58,8 @@ export async function confirmPayment(transaction: any): Promise<boolean> {
  */
 async function checkTransaction(transaction: any): Promise<void> {
   try {
-    // Skip if already paid or expired
-    if (transaction.status === 'PAID' || transaction.status === 'EXPIRED') return;
+    // Skip if already paid, expired, or cancelled
+    if (transaction.status === 'PAID' || transaction.status === 'EXPIRED' || transaction.status === 'CANCELLED') return;
 
     // Check if expired
     const age = Date.now() - new Date(transaction.createdAt).getTime();

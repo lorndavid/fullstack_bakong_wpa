@@ -64,27 +64,98 @@
 
               <!-- ✅ QR & Pending State -->
               <template v-else-if="store.isPending">
-                <!-- Header -->
-                <KhqrHeader merchant-name="MY STORE" subtitle="Secure KHQR Payment" />
+                <div class="w-full sm:max-w-[360px] mx-auto">
+                  <!-- The ABA Style KHQR Ticket -->
+                  <div class="bg-white dark:bg-surface-800 rounded-t-xl rounded-b-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] overflow-hidden relative">
+                    
+                    <!-- Red Header -->
+                    <div class="relative bg-[#E2001A] h-16 flex items-center justify-center">
+                      <!-- Bottom-right slant cutout matching ABA style -->
+                      <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-white dark:bg-surface-800 rotate-45 transform origin-bottom-right"></div>
+                      
+                      <!-- KHQR Logo approximation -->
+                      <div class="text-white font-bold text-2xl tracking-[0.15em] flex items-center select-none">
+                        <span>KH</span>
+                        <span class="font-medium px-0.5">Q</span>
+                        <span>R</span>
+                      </div>
+                    </div>
 
-                <!-- Amount + Timer -->
-                <div class="mt-5">
-                  <KhqrTimer :amount="store.amount" />
-                </div>
+                    <!-- Ticket Content -->
+                    <div class="px-6 pt-5 pb-6 relative">
+                      <!-- Edge cutouts for ticket effect -->
+                      <div class="absolute -left-3 top-24 w-6 h-6 bg-surface-50 dark:bg-surface-900 rounded-full shadow-inner"></div>
+                      <div class="absolute -right-3 top-24 w-6 h-6 bg-surface-50 dark:bg-surface-900 rounded-full shadow-inner"></div>
 
-                <!-- QR Card -->
-                <div class="mt-5">
-                  <KhqrQrCard :qr-image="store.qrImage" />
-                </div>
+                      <!-- Merchant & Amount -->
+                      <p class="text-[13px] font-semibold text-surface-600 dark:text-surface-300 uppercase tracking-wide">
+                        LORN DAVIT ONLINE
+                      </p>
+                      <div class="mt-1.5 flex items-baseline gap-1.5">
+                        <p class="text-2xl font-bold text-surface-900 dark:text-white">
+                          {{ store.amount.toFixed(2) }}
+                        </p>
+                        <span class="text-sm font-bold text-surface-900 dark:text-white uppercase">USD</span>
+                      </div>
+                      
+                      <!-- Dashed Separator -->
+                      <div class="my-5 border-t-[2px] border-dashed border-surface-200 dark:border-surface-600 relative z-10"></div>
 
-                <!-- Bank Icons -->
-                <div class="mt-5">
-                  <KhqrBankIcons />
-                </div>
+                      <!-- QR Code -->
+                      <div class="flex justify-center relative z-10">
+                        <div class="relative w-full aspect-square max-w-[240px] bg-white rounded-lg p-1.5">
+                          <img 
+                            v-if="store.qrImage" 
+                            :src="store.qrImage" 
+                            alt="KHQR Code" 
+                            class="w-full h-full object-contain" 
+                          />
+                          <div v-else class="w-full h-full bg-surface-50 rounded animate-pulse"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-                <!-- Status -->
-                <div class="mt-4">
-                  <KhqrStatus />
+                  <!-- Footer / Status Area -->
+                  <div class="mt-6 flex flex-col items-center">
+                    <!-- Timer -->
+                    <div class="flex items-center gap-2 mb-4 bg-surface-100 dark:bg-surface-800 px-4 py-2 rounded-full shadow-inner">
+                      <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <span class="text-sm font-medium text-surface-600 dark:text-surface-300">Expires in</span>
+                      <span 
+                        class="text-sm font-bold w-12 text-center" 
+                        :class="store.countdownSeconds <= 30 ? 'text-[#E2001A] animate-pulse' : 'text-primary-600 dark:text-primary-400'"
+                      >
+                        {{ store.formattedTime }}
+                      </span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="w-full flex items-center justify-center gap-3 mb-5 px-2">
+                      <button 
+                        @click="downloadQR" 
+                        class="flex-1 h-11 flex items-center justify-center gap-2 bg-white dark:bg-surface-800 text-surface-700 dark:text-surface-200 font-semibold text-sm rounded-xl border border-surface-200 dark:border-surface-600 shadow-[0_2px_8px_rgb(0,0,0,0.04)] hover:bg-surface-50 dark:hover:bg-surface-700 hover:border-surface-300 active:scale-[0.98] transition-all"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Save QR
+                      </button>
+                      <button 
+                        @click="store.closeSheet()" 
+                        class="flex-1 h-11 flex items-center justify-center gap-2 bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-400 font-semibold text-sm rounded-xl border border-transparent hover:bg-surface-200 dark:hover:bg-surface-700 active:scale-[0.98] transition-all"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+
+                    <p class="text-[11px] font-medium text-surface-400 dark:text-surface-500 uppercase tracking-widest mb-2">
+                      Supported Apps
+                    </p>
+                    <KhqrBankIcons />
+                  </div>
                 </div>
               </template>
 
@@ -124,11 +195,7 @@ import { computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePaymentStore } from '@/stores/payment.store'
 import { useCartStore } from '@/stores/cart'
-import KhqrHeader from './KhqrHeader.vue'
-import KhqrTimer from './KhqrTimer.vue'
-import KhqrQrCard from './KhqrQrCard.vue'
 import KhqrBankIcons from './KhqrBankIcons.vue'
-import KhqrStatus from './KhqrStatus.vue'
 import KhqrSuccess from './KhqrSuccess.vue'
 import KhqrExpired from './KhqrExpired.vue'
 
@@ -164,6 +231,17 @@ function handleContinue() {
 function handleBack() {
   store.closeSheet()
   router.push('/cart')
+}
+
+function downloadQR() {
+  if (!store.qrImage) return
+  
+  const link = document.createElement('a')
+  link.href = store.qrImage
+  link.download = `KHQR-Payment-${Date.now()}.png`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 
 // Cleanup polling/countdown on unmount (user navigates away)

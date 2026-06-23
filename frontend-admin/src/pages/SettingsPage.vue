@@ -61,6 +61,40 @@
         </div>
       </div>
 
+      <!-- Flash Sale -->
+      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-4">
+        <h3 class="text-lg font-bold text-surface-800 dark:text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          Flash Sale Settings
+        </h3>
+        <p class="text-sm text-surface-500">Configure the global flash sale end time and select which products are featured.</p>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">End Time</label>
+            <input type="datetime-local" v-model="form.flashSale.endTime" class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">Select Products</label>
+          <div v-if="allProducts.length === 0" class="text-sm text-surface-500 py-2">Loading products...</div>
+          <div v-else class="max-h-60 overflow-y-auto border border-surface-200 dark:border-surface-600 rounded-lg p-2 bg-surface-50 dark:bg-surface-700/50 space-y-1">
+            <label v-for="product in allProducts" :key="product._id" class="flex items-center gap-3 p-2 hover:bg-white dark:hover:bg-surface-800 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-surface-200 dark:hover:border-surface-600">
+              <input type="checkbox" :value="product._id" v-model="form.flashSale.products" class="w-4 h-4 text-primary-500 rounded border-surface-300 dark:border-surface-600 focus:ring-primary-500 bg-white dark:bg-surface-800" />
+              <img v-if="product.images?.length" :src="product.images[0].secure_url" class="w-10 h-10 rounded object-cover border border-surface-200 dark:border-surface-700" />
+              <div v-else class="w-10 h-10 rounded bg-surface-200 dark:bg-surface-600"></div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-surface-800 dark:text-white truncate">{{ product.name }}</p>
+                <p class="text-xs text-surface-500 truncate">${{ product.price.toFixed(2) }} (Discount: {{ product.discount }}%)</p>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
       <!-- Theme Colors -->
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-4">
         <h3 class="text-lg font-bold text-surface-800 dark:text-white flex items-center gap-2">
@@ -169,6 +203,15 @@ interface Settings {
   logo?: { public_id: string; secure_url: string }
   siteName: string
   siteDescription: string
+  flashSale?: { endTime: string; products: string[] }
+}
+
+interface Product {
+  _id: string
+  name: string
+  price: number
+  discount: number
+  images: { secure_url: string }[]
 }
 
 const loading = ref(true)
@@ -187,8 +230,13 @@ const form = reactive({
   },
   textOverrides: {} as Record<string, string>,
   logoUrl: '',
+  flashSale: {
+    endTime: '',
+    products: [] as string[]
+  }
 })
 
+const allProducts = ref<Product[]>([])
 const logoInput = ref<HTMLInputElement | null>(null)
 const selectedLogo = ref<File | null>(null)
 const logoPreview = ref<string | null>(null)
@@ -236,9 +284,19 @@ const filteredTextFields = computed(() => {
 
 let originalSettings: Settings | null = null
 
-onMounted(() => {
+onMounted(async () => {
+  await fetchProducts()
   fetchSettings()
 })
+
+async function fetchProducts() {
+  try {
+    const data: any = await api.get('/products?limit=100') // fetch up to 100 for admin selection
+    allProducts.value = data.products || []
+  } catch (err) {
+    console.error('Failed to load products for flash sale', err)
+  }
+}
 
 async function fetchSettings() {
   loading.value = true
@@ -256,6 +314,20 @@ async function fetchSettings() {
     }
     form.textOverrides = { ...(s.textOverrides || {}) }
     form.logoUrl = s.logo?.secure_url || ''
+    
+    // Parse flash sale
+    if (s.flashSale) {
+      form.flashSale.products = s.flashSale.products || []
+      // Convert ISO date to local datetime for datetime-local input
+      if (s.flashSale.endTime) {
+        const d = new Date(s.flashSale.endTime)
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+        form.flashSale.endTime = d.toISOString().slice(0, 16)
+      }
+    } else {
+      form.flashSale = { endTime: '', products: [] }
+    }
+    
     logoPreview.value = null
     selectedLogo.value = null
   } catch (err: any) {
@@ -291,6 +363,20 @@ function resetForm() {
     form.colors = { ...originalSettings.colors }
     form.textOverrides = { ...originalSettings.textOverrides }
     form.logoUrl = originalSettings.logo?.secure_url || ''
+    
+    if (originalSettings.flashSale) {
+      form.flashSale.products = [...originalSettings.flashSale.products]
+      if (originalSettings.flashSale.endTime) {
+        const d = new Date(originalSettings.flashSale.endTime)
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+        form.flashSale.endTime = d.toISOString().slice(0, 16)
+      } else {
+        form.flashSale.endTime = ''
+      }
+    } else {
+      form.flashSale = { endTime: '', products: [] }
+    }
+    
     logoPreview.value = null
     selectedLogo.value = null
   }
@@ -305,6 +391,13 @@ async function saveSettings() {
     formData.append('siteName', form.siteName)
     formData.append('siteDescription', form.siteDescription)
     formData.append('colors', JSON.stringify(form.colors))
+    
+    // Add Flash sale
+    const flashSaleData = {
+      endTime: form.flashSale.endTime ? new Date(form.flashSale.endTime).toISOString() : null,
+      products: form.flashSale.products
+    }
+    formData.append('flashSale', JSON.stringify(flashSaleData))
 
     // Only send text overrides that differ from defaults
     const changedOverrides: Record<string, string> = {}

@@ -77,6 +77,9 @@ export const usePaymentStore = defineStore('payment', () => {
   }
 
   function closeSheet() {
+    if (status.value === 'PENDING' && md5.value) {
+      updateTransactionStatus(md5.value, 'CANCELLED').catch(() => {})
+    }
     sheetOpen.value = false
     cleanup()
   }

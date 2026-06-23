@@ -1,5 +1,6 @@
 import { Response, NextFunction } from 'express';
 import Product from '../models/Product';
+import Settings from '../models/Settings';
 import { uploadToCloudinary, deleteFromCloudinary } from '../services/cloudinary';
 import { saveFileLocally, deleteLocalFile } from '../services/fileStorage';
 import { AuthRequest } from '../types';
@@ -113,11 +114,27 @@ const getFlashSaleProducts = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const products = await Product.find({ discount: { $gt: 30 } })
+    const settings = await Settings.findOne();
+    if (!settings || !settings.flashSale || !settings.flashSale.products) {
+      res.json({ success: true, products: [], endTime: null });
+      return;
+    }
+
+    // Only return products if the flash sale hasn't expired
+    if (settings.flashSale.endTime && new Date(settings.flashSale.endTime) < new Date()) {
+      res.json({ success: true, products: [], endTime: settings.flashSale.endTime });
+      return;
+    }
+
+    const products = await Product.find({ _id: { $in: settings.flashSale.products } })
       .populate('category', 'name icon')
-      .sort({ discount: -1 })
       .limit(8);
-    res.json({ success: true, products });
+      
+    res.json({ 
+      success: true, 
+      products, 
+      endTime: settings.flashSale.endTime 
+    });
   } catch (error) {
     next(error);
   }

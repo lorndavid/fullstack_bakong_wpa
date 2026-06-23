@@ -308,9 +308,8 @@ const flashError = ref<string | null>(null)
 const arrivalsError = ref<string | null>(null)
 const heroSlidesError = ref<string | null>(null)
 
-// Flash sale countdown timer (24h from mount)
-const FLASH_SALE_DURATION = 24 * 60 * 60 // 24 hours in seconds
-const flashRemaining = ref(FLASH_SALE_DURATION)
+// Flash sale countdown timer
+const flashRemaining = ref(0)
 let timerInterval: ReturnType<typeof setInterval> | null = null
 
 const flashTimer = computed(() => {
@@ -353,6 +352,13 @@ async function fetchFlashSale() {
   try {
     const data: any = await api.get('/products/flash-sale')
     flashSaleProducts.value = data.products || []
+    
+    if (data.endTime) {
+      const end = new Date(data.endTime).getTime()
+      const now = new Date().getTime()
+      const diff = Math.floor((end - now) / 1000)
+      flashRemaining.value = diff > 0 ? diff : 0
+    }
   } catch (err: any) {
     flashError.value = 'Failed to load flash sale'
     console.error('Failed to fetch flash sale:', err)

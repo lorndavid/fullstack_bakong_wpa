@@ -1,48 +1,43 @@
 <template>
-  <div class="text-center animate-fade-in px-2">
-    <!-- Animated Check Circle -->
-    <div class="relative mx-auto mb-7 w-[100px] h-[100px]">
-      <div class="absolute inset-0 bg-emerald-500/15 rounded-full animate-ping-slow" />
-      <div
-        class="absolute inset-0 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-2xl shadow-emerald-500/40 animate-bounce-in"
-      >
-        <svg class="w-12 h-12 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <div class="text-center animate-fade-in px-4">
+    <!-- Clean Success Icon -->
+    <div class="mx-auto w-[72px] h-[72px] bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mb-5 animate-bounce-in">
+      <div class="w-[52px] h-[52px] bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
+        <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
           <path class="animate-draw-check" d="M5 13l4 4L19 7" />
         </svg>
       </div>
     </div>
 
-    <h2 class="text-2xl sm:text-3xl font-bold text-[#00A854] dark:text-emerald-400 mb-2">
+    <h2 class="text-[22px] font-bold text-surface-900 dark:text-white mb-1.5">
       Payment Successful
     </h2>
-    <p class="text-4xl font-bold text-surface-900 dark:text-white mb-6">
-      ${{ amount.toFixed(2) }}
+    <p class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mb-6 font-mono tracking-tight">
+      ${{ amount.toFixed(2) }} <span class="text-lg">USD</span>
     </p>
 
-    <!-- Details Card -->
-    <div class="bg-gradient-to-b from-[#E7FFF0] to-white dark:from-emerald-900/10 dark:to-surface-800/50 backdrop-blur-sm rounded-2xl p-5 border border-emerald-100 dark:border-emerald-800/20 shadow-sm mb-6 text-left space-y-3">
-      <div v-if="transactionId" class="flex items-center justify-between text-sm">
-        <span class="text-surface-400">Transaction ID</span>
-        <span class="font-mono text-xs text-surface-700 dark:text-surface-300 font-semibold truncate ml-2 max-w-[180px]">
-          {{ transactionId }}
-        </span>
+    <!-- Details Box -->
+    <div class="bg-surface-50 dark:bg-surface-800/80 rounded-xl p-4 border border-surface-100 dark:border-surface-700 mb-8 text-left space-y-3">
+      <div v-if="transactionId" class="flex items-center justify-between">
+        <span class="text-sm font-medium text-surface-500">Transaction ID</span>
+        <span class="text-sm font-semibold text-surface-900 dark:text-surface-100 font-mono tracking-tight">{{ transactionId }}</span>
       </div>
-      <div class="flex items-center justify-between text-sm">
-        <span class="text-surface-400">Merchant</span>
-        <span class="text-surface-700 dark:text-surface-300 font-semibold">{{ merchant }}</span>
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium text-surface-500">Merchant</span>
+        <span class="text-sm font-semibold text-surface-900 dark:text-surface-100">{{ merchant }}</span>
       </div>
-      <div class="flex items-center justify-between text-sm">
-        <span class="text-surface-400">Paid at</span>
-        <span class="text-surface-700 dark:text-surface-300 font-semibold">{{ paidTime }}</span>
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium text-surface-500">Time</span>
+        <span class="text-sm font-semibold text-surface-900 dark:text-surface-100">{{ paidTime }}</span>
       </div>
     </div>
 
-    <!-- Button -->
+    <!-- Done Button -->
     <button
       @click="$emit('continue')"
-      class="w-full h-[52px] bg-primary-500 text-white font-semibold text-base rounded-2xl hover:bg-primary-600 active:scale-[0.98] transition-all focus:outline-none focus:ring-4 focus:ring-primary-500/30 shadow-lg shadow-primary-500/25"
+      class="w-full h-12 bg-[#E2001A] text-white font-semibold text-[15px] rounded-xl hover:bg-red-700 active:scale-[0.98] transition-all focus:outline-none shadow-[0_4px_14px_rgba(226,0,26,0.3)]"
     >
-      Continue Shopping
+      Done
     </button>
   </div>
 </template>

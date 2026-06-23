@@ -1,29 +1,31 @@
 <template>
-  <div class="text-center animate-fade-in px-6 bg-[#FFF4F4] dark:bg-red-900/20 rounded-2xl py-8">
-    <!-- Red Icon -->
-    <div class="mx-auto w-[88px] h-[88px] bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6 animate-bounce-in">
-      <svg class="w-11 h-11 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+  <div class="text-center animate-fade-in px-4 py-4">
+    <!-- Simple Error Icon -->
+    <div class="mx-auto w-16 h-16 bg-surface-100 dark:bg-surface-800 rounded-full flex items-center justify-center mb-5 animate-bounce-in">
+      <svg class="w-8 h-8 text-surface-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <circle cx="12" cy="12" r="10" />
-        <line x1="15" y1="9" x2="9" y2="15" />
-        <line x1="9" y1="9" x2="15" y2="15" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
       </svg>
     </div>
 
-    <h2 class="text-xl font-bold text-red-600 dark:text-red-400 mb-2">Payment Expired</h2>
-    <p class="text-sm text-surface-400 mb-8">The QR code has expired. Please generate a new one to complete your payment.</p>
+    <h2 class="text-[20px] font-bold text-surface-900 dark:text-white mb-2">QR Code Expired</h2>
+    <p class="text-[14px] text-surface-500 dark:text-surface-400 mb-8 max-w-[260px] mx-auto leading-relaxed">
+      This payment code is no longer valid. Please generate a new one to proceed.
+    </p>
 
     <div class="space-y-3">
       <button
         @click="$emit('generate')"
-        class="w-full h-[52px] bg-primary-500 text-white font-semibold text-base rounded-2xl hover:bg-primary-600 active:scale-[0.98] transition-all focus:outline-none focus:ring-4 focus:ring-primary-500/30 shadow-lg shadow-primary-500/25"
+        class="w-full h-12 bg-[#E2001A] text-white font-semibold text-[15px] rounded-xl hover:bg-red-700 active:scale-[0.98] transition-all focus:outline-none shadow-[0_4px_14px_rgba(226,0,26,0.3)]"
       >
         Generate New QR
       </button>
       <button
         @click="$emit('back')"
-        class="w-full h-[52px] bg-white dark:bg-surface-700 text-surface-600 dark:text-surface-300 font-semibold text-base rounded-2xl border border-surface-200 dark:border-surface-600 hover:bg-surface-50 dark:hover:bg-surface-600 active:scale-[0.98] transition-all"
+        class="w-full h-12 bg-white dark:bg-surface-800 text-surface-700 dark:text-surface-300 font-semibold text-[15px] rounded-xl border border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-700 active:scale-[0.98] transition-all"
       >
-        Back to Cart
+        Cancel
       </button>
     </div>
   </div>

@@ -25,6 +25,7 @@ const updateSettings = async (
     // Parse JSON fields (they come as strings when sent via FormData with file upload)
     const colors = typeof req.body.colors === 'string' ? JSON.parse(req.body.colors) : req.body.colors;
     const textOverrides = typeof req.body.textOverrides === 'string' ? JSON.parse(req.body.textOverrides) : req.body.textOverrides;
+    const flashSale = typeof req.body.flashSale === 'string' ? JSON.parse(req.body.flashSale) : req.body.flashSale;
     const { siteName, siteDescription } = req.body;
 
     let settings = await Settings.findOne();
@@ -44,6 +45,13 @@ const updateSettings = async (
 
     if (siteName !== undefined) settings.siteName = siteName;
     if (siteDescription !== undefined) settings.siteDescription = siteDescription;
+
+    if (flashSale) {
+      settings.flashSale = {
+        endTime: flashSale.endTime ? new Date(flashSale.endTime) : new Date(),
+        products: flashSale.products || [],
+      };
+    }
 
     // Handle logo upload
     if (req.file) {

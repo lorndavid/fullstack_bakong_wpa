@@ -17,6 +17,11 @@ export interface ISettingsDocument extends Document {
     public_id: string;
     secure_url: string;
   };
+  // Flash Sale
+  flashSale?: {
+    endTime: Date;
+    products: mongoose.Types.ObjectId[];
+  };
   updatedAt: Date;
 }
 
@@ -43,6 +48,10 @@ const settingsSchema = new Schema<ISettingsDocument>(
     logo: {
       public_id: { type: String },
       secure_url: { type: String },
+    },
+    flashSale: {
+      endTime: { type: Date },
+      products: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
     },
   },
   {
