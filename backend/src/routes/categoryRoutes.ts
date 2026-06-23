@@ -5,12 +5,14 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
+  getCategoryProducts,
 } from '../controllers/categoryController';
 import { protect, authorize } from '../middlewares/auth';
 
 const router = Router();
 
 router.get('/', getCategories);
+router.get('/:id/products', getCategoryProducts);
 router.get('/:id', getCategory);
 router.post('/', protect, authorize('admin'), createCategory);
 router.put('/:id', protect, authorize('admin'), updateCategory);
