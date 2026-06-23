@@ -20,10 +20,6 @@ export interface IOrderDocument extends Document {
   shippingAddress: {
     fullName: string;
     phone: string;
-    address: string;
-    city: string;
-    province: string;
-    zipCode: string;
   };
   paymentMethod: 'khqr' | 'cod';
   createdAt: Date;
@@ -76,10 +72,6 @@ const orderSchema = new Schema<IOrderDocument>(
     shippingAddress: {
       fullName: { type: String, required: true },
       phone: { type: String, required: true },
-      address: { type: String, required: true },
-      city: { type: String, required: true },
-      province: { type: String, required: true },
-      zipCode: { type: String, required: true },
     },
     paymentMethod: {
       type: String,

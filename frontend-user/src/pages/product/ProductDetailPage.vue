@@ -20,17 +20,17 @@
       <svg class="w-20 h-20 mx-auto text-surface-300 dark:text-surface-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
-      <h2 class="text-xl font-bold text-surface-700 dark:text-surface-200 mb-2">Product Not Found</h2>
+      <h2 class="text-xl font-bold text-surface-700 dark:text-surface-200 mb-2">{{ $t('product.notFound') }}</h2>
       <p class="text-surface-500 mb-6">{{ error }}</p>
       <router-link to="/" class="inline-flex items-center px-6 py-2.5 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-colors">
-        Back to Home
+        {{ $t('common.backToHome') }}
       </router-link>
     </div>
 
     <template v-else-if="product">
       <!-- Breadcrumb -->
       <nav class="flex items-center space-x-2 text-sm text-surface-500 dark:text-surface-400">
-        <router-link to="/" class="hover:text-primary-500">Home</router-link>
+        <router-link to="/" class="hover:text-primary-500">{{ $t('nav.home') }}</router-link>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         <router-link v-if="categoryName" :to="`/category/${categoryId}`" class="hover:text-primary-500">{{ categoryName }}</router-link>
         <svg v-if="categoryName" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -96,7 +96,7 @@
               <span class="ml-1.5 text-sm text-surface-500">({{ product.numReviews }})</span>
             </div>
             <span class="text-sm text-surface-400">|</span>
-            <span class="text-sm text-surface-500">{{ product.sold }} sold</span>
+            <span class="text-sm text-surface-500">{{ product.sold }} {{ $t('home.sold') }}</span>
           </div>
 
           <!-- Price -->
@@ -112,13 +112,13 @@
           <div class="flex items-center space-x-2">
             <div class="w-2 h-2 rounded-full" :class="product.stock > 0 ? 'bg-accent-500' : 'bg-red-500'"></div>
             <span class="text-sm text-surface-600 dark:text-surface-300">
-              {{ product.stock > 0 ? (product.stock <= 10 ? 'Only ' + product.stock + ' left in stock' : 'In Stock') : 'Out of Stock' }}
+              {{ product.stock > 0 ? (product.stock <= 10 ? $t('product.leftStock', { stock: product.stock }) : $t('product.inStock')) : $t('product.outOfStock') }}
             </span>
           </div>
 
           <!-- Quantity -->
           <div v-if="product.stock > 0" class="space-y-2">
-            <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Quantity</label>
+            <label class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ $t('product.quantity') }}</label>
             <div class="flex items-center space-x-3">
               <button @click="decrement" :disabled="quantity <= 1"
                 class="w-10 h-10 flex items-center justify-center border border-surface-200 dark:border-surface-600 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors text-surface-600 dark:text-surface-300 disabled:opacity-50">
@@ -136,28 +136,24 @@
           <div v-if="product.stock > 0" class="flex flex-col sm:flex-row gap-3">
             <button @click="addToCart" class="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-all focus:ring-4 focus:ring-primary-500/30">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
-              Add to Cart
-            </button>
-            <button class="flex items-center justify-center gap-2 px-6 py-3 border-2 border-primary-500 text-primary-500 font-semibold rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-              Wishlist
+              {{ $t('product.addToCart') }}
             </button>
           </div>
 
           <!-- Out of Stock -->
           <div v-else class="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl text-center">
-            <p class="text-red-600 dark:text-red-400 font-medium">This product is currently out of stock</p>
+            <p class="text-red-600 dark:text-red-400 font-medium">{{ $t('product.outOfStock') }}</p>
           </div>
 
           <!-- Shipping Info -->
           <div class="grid grid-cols-2 gap-3 p-4 bg-surface-50 dark:bg-surface-800 rounded-xl">
             <div class="flex items-center space-x-2">
               <svg class="w-5 h-5 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-              <span class="text-sm text-surface-600 dark:text-surface-300">Free shipping over $50</span>
+              <span class="text-sm text-surface-600 dark:text-surface-300">{{ $t('product.shipping') }}</span>
             </div>
             <div class="flex items-center space-x-2">
               <svg class="w-5 h-5 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span class="text-sm text-surface-600 dark:text-surface-300">30-day returns</span>
+              <span class="text-sm text-surface-600 dark:text-surface-300">{{ $t('product.returns') }}</span>
             </div>
           </div>
         </div>
@@ -167,7 +163,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-4">
           <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
-            <h2 class="text-lg font-bold text-surface-800 dark:text-white mb-3">Description</h2>
+            <h2 class="text-lg font-bold text-surface-800 dark:text-white mb-3">{{ $t('product.description') }}</h2>
             <p class="text-surface-600 dark:text-surface-300 text-sm leading-relaxed whitespace-pre-line">
               {{ product.description }}
             </p>
@@ -175,10 +171,10 @@
         </div>
         <div class="space-y-4">
           <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
-            <h2 class="text-lg font-bold text-surface-800 dark:text-white mb-3">Reviews</h2>
+            <h2 class="text-lg font-bold text-surface-800 dark:text-white mb-3">{{ $t('product.reviews') }}</h2>
             <div v-if="product.numReviews === 0" class="text-center text-surface-400 py-4">
               <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-              <p class="text-sm">No reviews yet</p>
+              <p class="text-sm">{{ $t('product.noReviews') }}</p>
             </div>
             <div v-else class="space-y-4">
               <div class="flex items-center justify-between">
@@ -196,7 +192,7 @@
 
       <!-- Related Products -->
       <section v-if="relatedProducts.length > 0">
-        <h2 class="text-lg sm:text-xl font-bold text-surface-800 dark:text-white mb-4">Related Products</h2>
+        <h2 class="text-lg sm:text-xl font-bold text-surface-800 dark:text-white mb-4">{{ $t('product.relatedProducts') }}</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
           <div
             v-for="rp in relatedProducts"
@@ -234,7 +230,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useToast } from '@/composables/useToast'
+import { useI18n } from 'vue-i18n'
 import api from '@/services/api'
+
+const { t } = useI18n()
 
 interface Product {
   _id: string
@@ -341,6 +340,6 @@ function decrement() {
 function addToCart() {
   if (!product.value) return
   cart.addItem(product.value, quantity.value)
-  toast.success('Added to cart!')
+  toast.success(t('product.addedToCart'))
 }
 </script>

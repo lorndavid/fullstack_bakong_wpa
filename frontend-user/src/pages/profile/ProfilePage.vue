@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-    <h1 class="text-xl sm:text-2xl font-bold text-surface-800 dark:text-white mb-6">My Profile</h1>
+    <h1 class="text-xl sm:text-2xl font-bold text-surface-800 dark:text-white mb-6">{{ $t('profile.title') }}</h1>
 
     <!-- Profile Card -->
     <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-6">
@@ -21,15 +21,15 @@
       <!-- Info -->
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">Full Name</label>
+          <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('auth.name') }}</label>
           <input v-model="name" class="w-full px-4 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-sm" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">Email</label>
+          <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('auth.email') }}</label>
           <input :value="auth.user?.email" disabled class="w-full px-4 py-2.5 border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-700 text-surface-400 rounded-lg text-sm cursor-not-allowed" />
         </div>
         <button class="w-full py-2.5 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-all focus:ring-4 focus:ring-primary-500/30">
-          Save Changes
+          {{ $t('profile.saveChanges') }}
         </button>
       </div>
 
@@ -37,7 +37,7 @@
 
       <div class="space-y-3">
         <button @click="handleLogout" class="w-full py-2.5 border-2 border-red-200 dark:border-red-800 text-red-500 font-semibold rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
-          Sign Out
+          {{ $t('auth.signOut') }}
         </button>
       </div>
     </div>

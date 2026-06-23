@@ -18,6 +18,8 @@ const routes = [
       { path: 'orders', name: 'orders', component: () => import('@/pages/OrdersPage.vue') },
       { path: 'users', name: 'users', component: () => import('@/pages/UsersPage.vue') },
       { path: 'transactions', name: 'transactions', component: () => import('@/pages/TransactionsPage.vue') },
+      { path: 'hero-slides', name: 'hero-slides', component: () => import('@/pages/HeroSlidesPage.vue') },
+      { path: 'settings', name: 'settings', component: () => import('@/pages/SettingsPage.vue') },
     ],
   },
 ]

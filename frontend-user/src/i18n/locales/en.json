@@ -1,0 +1,187 @@
+{
+  "app": {
+    "name": "MY SHOP",
+    "tagline": "Premium Shopping Experience"
+  },
+  "nav": {
+    "home": "Home",
+    "categories": "Categories",
+    "cart": "Cart",
+    "orders": "Orders",
+    "account": "Account",
+    "profile": "My Profile",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "search": "Search products...",
+    "viewAll": "View All"
+  },
+  "home": {
+    "shopNow": "Shop Now",
+    "browseCategories": "Browse Categories",
+    "categories": "Categories",
+    "flashSale": "Flash Sale",
+    "newArrivals": "New Arrivals",
+    "freeShipping": "Free Shipping on Everything",
+    "freeShippingDesc": "Every order ships free. No minimum required.",
+    "alwaysFreeShipping": "Always Free Shipping",
+    "sold": "sold",
+    "noFlashSale": "No flash sale items available",
+    "noNewArrivals": "No new arrivals yet"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "emptyDesc": "Add some items to get started",
+    "continueShopping": "Continue Shopping",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "free": "FREE",
+    "discount": "Discount",
+    "total": "Total",
+    "proceedToCheckout": "Proceed to Checkout",
+    "couponPlaceholder": "Enter coupon code",
+    "apply": "Apply",
+    "remove": "Remove"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "freeShipping": "Free Shipping",
+    "contact": "Contact",
+    "review": "Review",
+    "payment": "Payment",
+    "contactInfo": "Contact Information",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "phone": "Phone Number",
+    "phonePlaceholder": "+855 12 345 678",
+    "continueToReview": "Continue to Review",
+    "continueToPayment": "Continue to Payment",
+    "deliveryContact": "Delivery Contact",
+    "change": "Change",
+    "orderItems": "Order Items",
+    "qty": "Qty",
+    "summary": "Summary",
+    "choosePayment": "Choose Payment Method",
+    "khqr": "KHQR Payment",
+    "khqrDesc": "Scan with ABA, ACLEDA, Wing, or any KHQR app",
+    "cod": "Cash on Delivery",
+    "codDesc": "Pay when you receive",
+    "placeOrder": "Place Order",
+    "processing": "Processing...",
+    "orderSuccess": "Order placed successfully! You will pay upon delivery."
+  },
+  "order": {
+    "title": "My Orders",
+    "detail": "Order Detail",
+    "noOrders": "No orders yet",
+    "startShopping": "Start Shopping",
+    "orderId": "Order ID",
+    "placed": "Placed on",
+    "contact": "Contact",
+    "payment": "Payment",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "discount": "Discount",
+    "total": "Total",
+    "items": "items",
+    "backToOrders": "Back to Orders",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "shipping": "Shipping",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "timeline": {
+      "placed": "Order Placed",
+      "confirmed": "Order Confirmed",
+      "delivery": "Out for Delivery",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    }
+  },
+  "product": {
+    "inStock": "In Stock",
+    "leftStock": "Only {stock} left in stock",
+    "outOfStock": "Out of Stock",
+    "quantity": "Quantity",
+    "addToCart": "Add to Cart",
+    "addedToCart": "Added to cart!",
+    "description": "Description",
+    "reviews": "Reviews",
+    "noReviews": "No reviews yet",
+    "shipping": "Free shipping on all orders",
+    "returns": "30-day returns",
+    "relatedProducts": "Related Products",
+    "notFound": "Product Not Found"
+  },
+  "category": {
+    "title": "Categories",
+    "noCategories": "No categories yet",
+    "checkBack": "Check back later for new categories",
+    "products": "products"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signingIn": "Signing in...",
+    "creatingAccount": "Creating account...",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "name": "Name",
+    "loginTitle": "Welcome Back",
+    "registerTitle": "Create Account",
+    "loginSubtitle": "Sign in to your account",
+    "registerSubtitle": "Join us today",
+    "or": "or",
+    "continueWithGoogle": "Continue with Google",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "logout": "Sign Out",
+    "invalidCredentials": "Invalid email or password",
+    "googleLoginFailed": "Google login failed"
+  },
+  "common": {
+    "loading": "Loading...",
+    "loadingOrder": "Loading order...",
+    "error": "Error",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save",
+    "saveChanges": "Save Changes",
+    "edit": "Edit",
+    "close": "Close",
+    "search": "Search",
+    "backToHome": "Back to Home",
+    "goHome": "Go Home"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "The page you're looking for doesn't exist"
+  },
+  "profile": {
+    "title": "My Profile",
+    "saveChanges": "Save Changes",
+    "signOut": "Sign Out"
+  },
+  "banner": {
+    "freeShipping": "Free Shipping on all orders — No minimum required!"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search products...",
+    "all": "All",
+    "sortLatest": "Sort by: Latest",
+    "sortLowHigh": "Price: Low to High",
+    "sortHighLow": "Price: High to Low",
+    "sortBestSelling": "Best Selling"
+  },
+  "footer": {
+    "allRightsReserved": "All rights reserved."
+  }
+}

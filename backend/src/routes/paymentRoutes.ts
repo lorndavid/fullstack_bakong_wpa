@@ -2,9 +2,12 @@ import { Router } from 'express';
 import {
   createPayment,
   checkPaymentStatus,
+  saveTransaction,
+  updatePaymentStatus,
   handleWebhook,
   subscribePayment,
   getAllTransactions,
+  deleteTransaction,
   paymentStream,
 } from '../controllers/paymentController';
 import { protect, authorize } from '../middlewares/auth';
@@ -20,11 +23,18 @@ router.get('/status/:md5', checkPaymentStatus);
 // POST /api/payment/webhook - Webhook for Bakong/third-party (public)
 router.post('/webhook', handleWebhook);
 
+// POST /api/payment/save - Save a transaction from frontend (public)
+router.post('/save', saveTransaction);
+
+// PUT /api/payment/status/:md5 - Update transaction status from frontend polling (public)
+router.put('/status/:md5', updatePaymentStatus);
+
 // GET /api/payment/subscribe/:md5 - SSE for frontend payment push (public)
 router.get('/subscribe/:md5', subscribePayment);
 
 // Admin-only routes below
 router.get('/transactions', protect, authorize('admin'), getAllTransactions);
+router.delete('/transactions/:id', protect, authorize('admin'), deleteTransaction);
 
 // SSE stream — inject token from query param for EventSource compatibility
 router.get('/stream', (req, _res, next) => {

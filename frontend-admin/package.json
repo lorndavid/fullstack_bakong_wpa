@@ -12,6 +12,7 @@
     "axios": "^1.7.7",
     "pinia": "^2.2.2",
     "vue": "^3.5.10",
+    "vue-i18n": "^9.14.5",
     "vue-router": "^4.4.4"
   },
   "devDependencies": {

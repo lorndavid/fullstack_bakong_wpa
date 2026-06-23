@@ -56,10 +56,6 @@ export interface IOrder {
   shippingAddress: {
     fullName: string;
     phone: string;
-    address: string;
-    city: string;
-    province: string;
-    zipCode: string;
   };
   paymentMethod: 'khqr' | 'cod';
   createdAt: Date;

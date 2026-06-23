@@ -4,14 +4,14 @@
     <div v-if="loading" class="flex items-center justify-center py-20">
       <div class="text-center">
         <div class="inline-block w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-        <p class="mt-3 text-sm text-surface-500">Loading dashboard...</p>
+        <p class="mt-3 text-sm text-surface-500">{{ $t('common.loadingDashboard') }}</p>
       </div>
     </div>
 
     <!-- Error -->
     <div v-else-if="error" class="bg-white dark:bg-surface-800 rounded-2xl shadow-card p-12 text-center">
       <p class="text-red-500 text-sm mb-3">{{ error }}</p>
-      <button @click="fetchStats" class="px-4 py-2 bg-primary-500 text-white text-sm rounded-lg">Retry</button>
+      <button @click="fetchStats" class="px-4 py-2 bg-primary-500 text-white text-sm rounded-lg">{{ $t('common.retry') }}</button>
     </div>
 
     <template v-else>
@@ -19,46 +19,46 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium text-surface-500">Total Revenue</span>
+            <span class="text-sm font-medium text-surface-500">{{ $t('dashboard.totalRevenue') }}</span>
             <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: #E6FFE6">
               <svg class="w-5 h-5" style="color: #00C853" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
           </div>
           <p class="text-2xl font-bold text-surface-800 dark:text-white">${{ stats.revenue.toLocaleString() }}</p>
-          <p class="text-xs text-surface-400 mt-1">From {{ stats.totalOrders }} orders</p>
+          <p class="text-xs text-surface-400 mt-1">{{ $t('dashboard.fromOrders', { count: stats.totalOrders }) }}</p>
         </div>
 
         <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium text-surface-500">Total Orders</span>
+            <span class="text-sm font-medium text-surface-500">{{ $t('dashboard.totalOrders') }}</span>
             <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: #E6F0FF">
               <svg class="w-5 h-5" style="color: #0055A4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
             </div>
           </div>
           <p class="text-2xl font-bold text-surface-800 dark:text-white">{{ stats.totalOrders.toLocaleString() }}</p>
-          <p class="text-xs text-surface-400 mt-1">{{ getRecentOrdersCount }} recent orders</p>
+          <p class="text-xs text-surface-400 mt-1">{{ getRecentOrdersCount }} {{ $t('dashboard.recentOrders') }}</p>
         </div>
 
         <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium text-surface-500">Total Products</span>
+            <span class="text-sm font-medium text-surface-500">{{ $t('dashboard.totalProducts') }}</span>
             <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: #F3E8FF">
               <svg class="w-5 h-5" style="color: #7C3AED" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
             </div>
           </div>
           <p class="text-2xl font-bold text-surface-800 dark:text-white">{{ stats.totalProducts.toLocaleString() }}</p>
-          <p class="text-xs text-surface-400 mt-1">In your catalog</p>
+          <p class="text-xs text-surface-400 mt-1">{{ $t('dashboard.inCatalog') }}</p>
         </div>
 
         <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-all">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium text-surface-500">Total Users</span>
+            <span class="text-sm font-medium text-surface-500">{{ $t('dashboard.totalUsers') }}</span>
             <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: #FEF3C7">
               <svg class="w-5 h-5" style="color: #F59E0B" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
             </div>
           </div>
           <p class="text-2xl font-bold text-surface-800 dark:text-white">{{ stats.totalUsers.toLocaleString() }}</p>
-          <p class="text-xs text-surface-400 mt-1">Registered users</p>
+          <p class="text-xs text-surface-400 mt-1">{{ $t('dashboard.registeredUsers') }}</p>
         </div>
       </div>
 
@@ -66,9 +66,9 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Revenue Chart -->
         <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
-          <h3 class="font-semibold text-surface-800 dark:text-white mb-4">Revenue (Last 30 Days)</h3>
+          <h3 class="font-semibold text-surface-800 dark:text-white mb-4">{{ $t('dashboard.revenueChart') }}</h3>
           <div v-if="chartData.length === 0" class="h-64 flex items-center justify-center text-surface-400 text-sm">
-            No revenue data yet
+            {{ $t('dashboard.noRevenueData') }}
           </div>
           <div v-else class="h-64 flex items-end gap-1.5 sm:gap-2">
             <div v-for="(day, i) in chartData" :key="i" class="flex-1 flex flex-col items-center gap-1 group relative">
@@ -85,11 +85,11 @@
         <!-- Recent Orders -->
         <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="font-semibold text-surface-800 dark:text-white">Recent Orders</h3>
-            <router-link to="/orders" class="text-sm text-primary-500 hover:text-primary-600">View All</router-link>
+            <h3 class="font-semibold text-surface-800 dark:text-white">{{ $t('dashboard.recentOrders') }}</h3>
+            <router-link to="/orders" class="text-sm text-primary-500 hover:text-primary-600">{{ $t('common.viewAll') }}</router-link>
           </div>
           <div v-if="recentOrders.length === 0" class="text-center py-8 text-surface-400 text-sm">
-            No recent orders
+            {{ $t('dashboard.noRecentOrders') }}
           </div>
           <div v-else class="space-y-3">
             <div v-for="order in recentOrders" :key="order._id" class="flex items-center justify-between py-2 border-b border-surface-100 dark:border-surface-700 last:border-0">
@@ -99,7 +99,7 @@
                 </div>
                 <div>
                   <p class="text-sm font-medium text-surface-800 dark:text-white">#{{ order._id?.slice(-8).toUpperCase() }}</p>
-                  <p class="text-xs text-surface-400">${{ order.total?.toFixed(2) }} · {{ order.products?.length || 0 }} items</p>
+                  <p class="text-xs text-surface-400">${{ order.total?.toFixed(2) }} · {{ order.products?.length || 0 }} {{ $t('dashboard.items') }}</p>
                 </div>
               </div>
               <span class="px-2.5 py-1 rounded-full text-xs font-medium" :class="statusClass(order.status)">
@@ -112,14 +112,14 @@
 
       <!-- Order Status Distribution -->
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
-        <h3 class="font-semibold text-surface-800 dark:text-white mb-4">Order Status</h3>
+        <h3 class="font-semibold text-surface-800 dark:text-white mb-4">{{ $t('dashboard.orderStatus') }}</h3>
         <div v-if="Object.keys(statusCounts).length === 0" class="text-center py-6 text-surface-400 text-sm">
-          No orders yet
+          {{ $t('dashboard.noOrders') }}
         </div>
         <div v-else class="grid grid-cols-2 sm:grid-cols-5 gap-4">
           <div v-for="(count, status) in statusCounts" :key="status" class="text-center p-4 rounded-xl" :style="{ background: statusBgColor(status) }">
             <p class="text-2xl font-bold" :style="{ color: statusTextColor(status) }">{{ count }}</p>
-            <p class="text-xs text-surface-500 mt-1 capitalize">{{ status }}</p>
+            <p class="text-xs text-surface-500 mt-1 capitalize">{{ $t('orders.' + status) }}</p>
           </div>
         </div>
       </div>
@@ -167,7 +167,7 @@ const chartData = computed(() => {
   const maxRevenue = Math.max(...sales.map((s) => s.total), 1)
 
   return sales.map((day) => ({
-    label: day._id?.slice(5) || '', // Show MM-DD
+    label: day._id?.slice(5) || '',
     revenue: day.total,
     percent: (day.total / maxRevenue) * 100,
   }))

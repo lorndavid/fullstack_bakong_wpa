@@ -1,15 +1,25 @@
 <template>
   <div class="min-h-screen bg-surface-50 dark:bg-surface-900 transition-colors duration-200">
+    <!-- Announcement Banner -->
+    <div class="bg-gradient-to-r from-primary-500 to-accent-500 text-white text-center py-1.5 sm:py-2 px-4 text-xs sm:text-sm font-medium">
+      <p class="flex items-center justify-center gap-1.5">
+        <span>🚚</span>          <span><strong class="font-semibold">{{ $t('banner.freeShipping') }}</strong></span>
+      </p>
+    </div>
+
     <!-- Top Navbar -->
     <header class="sticky top-0 z-50 bg-white dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6">
         <div class="flex items-center justify-between h-14 sm:h-16">
           <!-- Logo -->
           <router-link to="/" class="flex items-center space-x-2">
-            <div class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+            <div v-if="siteLogo" class="w-8 h-8 flex items-center justify-center">
+              <img :src="siteLogo" alt="Logo" class="w-full h-full object-contain" />
+            </div>
+            <div v-else class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
               <span class="text-white font-bold text-sm">M</span>
             </div>
-            <span class="font-bold text-lg text-primary-500 dark:text-primary-300 hidden sm:block">MY SHOP</span>
+            <span class="font-bold text-lg text-primary-500 dark:text-primary-300 hidden sm:block">{{ $t('app.name') }}</span>
           </router-link>
 
           <!-- Search Bar -->
@@ -21,13 +31,16 @@
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search products..."
+                  :placeholder="$t('nav.search')"
                   class="w-full pl-10 pr-4 py-2 bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 dark:text-white pointer-events-none"
                   readonly
                 />
               </div>
             </router-link>
           </div>
+
+          <!-- Language Switcher -->
+          <LanguageSwitcher />
 
           <!-- Right Actions -->
           <div class="flex items-center space-x-3 sm:space-x-4">
@@ -61,15 +74,15 @@
               
               <!-- Dropdown -->
               <div v-if="showUserMenu" @click.away="showUserMenu = false" class="absolute right-0 mt-2 w-48 bg-white dark:bg-surface-800 rounded-xl shadow-lg border border-surface-200 dark:border-surface-700 py-2 animate-scale-in">
-                <router-link to="/profile" class="block px-4 py-2 text-sm text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-700">My Profile</router-link>
-                <router-link to="/orders" class="block px-4 py-2 text-sm text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-700">My Orders</router-link>
+                <router-link to="/profile" class="block px-4 py-2 text-sm text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-700">{{ $t('nav.profile') }}</router-link>
+                <router-link to="/orders" class="block px-4 py-2 text-sm text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-700">{{ $t('nav.orders') }}</router-link>
                 <hr class="my-1 border-surface-200 dark:border-surface-700">
-                <button @click="handleLogout" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">Sign Out</button>
+                <button @click="handleLogout" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">{{ $t('auth.signOut') }}</button>
               </div>
             </div>
 
             <router-link v-else to="/auth/login" class="hidden sm:inline-flex items-center px-4 py-2 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors">
-              Sign In
+              {{ $t('auth.signIn') }}
             </router-link>
           </div>
         </div>
@@ -93,14 +106,14 @@
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
           </svg>
-          <span class="text-[10px] font-medium">Home</span>
+          <span class="text-[10px] font-medium">{{ $t('nav.home') }}</span>
         </router-link>
         <router-link to="/categories" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
           :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'categories' }">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
           </svg>
-          <span class="text-[10px] font-medium">Categories</span>
+          <span class="text-[10px] font-medium">{{ $t('nav.categories') }}</span>
         </router-link>
         <router-link to="/cart" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors relative"
           :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'cart' }">
@@ -112,20 +125,20 @@
               {{ cart.totalItems }}
             </span>
           </div>
-          <span class="text-[10px] font-medium">Cart</span>
+          <span class="text-[10px] font-medium">{{ $t('nav.cart') }}</span>
         </router-link>
         <router-link v-if="auth.isAuthenticated" to="/orders" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
           :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'orders' }">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
           </svg>
-          <span class="text-[10px] font-medium">Orders</span>
+          <span class="text-[10px] font-medium">{{ $t('nav.orders') }}</span>
         </router-link>
         <router-link v-else to="/auth/login" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
           </svg>
-          <span class="text-[10px] font-medium">Account</span>
+          <span class="text-[10px] font-medium">{{ $t('nav.account') }}</span>
         </router-link>
       </div>
     </nav>
@@ -153,14 +166,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide } from 'vue'
+import { ref, provide, inject, type Ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
 import { useThemeStore } from '@/stores/theme'
 import { useToast, Toast } from '@/composables/useToast'
 import { useRouter } from 'vue-router'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const auth = useAuthStore()
+const siteLogo = inject('siteLogo', ref('')) as Ref<string>
 const cart = useCartStore()
 const theme = useThemeStore()
 const router = useRouter()

@@ -21,7 +21,7 @@ export const useCartStore = defineStore('cart', () => {
   
   const subtotal = computed(() => items.value.reduce((sum, item) => sum + item.price * item.quantity, 0))
 
-  const shipping = computed(() => subtotal.value >= 50 ? 0 : 5)
+  const shipping = computed(() => 0)
 
   const total = computed(() => subtotal.value + shipping.value - discountAmount.value)
 
@@ -75,11 +75,6 @@ export const useCartStore = defineStore('cart', () => {
     if (code === 'SAVE10') {
       coupon.value = code
       discountAmount.value = subtotal.value * 0.1
-      return true
-    }
-    if (code === 'FREESHIP') {
-      coupon.value = code
-      discountAmount.value = shipping.value
       return true
     }
     return false

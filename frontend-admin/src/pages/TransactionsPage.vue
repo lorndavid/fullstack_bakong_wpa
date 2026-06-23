@@ -2,12 +2,12 @@
   <div class="space-y-4">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <h2 class="text-xl font-bold text-surface-800 dark:text-white">Transactions</h2>
+      <h2 class="text-xl font-bold text-surface-800 dark:text-white">{{ $t('transactions.title') }}</h2>
       <div class="flex items-center gap-3">
         <!-- Live indicator -->
         <div v-if="isLive" class="flex items-center gap-1.5 text-xs text-accent-500 font-medium">
           <span class="w-2 h-2 bg-accent-500 rounded-full animate-pulse"></span>
-          Live
+          {{ $t('transactions.live') }}
         </div>
         <!-- Search -->
         <div class="relative">
@@ -17,7 +17,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search by order ID, MD5..."
+            :placeholder="$t('transactions.searchPlaceholder')"
             class="w-full sm:w-64 pl-10 pr-4 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50"
           />
         </div>
@@ -26,11 +26,11 @@
           v-model="statusFilter"
           class="px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50"
         >
-          <option value="all">All Status</option>
-          <option value="PAID">PAID</option>
-          <option value="PENDING">PENDING</option>
-          <option value="EXPIRED">EXPIRED</option>
-          <option value="failed">Failed</option>
+          <option value="all">{{ $t('transactions.allStatus') }}</option>
+          <option value="PAID">{{ $t('transactions.paid') }}</option>
+          <option value="PENDING">{{ $t('transactions.pending') }}</option>
+          <option value="EXPIRED">{{ $t('transactions.expired') }}</option>
+          <option value="failed">{{ $t('transactions.failed') }}</option>
         </select>
       </div>
     </div>
@@ -38,13 +38,13 @@
     <!-- Loading -->
     <div v-if="loading && transactions.length === 0" class="bg-white dark:bg-surface-800 rounded-2xl shadow-card p-12 text-center">
       <div class="inline-block w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-      <p class="mt-3 text-sm text-surface-500">Loading transactions...</p>
+      <p class="mt-3 text-sm text-surface-500">{{ $t('common.loadingTransactions') }}</p>
     </div>
 
     <!-- Error -->
     <div v-else-if="error" class="bg-white dark:bg-surface-800 rounded-2xl shadow-card p-8 text-center">
       <p class="text-red-500 text-sm mb-3">{{ error }}</p>
-      <button @click="fetchTransactions" class="px-4 py-2 bg-primary-500 text-white text-sm rounded-lg">Retry</button>
+      <button @click="fetchTransactions" class="px-4 py-2 bg-primary-500 text-white text-sm rounded-lg">{{ $t('common.retry') }}</button>
     </div>
 
     <!-- Empty -->
@@ -52,8 +52,8 @@
       <svg class="w-16 h-16 mx-auto text-surface-300 dark:text-surface-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z"/>
       </svg>
-      <h3 class="text-lg font-semibold text-surface-700 dark:text-surface-200 mb-1">No transactions found</h3>
-      <p class="text-sm text-surface-500">Transactions will appear here once orders are placed.</p>
+      <h3 class="text-lg font-semibold text-surface-700 dark:text-surface-200 mb-1">{{ $t('transactions.noTransactions') }}</h3>
+      <p class="text-sm text-surface-500">{{ $t('transactions.noTransactionsDesc') }}</p>
     </div>
 
     <!-- Table -->
@@ -62,13 +62,13 @@
         <table class="w-full">
           <thead>
             <tr class="border-b border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50">
-              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">#</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Order</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Amount</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">MD5</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Status</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Date</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Actions</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.hash') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.order') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.amount') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.md5') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.status') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.date') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-surface-100 dark:divide-surface-700">
@@ -95,20 +95,29 @@
                   <span v-if="tx.status === 'PAID'" class="w-1.5 h-1.5 bg-accent-500 rounded-full"></span>
                   <span v-else-if="tx.status === 'PENDING'" class="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></span>
                   <span v-else class="w-1.5 h-1.5 bg-surface-400 rounded-full"></span>
-                  {{ tx.status }}
+                  {{ tx.status === 'PAID' ? $t('transactions.paid') : tx.status === 'PENDING' ? $t('transactions.pending') : tx.status === 'EXPIRED' ? $t('transactions.expired') : $t('transactions.failed') }}
                 </span>
               </td>
               <td class="px-4 py-3 text-sm text-surface-500 whitespace-nowrap">
                 {{ formatDate(tx.createdAt) }}
               </td>
               <td class="px-4 py-3">
-                <button @click="copyMd5(tx.md5)"
-                  class="p-1.5 text-surface-400 hover:text-primary-500 transition-colors rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700"
-                  title="Copy MD5">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                  </svg>
-                </button>
+                <div class="flex items-center gap-1">
+                  <button @click="copyMd5(tx.md5)"
+                    class="p-1.5 text-surface-400 hover:text-primary-500 transition-colors rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700"
+                    :title="$t('transactions.md5')">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                  </button>
+                  <button @click="confirmDeleteTransaction(tx)"
+                    class="p-1.5 text-surface-400 hover:text-red-500 transition-colors rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700"
+                    :title="$t('common.delete')">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -118,12 +127,12 @@
       <!-- Pagination -->
       <div v-if="pagination.pages > 1" class="flex items-center justify-between px-4 py-3 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50">
         <p class="text-xs text-surface-500">
-          Showing {{ (pagination.page - 1) * pagination.limit + 1 }}–{{ Math.min(pagination.page * pagination.limit, pagination.total) }} of {{ pagination.total }}
+          {{ $t('transactions.showingRange', { from: (pagination.page - 1) * pagination.limit + 1, to: Math.min(pagination.page * pagination.limit, pagination.total), total: pagination.total }) }}
         </p>
         <div class="flex items-center gap-1">
           <button @click="goToPage(pagination.page - 1)" :disabled="pagination.page <= 1"
             class="px-3 py-1.5 text-xs rounded-lg border border-surface-200 dark:border-surface-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
-            Previous
+            {{ $t('common.previous') }}
           </button>
           <template v-for="p in visiblePages" :key="p">
             <button v-if="p === -1" disabled class="px-2 py-1.5 text-xs text-surface-400">...</button>
@@ -137,8 +146,24 @@
           </template>
           <button @click="goToPage(pagination.page + 1)" :disabled="pagination.page >= pagination.pages"
             class="px-3 py-1.5 text-xs rounded-lg border border-surface-200 dark:border-surface-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
-            Next
+            {{ $t('common.next') }}
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation -->
+    <div v-if="deletingTx" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="fixed inset-0 bg-black/50" @click="deletingTx = null"></div>
+      <div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-xl w-full max-w-sm p-6 animate-scale-in text-center">
+        <div class="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+        </div>
+        <h3 class="text-lg font-bold text-surface-800 dark:text-white mb-2">{{ $t('transactions.deleteTitle') }}</h3>
+        <p class="text-sm text-surface-500 mb-6" v-html="$t('transactions.deleteDesc', { id: deletingTx._id?.slice(-8) })"></p>
+        <div class="flex gap-3">
+          <button @click="deletingTx = null" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-surface-50">{{ $t('common.cancel') }}</button>
+          <button @click="deleteTransaction" :disabled="deleting" class="flex-1 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50">{{ deleting ? $t('common.deleting') : $t('common.delete') }}</button>
         </div>
       </div>
     </div>
@@ -182,6 +207,8 @@ const statusFilter = ref('all')
 const highlightedIds = ref(new Set<string>())
 const toastMessage = ref<string | null>(null)
 const isLive = ref(false)
+const deletingTx = ref<Transaction | null>(null)
+const deleting = ref(false)
 
 let eventSource: EventSource | null = null
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
@@ -363,6 +390,25 @@ async function copyMd5(md5?: string) {
     showToast('MD5 copied to clipboard')
   } catch {
     showToast('Failed to copy')
+  }
+}
+
+function confirmDeleteTransaction(tx: Transaction) {
+  deletingTx.value = tx
+}
+
+async function deleteTransaction() {
+  if (!deletingTx.value) return
+  deleting.value = true
+  try {
+    await api.delete(`/payment/transactions/${deletingTx.value._id}`)
+    deletingTx.value = null
+    showToast('Transaction deleted')
+    fetchTransactions()
+  } catch (err: any) {
+    showToast(err.message || 'Failed to delete')
+  } finally {
+    deleting.value = false
   }
 }
 </script>

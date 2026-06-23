@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-6">
     <div class="text-center">
-      <h1 class="text-2xl font-bold text-surface-800 dark:text-white">Create Account</h1>
-      <p class="text-sm text-surface-500 dark:text-surface-400 mt-1">Join us today</p>
+      <h1 class="text-2xl font-bold text-surface-800 dark:text-white">{{ $t('auth.registerTitle') }}</h1>
+      <p class="text-sm text-surface-500 dark:text-surface-400 mt-1">{{ $t('auth.registerSubtitle') }}</p>
     </div>
 
     <div v-if="error" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg">
@@ -11,17 +11,17 @@
 
     <form @submit.prevent="handleRegister" class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">Full Name</label>
+        <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('auth.name') }}</label>
         <input
           v-model="name"
           type="text"
           required
-          placeholder="John Doe"
+          :placeholder="$t('checkout.fullNamePlaceholder')"
           class="w-full px-4 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all text-sm"
         />
       </div>
       <div>
-        <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">Email</label>
+        <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('auth.email') }}</label>
         <input
           v-model="email"
           type="email"
@@ -31,7 +31,7 @@
         />
       </div>
       <div>
-        <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">Password</label>
+        <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('auth.password') }}</label>
         <input
           v-model="password"
           type="password"
@@ -42,7 +42,7 @@
         />
       </div>
       <div>
-        <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">Confirm Password</label>
+        <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('auth.confirmPassword') }}</label>
         <input
           v-model="confirmPassword"
           type="password"
@@ -58,15 +58,15 @@
       >
         <span v-if="loading" class="flex items-center justify-center">
           <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
-          Creating account...
+          {{ $t('auth.creatingAccount') }}
         </span>
-        <span v-else>Create Account</span>
+        <span v-else>{{ $t('auth.registerTitle') }}</span>
       </button>
     </form>
 
     <p class="text-center text-sm text-surface-500 dark:text-surface-400">
-      Already have an account?
-      <router-link to="/auth/login" class="text-primary-500 hover:text-primary-600 font-semibold">Sign in</router-link>
+      {{ $t('auth.hasAccount') }}
+      <router-link to="/auth/login" class="text-primary-500 hover:text-primary-600 font-semibold">{{ $t('auth.signIn') }}</router-link>
     </p>
   </div>
 </template>
@@ -75,7 +75,9 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
 
@@ -88,7 +90,7 @@ const error = ref('')
 
 async function handleRegister() {
   if (password.value !== confirmPassword.value) {
-    error.value = 'Passwords do not match'
+    error.value = t('auth.passwordsDoNotMatch')
     return
   }
   loading.value = true

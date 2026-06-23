@@ -1,0 +1,187 @@
+{
+  "app": {
+    "name": "ហាងរបស់ខ្ញុំ",
+    "tagline": "បទពិសោធន៍ទិញទំនិញកម្រិតខ្ពស់"
+  },
+  "nav": {
+    "home": "ទំព័រដើម",
+    "categories": "ប្រភេទ",
+    "cart": "កន្ត្រក",
+    "orders": "ការបញ្ជាទិញ",
+    "account": "គណនី",
+    "profile": "ប្រវត្តិរូប",
+    "signIn": "ចូល",
+    "signOut": "ចាកចេញ",
+    "search": "ស្វែងរកផលិតផល...",
+    "viewAll": "មើលទាំងអស់"
+  },
+  "home": {
+    "shopNow": "ទិញឥឡូវ",
+    "browseCategories": "រកមើលប្រភេទ",
+    "categories": "ប្រភេទ",
+    "flashSale": "ការបញ្ចុះតម្លៃ",
+    "newArrivals": "ផលិតផលថ្មី",
+    "freeShipping": "ដឹកជញ្ជូនឥតគិតថ្លៃ",
+    "freeShippingDesc": "រាល់ការបញ្ជាទិញសុទ្ធតែដឹកជញ្ជូនឥតគិតថ្លៃ",
+    "alwaysFreeShipping": "ដឹកជញ្ជូនឥតគិតថ្លៃជានិច្ច",
+    "sold": "បានលក់",
+    "noFlashSale": "មិនមានទំនិញបញ្ចុះតម្លៃទេ",
+    "noNewArrivals": "មិនទាន់មានផលិតផលថ្មីនៅឡើយទេ"
+  },
+  "cart": {
+    "title": "កន្ត្រកទំនិញ",
+    "empty": "កន្ត្រករបស់អ្នកទទេ",
+    "emptyDesc": "បន្ថែមទំនិញដើម្បីចាប់ផ្តើម",
+    "continueShopping": "បន្តទិញទំនិញ",
+    "subtotal": "សរុបរង",
+    "shipping": "ការដឹកជញ្ជូន",
+    "free": "ឥតគិតថ្លៃ",
+    "discount": "បញ្ចុះតម្លៃ",
+    "total": "សរុប",
+    "proceedToCheckout": "បន្តទៅការទូទាត់",
+    "couponPlaceholder": "បញ្ចូលលេខកូដបញ្ចុះតម្លៃ",
+    "apply": "អនុវត្ត",
+    "remove": "លុប"
+  },
+  "checkout": {
+    "title": "ការទូទាត់",
+    "freeShipping": "ដឹកជញ្ជូនឥតគិតថ្លៃ",
+    "contact": "ទំនាក់ទំនង",
+    "review": "ពិនិត្យឡើងវិញ",
+    "payment": "ការទូទាត់",
+    "contactInfo": "ព័ត៌មានទំនាក់ទំនង",
+    "fullName": "ឈ្មោះពេញ",
+    "fullNamePlaceholder": "សុខ មករា",
+    "phone": "លេខទូរស័ព្ទ",
+    "phonePlaceholder": "+855 12 345 678",
+    "continueToReview": "បន្តទៅការពិនិត្យ",
+    "continueToPayment": "បន្តទៅការទូទាត់",
+    "deliveryContact": "ព័ត៌មានដឹកជញ្ជូន",
+    "change": "ផ្លាស់ប្តូរ",
+    "orderItems": "ទំនិញក្នុងការបញ្ជាទិញ",
+    "qty": "បរិមាណ",
+    "summary": "សង្ខេប",
+    "choosePayment": "ជ្រើសរើសវិធីទូទាត់",
+    "khqr": "ការទូទាត់តាម KHQR",
+    "khqrDesc": "ស្កេនជាមួយ ABA, ACLEDA, Wing ឬកម្មវិធី KHQR ផ្សេងទៀត",
+    "cod": "បង់ប្រាក់ពេលទទួល",
+    "codDesc": "បង់ប្រាក់នៅពេលអ្នកទទួលបាន",
+    "placeOrder": "ដាក់ការបញ្ជាទិញ",
+    "processing": "កំពុងដំណើរការ...",
+    "orderSuccess": "ការបញ្ជាទិញបានជោគជ័យ! អ្នកនឹងបង់ប្រាក់ពេលទទួលទំនិញ។"
+  },
+  "order": {
+    "title": "ការបញ្ជាទិញរបស់ខ្ញុំ",
+    "detail": "ព័ត៌មានលម្អិត",
+    "noOrders": "មិនទាន់មានការបញ្ជាទិញនៅឡើយទេ",
+    "startShopping": "ចាប់ផ្តើមទិញទំនិញ",
+    "orderId": "លេខកូដ",
+    "placed": "បានដាក់នៅ",
+    "contact": "ទំនាក់ទំនង",
+    "payment": "ការទូទាត់",
+    "subtotal": "សរុបរង",
+    "shipping": "ការដឹកជញ្ជូន",
+    "discount": "បញ្ចុះតម្លៃ",
+    "total": "សរុប",
+    "items": "ទំនិញ",
+    "backToOrders": "ត្រឡប់ទៅការបញ្ជាទិញ",
+    "status": {
+      "pending": "កំពុងរង់ចាំ",
+      "confirmed": "បានបញ្ជាក់",
+      "shipping": "កំពុងដឹកជញ្ជូន",
+      "delivered": "បានដឹកជញ្ជូន",
+      "cancelled": "បានបោះបង់"
+    },
+    "timeline": {
+      "placed": "បានដាក់ការបញ្ជាទិញ",
+      "confirmed": "បានបញ្ជាក់ការបញ្ជាទិញ",
+      "delivery": "កំពុងដឹកជញ្ជូន",
+      "delivered": "បានដឹកជញ្ជូន",
+      "cancelled": "បានបោះបង់"
+    }
+  },
+  "product": {
+    "inStock": "មាននៅក្នុងស្តុក",
+    "leftStock": "នៅសល់តែ {stock} ទៀតប៉ុណ្ណោះ",
+    "outOfStock": "អស់ស្តុក",
+    "quantity": "បរិមាណ",
+    "addToCart": "បន្ថែមទៅកន្ត្រក",
+    "addedToCart": "បានបន្ថែមទៅកន្ត្រកហើយ!",
+    "description": "ការពិពណ៌នា",
+    "reviews": "ការវាយតម្លៃ",
+    "noReviews": "មិនទាន់មានការវាយតម្លៃនៅឡើយទេ",
+    "shipping": "ដឹកជញ្ជូនឥតគិតថ្លៃ",
+    "returns": "សិទ្ធិត្រឡប់ក្នុងរយៈពេល ៣០ថ្ងៃ",
+    "relatedProducts": "ផលិតផលពាក់ព័ន្ធ",
+    "notFound": "រកមិនឃើញផលិតផល"
+  },
+  "category": {
+    "title": "ប្រភេទ",
+    "noCategories": "មិនទាន់មានប្រភេទនៅឡើយទេ",
+    "checkBack": "សូមត្រលប់មកពិនិត្យមើលនៅពេលក្រោយ",
+    "products": "ផលិតផល"
+  },
+  "auth": {
+    "signIn": "ចូល",
+    "signUp": "ចុះឈ្មោះ",
+    "signingIn": "កំពុងចូល...",
+    "creatingAccount": "កំពុងបង្កើតគណនី...",
+    "email": "អ៊ីមែល",
+    "password": "ពាក្យសម្ងាត់",
+    "confirmPassword": "បញ្ជាក់ពាក្យសម្ងាត់",
+    "name": "ឈ្មោះ",
+    "loginTitle": "សូមស្វាគមន៍",
+    "registerTitle": "បង្កើតគណនី",
+    "loginSubtitle": "ចូលគណនីរបស់អ្នក",
+    "registerSubtitle": "ចុះឈ្មោះថ្ងៃនេះ",
+    "or": "ឬ",
+    "continueWithGoogle": "បន្តជាមួយ Google",
+    "rememberMe": "ចងចាំខ្ញុំ",
+    "forgotPassword": "ភ្លេចពាក្យសម្ងាត់?",
+    "passwordsDoNotMatch": "ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ",
+    "noAccount": "មិនទាន់មានគណនី?",
+    "hasAccount": "មានគណនីរួចហើយ?",
+    "logout": "ចាកចេញ",
+    "invalidCredentials": "អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ",
+    "googleLoginFailed": "ការចូលតាម Google បរាជ័យ"
+  },
+  "common": {
+    "loading": "កំពុងផ្ទុក...",
+    "loadingOrder": "កំពុងផ្ទុកការបញ្ជាទិញ...",
+    "error": "កំហុស",
+    "retry": "ព្យាយាមម្តងទៀត",
+    "cancel": "បោះបង់",
+    "delete": "លុប",
+    "save": "រក្សាទុក",
+    "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+    "edit": "កែសម្រួល",
+    "close": "បិទ",
+    "search": "ស្វែងរក",
+    "backToHome": "ត្រឡប់ទៅទំព័រដើម",
+    "goHome": "ទៅទំព័រដើម"
+  },
+  "notFound": {
+    "title": "រកទំព័រមិនឃើញ",
+    "description": "ទំព័រដែលអ្នកកំពុងស្វែងរកមិនមានទេ"
+  },
+  "profile": {
+    "title": "ប្រវត្តិរូបរបស់ខ្ញុំ",
+    "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+    "signOut": "ចាកចេញ"
+  },
+  "banner": {
+    "freeShipping": "ដឹកជញ្ជូនឥតគិតថ្លៃ — មិនតម្រូវឱ្យមានការបញ្ជាទិញអប្បបរមា!"
+  },
+  "search": {
+    "title": "ស្វែងរក",
+    "placeholder": "ស្វែងរកផលិតផល...",
+    "all": "ទាំងអស់",
+    "sortLatest": "តម្រៀបតាម: ថ្មី",
+    "sortLowHigh": "តម្លៃ: ទាបទៅខ្ពស់",
+    "sortHighLow": "តម្លៃ: ខ្ពស់ទៅទាប",
+    "sortBestSelling": "លក់ដាច់"
+  },
+  "footer": {
+    "allRightsReserved": "រក្សាសិទ្ធិគ្រប់យ៉ាង។"
+  }
+}

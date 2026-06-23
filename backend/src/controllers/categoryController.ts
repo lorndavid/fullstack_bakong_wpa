@@ -9,7 +9,27 @@ const getCategories = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const categories = await Category.find().sort({ name: 1 });
+    const categories = await Category.aggregate([
+      { $sort: { name: 1 } },
+      {
+        $lookup: {
+          from: 'products',
+          localField: '_id',
+          foreignField: 'category',
+          as: 'products',
+        },
+      },
+      {
+        $addFields: {
+          productCount: { $size: '$products' },
+        },
+      },
+      {
+        $project: {
+          products: 0,
+        },
+      },
+    ]);
     res.json({ success: true, categories });
   } catch (error) {
     next(error);

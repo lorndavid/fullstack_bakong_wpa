@@ -1,38 +1,67 @@
 <template>
   <div class="space-y-6 sm:space-y-8 pb-6">
-    <!-- Hero Banner Carousel -->
-    <section class="relative overflow-hidden bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-800 dark:to-primary-900">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
-        <div class="flex items-center justify-between">
-          <div class="max-w-lg space-y-4 animate-slide-up">
-            <span class="inline-block px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-full">Summer Sale 2024</span>
-            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
-              Shop Smarter<br/>Save Bigger
-            </h1>
-            <p class="text-white/80 text-sm sm:text-base">Discover amazing deals on premium products. Free shipping on orders over $50.</p>
-            <div class="flex items-center space-x-3">
-              <router-link to="/search" class="inline-flex items-center px-5 py-2.5 bg-white text-primary-500 font-semibold rounded-lg hover:bg-primary-50 transition-all text-sm sm:text-base">
-                Shop Now
-                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-              </router-link>
-              <router-link to="/categories" class="inline-flex items-center px-5 py-2.5 text-white border border-white/30 font-medium rounded-lg hover:bg-white/10 transition-all text-sm sm:text-base">
-                Browse Categories
-              </router-link>
+    <!-- Hero Banner Carousel with Slides from API -->
+    <section class="relative overflow-hidden">
+      <div class="relative max-w-[80%] mx-auto rounded-2xl overflow-hidden shadow-2xl">
+        <div v-for="(slide, idx) in heroSlides" :key="idx"
+          class="transition-all duration-700 ease-in-out"
+          :class="idx === currentHeroSlide ? 'opacity-100' : 'opacity-0 absolute inset-0'">
+          <div v-if="slide.image" class="relative">
+            <img :src="slide.image.secure_url" :alt="slide.title || 'Slide ' + (idx + 1)" class="w-full h-[280px] sm:h-[380px] lg:h-[450px] object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+            <div class="absolute inset-0 flex items-center">
+              <div class="max-w-7xl mx-auto px-4 sm:px-6 w-full">
+                <div class="max-w-lg space-y-3 sm:space-y-4 animate-slide-up">
+                  <span v-if="slide.subtitle" class="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold rounded-full">{{ slide.subtitle }}</span>
+                  <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                    {{ slide.title || 'Welcome to MY SHOP' }}
+                  </h1>
+                  <p v-if="slide.description" class="text-white/80 text-sm sm:text-base">{{ slide.description }}</p>
+                  <div class="flex items-center space-x-3">
+                    <router-link :to="slide.link || '/search'" class="inline-flex items-center px-5 py-2.5 bg-white text-primary-500 font-semibold rounded-lg hover:bg-primary-50 transition-all text-sm sm:text-base shadow-lg">
+                      {{ $t('home.shopNow') }}
+                      <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                    </router-link>
+                    <router-link to="/categories" class="inline-flex items-center px-5 py-2.5 text-white border border-white/30 font-medium rounded-lg hover:bg-white/10 transition-all text-sm sm:text-base backdrop-blur-sm">
+                      {{ $t('home.browseCategories') }}
+                    </router-link>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="hidden lg:block">
-            <div class="w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <!-- Loading state for hero -->
+        <div v-if="heroSlides.length === 0 && !heroSlidesError" class="bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-800 dark:to-primary-900 h-[280px] sm:h-[380px] lg:h-[450px] max-w-[80%] mx-auto rounded-2xl flex items-center">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 w-full animate-pulse">
+            <div class="max-w-lg space-y-4">
+              <div class="h-6 w-24 bg-white/20 rounded-full"></div>
+              <div class="h-12 w-72 bg-white/20 rounded"></div>
+              <div class="h-4 w-48 bg-white/20 rounded"></div>
+            </div>
           </div>
         </div>
+
+        <!-- Hero Slide Dots -->
+        <div v-if="heroSlides.length > 1" class="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-10">
+          <button
+            v-for="(_, idx) in heroSlides"
+            :key="idx"
+            @click="currentHeroSlide = idx"
+            class="h-2 rounded-full transition-all duration-300"
+            :class="idx === currentHeroSlide ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/70'"
+          ></button>
+        </div>
       </div>
-      <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-surface-50 dark:from-surface-900"></div>
+      <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-surface-50 dark:from-surface-900 pointer-events-none" style="max-width: 80%; margin: 0 auto; right: 0;"></div>
     </section>
 
     <!-- Categories -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg sm:text-xl font-bold text-surface-800 dark:text-white">Categories</h2>
-        <router-link to="/categories" class="text-sm text-primary-500 hover:text-primary-600 font-medium">View All</router-link>
+        <h2 class="text-lg sm:text-xl font-bold text-surface-800 dark:text-white">{{ $t('home.categories') }}</h2>
+        <router-link to="/categories" class="text-sm text-primary-500 hover:text-primary-600 font-medium">{{ $t('nav.viewAll') }}</router-link>
       </div>
 
       <!-- Skeleton -->
@@ -68,7 +97,7 @@
     <section class="max-w-7xl mx-auto px-4 sm:px-6">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center space-x-3">
-          <h2 class="text-lg sm:text-xl font-bold text-surface-800 dark:text-white">Flash Sale</h2>
+          <h2 class="text-lg sm:text-xl font-bold text-surface-800 dark:text-white">{{ $t('home.flashSale') }}</h2>
           <div class="flex items-center space-x-1.5">
             <span class="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded">{{ flashTimer.hours }}</span>
             <span class="text-surface-400 font-bold">:</span>
@@ -77,7 +106,7 @@
             <span class="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded">{{ flashTimer.seconds }}</span>
           </div>
         </div>
-        <router-link to="/search?sort=discount" class="text-sm text-primary-500 hover:text-primary-600 font-medium">View All</router-link>
+        <router-link to="/search?sort=discount" class="text-sm text-primary-500 hover:text-primary-600 font-medium">{{ $t('nav.viewAll') }}</router-link>
       </div>
 
       <!-- Skeleton -->
@@ -126,7 +155,7 @@
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                 </svg>
               </div>
-              <span class="text-xs text-surface-400">{{ product.sold }} sold</span>
+              <span class="text-xs text-surface-400">{{ product.sold }} {{ $t('home.sold') }}</span>
             </div>
           </div>
         </div>
@@ -139,22 +168,25 @@
 
       <!-- Empty -->
       <div v-else class="text-center py-8 bg-white dark:bg-surface-800 rounded-2xl">
-        <p class="text-sm text-surface-500">No flash sale items available</p>
+        <p class="text-sm text-surface-500">{{ $t('home.noFlashSale') }}</p>
       </div>
     </section>
 
     <!-- Promotion Banner -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6">
-      <div class="bg-gradient-to-r from-accent-500 to-accent-600 rounded-2xl p-6 sm:p-8 text-white animate-fade-in">
-        <div class="flex items-center justify-between">
+      <div class="bg-gradient-to-r from-accent-500 to-accent-600 rounded-2xl p-6 sm:p-8 text-white animate-fade-in overflow-hidden relative">
+        <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+        <div class="flex items-center justify-between relative z-10">
           <div class="space-y-2">
-            <span class="inline-block px-3 py-1 bg-white/20 text-xs font-semibold rounded-full">Special Offer</span>
-            <h3 class="text-xl sm:text-2xl font-bold">Free Shipping</h3>
-            <p class="text-white/80 text-sm">On orders over $50. Use code: FREESHIP</p>
+            <span class="inline-block px-3 py-1 bg-white/20 text-xs font-semibold rounded-full backdrop-blur-sm">🎉 {{ $t('home.alwaysFreeShipping') }}</span>
+            <h3 class="text-xl sm:text-2xl font-bold">{{ $t('home.freeShipping') }}</h3>
+            <p class="text-white/80 text-sm">{{ $t('home.freeShippingDesc') }}</p>
           </div>
-          <div class="text-right">
-            <div class="text-3xl font-bold">$50</div>
-            <div class="text-sm text-white/60">minimum order</div>
+          <div class="text-right hidden sm:block">
+            <svg class="w-16 h-16 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+            </svg>
           </div>
         </div>
       </div>
@@ -163,8 +195,8 @@
     <!-- New Arrivals -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg sm:text-xl font-bold text-surface-800 dark:text-white">New Arrivals</h2>
-        <router-link to="/search?sort=newest" class="text-sm text-primary-500 hover:text-primary-600 font-medium">View All</router-link>
+        <h2 class="text-lg sm:text-xl font-bold text-surface-800 dark:text-white">{{ $t('home.newArrivals') }}</h2>
+        <router-link to="/search?sort=newest" class="text-sm text-primary-500 hover:text-primary-600 font-medium">{{ $t('nav.viewAll') }}</router-link>
       </div>
 
       <!-- Skeleton -->
@@ -198,8 +230,7 @@
               <svg class="w-12 h-12 text-surface-300 dark:text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
-            </div>
-            <span v-if="product.discount > 0" class="absolute top-2 left-2 px-2 py-0.5 bg-accent-500 text-white text-xs font-bold rounded">NEW</span>
+            </div>                            <span v-if="product.discount > 0" class="absolute top-2 left-2 px-2 py-0.5 bg-accent-500 text-white text-xs font-bold rounded">{{ $t('home.newArrivals') }}</span>
           </div>
           <div class="p-3">
             <h3 class="text-sm font-semibold text-surface-800 dark:text-white truncate">{{ product.name }}</h3>
@@ -227,7 +258,7 @@
 
       <!-- Empty -->
       <div v-else class="text-center py-8 bg-white dark:bg-surface-800 rounded-2xl">
-        <p class="text-sm text-surface-500">No new arrivals yet</p>
+        <p class="text-sm text-surface-500">{{ $t('home.noNewArrivals') }}</p>
       </div>
     </section>
 
@@ -269,10 +300,13 @@ const router = useRouter()
 const categories = ref<Category[]>([])
 const flashSaleProducts = ref<Product[]>([])
 const newArrivals = ref<Product[]>([])
+const heroSlides = ref<any[]>([])
+const currentHeroSlide = ref(0)
 const loading = ref(true)
 const categoriesError = ref<string | null>(null)
 const flashError = ref<string | null>(null)
 const arrivalsError = ref<string | null>(null)
+const heroSlidesError = ref<string | null>(null)
 
 // Flash sale countdown timer (24h from mount)
 const FLASH_SALE_DURATION = 24 * 60 * 60 // 24 hours in seconds
@@ -335,6 +369,18 @@ async function fetchNewArrivals() {
   }
 }
 
+async function fetchHeroSlides() {
+  try {
+    const data: any = await api.get('/hero-slides')
+    heroSlides.value = data.slides || []
+  } catch (err: any) {
+    heroSlidesError.value = 'Failed to load hero slides'
+    console.error('Failed to fetch hero slides:', err)
+  }
+}
+
+let heroSlideInterval: ReturnType<typeof setInterval> | null = null
+
 onMounted(async () => {
   loading.value = true
 
@@ -343,6 +389,7 @@ onMounted(async () => {
     fetchCategories(),
     fetchFlashSale(),
     fetchNewArrivals(),
+    fetchHeroSlides(),
   ])
 
   loading.value = false
@@ -353,12 +400,23 @@ onMounted(async () => {
       flashRemaining.value--
     }
   }, 1000)
+
+  // Auto-rotate hero slides
+  if (heroSlides.value.length > 1) {
+    heroSlideInterval = setInterval(() => {
+      currentHeroSlide.value = (currentHeroSlide.value + 1) % heroSlides.value.length
+    }, 5000)
+  }
 })
 
 onUnmounted(() => {
   if (timerInterval) {
     clearInterval(timerInterval)
     timerInterval = null
+  }
+  if (heroSlideInterval) {
+    clearInterval(heroSlideInterval)
+    heroSlideInterval = null
   }
 })
 </script>

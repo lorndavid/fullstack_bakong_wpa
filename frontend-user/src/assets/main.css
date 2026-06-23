@@ -14,6 +14,7 @@
   body {
     @apply bg-surface-50 dark:bg-surface-900 text-surface-800 dark:text-surface-200;
     overflow-x: hidden;
+    font-family: 'Battambang', 'Inter', sans-serif;
   }
 
   /* Scrollbar */
@@ -66,6 +67,36 @@
     padding-top: env(safe-area-inset-top, 0px);
   }
 }
+
+/* Dynamic theme overrides (injected by admin Settings) */
+:root {
+  --color-primary: #0055A4;
+  --color-accent: #00C853;
+}
+
+/* Override Tailwind utility classes with CSS variables for theme customization */
+.bg-primary-50 { background-color: color-mix(in srgb, var(--color-primary) 10%, transparent); }
+.bg-primary-100 { background-color: color-mix(in srgb, var(--color-primary) 20%, transparent); }
+.bg-primary-500 { background-color: var(--color-primary); }
+.hover\:bg-primary-600:hover { background-color: color-mix(in srgb, var(--color-primary) 85%, black); }
+.hover\:bg-primary-50:hover { background-color: color-mix(in srgb, var(--color-primary) 10%, transparent); }
+.text-primary-500 { color: var(--color-primary); }
+.text-primary-600 { color: color-mix(in srgb, var(--color-primary) 85%, black); }
+.ring-primary-500\/30 { --tw-ring-color: color-mix(in srgb, var(--color-primary) 30%, transparent); }
+.focus\:ring-primary-500\/30:focus { --tw-ring-color: color-mix(in srgb, var(--color-primary) 30%, transparent); }
+.border-primary-500 { border-color: var(--color-primary); }
+.from-primary-500 { --tw-gradient-from: var(--color-primary); }
+.to-primary-700 { --tw-gradient-to: color-mix(in srgb, var(--color-primary) 70%, black); }
+
+.bg-accent-500 { background-color: var(--color-accent); }
+.hover\:bg-accent-600:hover { background-color: color-mix(in srgb, var(--color-accent) 85%, black); }
+.text-accent-500 { color: var(--color-accent); }
+.text-accent-700 { color: color-mix(in srgb, var(--color-accent) 70%, black); }
+.from-accent-500 { --tw-gradient-from: var(--color-accent); }
+.to-accent-600 { --tw-gradient-to: color-mix(in srgb, var(--color-accent) 85%, black); }
+.border-accent-500 { border-color: var(--color-accent); }
+.shadow-accent-500\/40 { --tw-shadow-color: color-mix(in srgb, var(--color-accent) 40%, transparent); }
+.ring-accent-500\/30 { --tw-ring-color: color-mix(in srgb, var(--color-accent) 30%, transparent); }
 
 /* Transitions */
 @layer utilities {

@@ -56,7 +56,7 @@ const createOrder = async (
       subtotal += discountPrice * item.quantity;
     }
 
-    const shipping = subtotal >= 50 ? 0 : 5;
+    const shipping = 0;
     const total = subtotal + shipping;
 
     const order = await Order.create({
@@ -217,6 +217,34 @@ const updateOrderStatus = async (
   }
 };
 
+const deleteOrder = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      res.status(404).json({ success: false, message: 'Order not found' });
+      return;
+    }
+
+    // Restore stock for all products in the order
+    for (const item of order.products) {
+      await Product.findByIdAndUpdate(item.productId, {
+        $inc: { stock: item.quantity, sold: -item.quantity },
+      });
+    }
+
+    await Order.findByIdAndDelete(req.params.id);
+
+    res.json({ success: true, message: 'Order deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const cancelOrder = async (
   req: AuthRequest,
   res: Response,
@@ -268,4 +296,5 @@ export {
   getAllOrders,
   updateOrderStatus,
   cancelOrder,
+  deleteOrder,
 };

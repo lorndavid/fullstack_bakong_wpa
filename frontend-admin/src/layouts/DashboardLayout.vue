@@ -4,7 +4,10 @@
     <aside class="w-64 bg-white dark:bg-surface-800 border-r border-surface-200 dark:border-surface-700 hidden lg:flex flex-col">
       <div class="p-6">
         <router-link to="/" class="flex items-center space-x-2">
-          <div class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+          <div v-if="siteLogo" class="w-8 h-8 flex items-center justify-center">
+            <img :src="siteLogo" alt="Logo" class="w-full h-full object-contain" />
+          </div>
+          <div v-else class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
             <span class="text-white font-bold">M</span>
           </div>
           <span class="font-bold text-lg text-surface-800 dark:text-white">MY SHOP</span>
@@ -42,6 +45,7 @@
           <h1 class="text-lg font-semibold text-surface-800 dark:text-white">{{ pageTitle }}</h1>
         </div>
         <div class="flex items-center space-x-3">
+          <LanguageSwitcher />
           <button @click="toggleTheme" class="p-2 text-surface-500 hover:text-surface-700 dark:hover:text-surface-300">
             <svg v-if="isDark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
@@ -55,7 +59,10 @@
         <div class="p-6">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
-              <div class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+              <div v-if="siteLogo" class="w-8 h-8 flex items-center justify-center">
+                <img :src="siteLogo" alt="Logo" class="w-full h-full object-contain" />
+              </div>
+              <div v-else class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
                 <span class="text-white font-bold">M</span>
               </div>
               <span class="font-bold text-lg">MY SHOP</span>
@@ -84,9 +91,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, inject, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
+
+const siteLogo = inject('siteLogo', ref('')) as Ref<string>
 
 const route = useRoute()
 const router = useRouter()
@@ -102,6 +112,8 @@ const navItems = [
   { path: '/orders', label: 'Orders', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>' },
   { path: '/users', label: 'Users', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>' },
   { path: '/transactions', label: 'Transactions', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z"/>' },
+  { path: '/hero-slides', label: 'Hero Slides', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>' },
+  { path: '/settings', label: 'Settings', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>' },
 ]
 
 const pageTitle = computed(() => {

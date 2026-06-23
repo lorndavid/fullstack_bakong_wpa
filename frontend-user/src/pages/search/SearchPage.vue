@@ -8,7 +8,7 @@
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="Search products..."
+        :placeholder="$t('search.placeholder')"
         class="w-full pl-12 pr-4 py-3 bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-600 text-surface-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-sm"
         autofocus
       />
@@ -16,7 +16,7 @@
 
     <!-- Filters -->
     <div class="flex items-center gap-3 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-      <button v-for="filter in filters" :key="filter.label" @click="selectedFilter = filter.value"
+      <button v-for="filter in filters" :key="filter.value" @click="selectedFilter = filter.value"
         class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all"
         :class="selectedFilter === filter.value 
           ? 'bg-primary-500 text-white shadow-md' 
@@ -31,7 +31,7 @@
       <div v-for="i in 8" :key="i" class="group bg-white dark:bg-surface-800 rounded-card shadow-card hover:shadow-card-hover transition-all duration-250 overflow-hidden cursor-pointer hover:-translate-y-1">
         <div class="aspect-square bg-surface-100 dark:bg-surface-700 animate-pulse"></div>
         <div class="p-3">
-          <h3 class="text-sm font-semibold text-surface-800 dark:text-white truncate">Search Result {{ i }}</h3>
+          <h3 class="text-sm font-semibold text-surface-800 dark:text-white truncate">{{ $t('search.placeholder') }} {{ i }}</h3>
           <span class="text-sm font-bold text-primary-500">$19.99</span>
         </div>
       </div>
@@ -40,16 +40,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const searchQuery = ref('')
 const selectedFilter = ref('all')
-const filters = [
-  { label: 'All', value: 'all' },
-  { label: 'Fashion', value: 'fashion' },
-  { label: 'Electronics', value: 'electronics' },
-  { label: 'Home', value: 'home' },
-  { label: 'Beauty', value: 'beauty' },
-  { label: 'Sports', value: 'sports' },
-]
+
+const filters = computed(() => [
+  { label: t('search.all'), value: 'all' },
+  { label: t('search.sortLatest'), value: 'latest' },
+  { label: t('search.sortLowHigh'), value: 'lowhigh' },
+  { label: t('search.sortHighLow'), value: 'highlow' },
+  { label: t('search.sortBestSelling'), value: 'bestselling' },
+])
 </script>

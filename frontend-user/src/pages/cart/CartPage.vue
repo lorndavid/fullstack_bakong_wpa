@@ -1,16 +1,16 @@
 <template>
   <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-    <h1 class="text-xl sm:text-2xl font-bold text-surface-800 dark:text-white mb-6">Shopping Cart</h1>
+    <h1 class="text-xl sm:text-2xl font-bold text-surface-800 dark:text-white mb-6">{{ $t('cart.title') }}</h1>
 
     <!-- Empty State -->
     <div v-if="cart.items.length === 0" class="text-center py-16">
       <svg class="w-24 h-24 mx-auto text-surface-300 dark:text-surface-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
       </svg>
-      <h2 class="text-lg font-semibold text-surface-700 dark:text-surface-200 mb-2">Your cart is empty</h2>
-      <p class="text-surface-500 mb-6">Add some items to get started</p>
+      <h2 class="text-lg font-semibold text-surface-700 dark:text-surface-200 mb-2">{{ $t('cart.empty') }}</h2>
+      <p class="text-surface-500 mb-6">{{ $t('cart.emptyDesc') }}</p>
       <router-link to="/" class="inline-flex items-center px-6 py-2.5 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-colors">
-        Continue Shopping
+        {{ $t('cart.continueShopping') }}
       </router-link>
     </div>
 
@@ -21,7 +21,12 @@
           class="bg-white dark:bg-surface-800 rounded-2xl p-4 shadow-card animate-fade-in">
           <div class="flex gap-4">
             <div class="w-20 h-20 sm:w-24 sm:h-24 bg-surface-100 dark:bg-surface-700 rounded-xl flex-shrink-0 overflow-hidden">
-              <div class="w-full h-full bg-surface-100 dark:bg-surface-700"></div>
+              <img v-if="item.image" :src="item.image" :alt="item.name" class="w-full h-full object-cover" />
+              <div v-else class="w-full h-full flex items-center justify-center">
+                <svg class="w-8 h-8 text-surface-300 dark:text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
             </div>
             <div class="flex-1 min-w-0">
               <h3 class="font-semibold text-surface-800 dark:text-white truncate">{{ item.name }}</h3>
@@ -48,46 +53,46 @@
       <!-- Coupon -->
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-4 shadow-card">
         <div class="flex gap-2">
-          <input v-model="couponCode" type="text" placeholder="Enter coupon code"
+          <input v-model="couponCode" type="text" :placeholder="$t('cart.couponPlaceholder')"
             class="flex-1 px-4 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-sm"
           />
           <button @click="applyCoupon" class="px-5 py-2.5 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors text-sm whitespace-nowrap">
-            Apply
+            {{ $t('cart.apply') }}
           </button>
         </div>
         <div v-if="cart.coupon" class="mt-2 flex items-center gap-2 text-sm text-accent-500">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-          Coupon "{{ cart.coupon }}" applied ( -${{ cart.discountAmount.toFixed(2) }} )
-          <button @click="cart.removeCoupon()" class="text-red-500 hover:text-red-600">Remove</button>
+          {{ $t('cart.discount') }} "{{ cart.coupon }}" ( -${{ cart.discountAmount.toFixed(2) }} )
+          <button @click="cart.removeCoupon()" class="text-red-500 hover:text-red-600">{{ $t('cart.remove') }}</button>
         </div>
       </div>
 
       <!-- Order Summary -->
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
-        <h2 class="text-lg font-bold text-surface-800 dark:text-white mb-4">Order Summary</h2>
+        <h2 class="text-lg font-bold text-surface-800 dark:text-white mb-4">{{ $t('checkout.summary') }}</h2>
         <div class="space-y-3 text-sm">
           <div class="flex justify-between">
-            <span class="text-surface-500">Subtotal</span>
+            <span class="text-surface-500">{{ $t('cart.subtotal') }}</span>
             <span class="font-medium text-surface-800 dark:text-white">${{ cart.subtotal.toFixed(2) }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-surface-500">Shipping</span>
+            <span class="text-surface-500">{{ $t('cart.shipping') }}</span>
             <span class="font-medium" :class="cart.shipping === 0 ? 'text-accent-500' : 'text-surface-800 dark:text-white'">
-              {{ cart.shipping === 0 ? 'FREE' : '$' + cart.shipping.toFixed(2) }}
+              {{ cart.shipping === 0 ? $t('cart.free') : '$' + cart.shipping.toFixed(2) }}
             </span>
           </div>
           <div v-if="cart.discountAmount > 0" class="flex justify-between text-accent-500">
-            <span>Discount</span>
+            <span>{{ $t('cart.discount') }}</span>
             <span>- ${{ cart.discountAmount.toFixed(2) }}</span>
           </div>
           <hr class="border-surface-200 dark:border-surface-700" />
           <div class="flex justify-between text-base font-bold">
-            <span class="text-surface-800 dark:text-white">Total</span>
+            <span class="text-surface-800 dark:text-white">{{ $t('cart.total') }}</span>
             <span class="text-primary-500">${{ cart.total.toFixed(2) }}</span>
           </div>
         </div>
         <router-link to="/checkout" class="mt-4 block w-full py-3 bg-accent-500 text-white font-semibold text-center rounded-lg hover:bg-accent-600 transition-all focus:ring-4 focus:ring-accent-500/30">
-          Proceed to Checkout
+          {{ $t('cart.proceedToCheckout') }}
         </router-link>
       </div>
     </div>
@@ -95,10 +100,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useCartStore } from '@/stores/cart'
 import { useToast } from '@/composables/useToast'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const cart = useCartStore()
 const toast = useToast()
 const couponCode = ref('')
@@ -107,7 +114,7 @@ function applyCoupon() {
   if (!couponCode.value.trim()) return
   const success = cart.applyCoupon(couponCode.value)
   if (success) {
-    toast.success('Coupon applied!')
+    toast.success(t('cart.couponPlaceholder') + ' applied!')
     couponCode.value = ''
   } else {
     toast.error('Invalid coupon code')
