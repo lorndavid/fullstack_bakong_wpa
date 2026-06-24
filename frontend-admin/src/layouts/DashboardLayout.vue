@@ -1,34 +1,77 @@
 <template>
   <div class="min-h-screen bg-surface-50 dark:bg-surface-900 flex">
-    <!-- Sidebar -->
+    <!-- Sidebar (Desktop) -->
     <aside class="w-64 bg-white dark:bg-surface-800 border-r border-surface-200 dark:border-surface-700 hidden lg:flex flex-col">
       <div class="p-6">
-        <router-link to="/" class="flex items-center space-x-2">
-          <div v-if="siteLogo" class="w-8 h-8 flex items-center justify-center">
+        <router-link to="/" class="flex items-center space-x-2.5">
+          <div v-if="siteLogo" class="w-9 h-9 flex items-center justify-center">
             <img :src="siteLogo" alt="Logo" class="w-full h-full object-contain" />
           </div>
-          <div v-else class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
-            <span class="text-white font-bold">M</span>
+          <div v-else class="w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-md">
+            <span class="text-white font-bold text-base">M</span>
           </div>
-          <span class="font-bold text-lg text-surface-800 dark:text-white">MY SHOP</span>
+          <span class="font-bold text-lg text-surface-800 dark:text-white tracking-tight">{{ $t('app.name') }}</span>
         </router-link>
       </div>
-      <nav class="flex-1 px-3 space-y-1">
-        <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all"
-          :class="$route.path === item.path 
-            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' 
-            : 'text-surface-600 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-700'">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="item.icon"></svg>
-          <span>{{ item.label }}</span>
-        </router-link>
+
+      <!-- User info at top of sidebar -->
+      <div class="mx-3 mb-2 px-3 py-2.5 bg-surface-50 dark:bg-surface-700/50 rounded-xl flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-primary-100 dark:bg-primary-900/50">
+          <img v-if="auth.user?.avatar" :src="auth.user.avatar" :alt="auth.user.name" class="w-full h-full object-cover" @error="avatarError = true" />
+          <div v-if="!auth.user?.avatar || avatarError" class="w-full h-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+            <span class="text-sm font-bold text-white">{{ auth.user?.name?.charAt(0).toUpperCase() }}</span>
+          </div>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-medium text-surface-800 dark:text-white truncate">{{ auth.user?.name }}</p>
+          <p class="text-xs text-surface-500 dark:text-surface-400 truncate">{{ auth.user?.email }}</p>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-3 space-y-0.5 overflow-y-auto">
+        <template v-for="item in navItems" :key="item.path || item.label">
+          <!-- Regular nav item -->
+          <router-link v-if="!item.type" :to="item.path!"
+            class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group"
+            :class="$route.path === item.path || ($route.path.startsWith(item.path + '/') && item.path !== '/')
+              ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 shadow-sm'
+              : 'text-surface-600 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-700/50'">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="item.icon"></svg>
+            <span>{{ item.label }}</span>
+          </router-link>
+          <!-- Group nav item (expandable) -->
+          <div v-else class="space-y-0.5">
+            <button @click="toggleGroup('users-group')"
+              class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group"
+              :class="isGroupOpen('users-group')
+                ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 shadow-sm'
+                : 'text-surface-600 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-700/50'">
+              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="item.icon"></svg>
+              <span class="flex-1 text-left">{{ item.label }}</span>
+              <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isGroupOpen('users-group') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div v-if="isGroupOpen('users-group')" class="ml-8 space-y-0.5 overflow-hidden">
+              <router-link v-for="child in item.children" :key="child.path" :to="child.path"
+                class="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
+                :class="$route.path === child.path
+                  ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                  : 'text-surface-500 dark:text-surface-400 hover:text-surface-700 dark:hover:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-700/50'">
+                <span class="w-1.5 h-1.5 rounded-full" :class="$route.path === child.path ? 'bg-primary-500' : 'bg-surface-300 dark:bg-surface-600'"></span>
+                <span>{{ child.label }}</span>
+              </router-link>
+            </div>
+          </div>
+        </template>
       </nav>
-      <div class="p-4 border-t border-surface-200 dark:border-surface-700">
-        <button @click="handleLogout" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 w-full transition-colors">
+
+      <div class="p-3 border-t border-surface-200 dark:border-surface-700 mt-2">
+        <button @click="handleLogout" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 w-full transition-all duration-150">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
           </svg>
-          <span>Sign Out</span>
+          <span>{{ $t('nav.signOut') }}</span>
         </button>
       </div>
     </aside>
@@ -36,54 +79,106 @@
     <!-- Main -->
     <div class="flex-1 flex flex-col min-w-0">
       <!-- Top Bar -->
-      <header class="h-16 bg-white dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between px-4 sm:px-6">
+      <header class="h-16 bg-white dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30">
         <div class="flex items-center space-x-3">
-          <!-- Mobile menu button -->
-          <button @click="showMobileMenu = !showMobileMenu" class="lg:hidden p-2 text-surface-500 hover:text-surface-700 dark:hover:text-surface-300">
+          <button @click="showMobileMenu = !showMobileMenu" class="lg:hidden p-2 text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
           </button>
-          <h1 class="text-lg font-semibold text-surface-800 dark:text-white">{{ pageTitle }}</h1>
+          <div>
+            <h1 class="text-lg font-semibold text-surface-800 dark:text-white">{{ pageTitle }}</h1>
+            <p class="text-xs text-surface-400 hidden sm:block">{{ currentDate }}</p>
+          </div>
         </div>
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2">
           <LanguageSwitcher />
-          <button @click="toggleTheme" class="p-2 text-surface-500 hover:text-surface-700 dark:hover:text-surface-300">
+          <button @click="toggleTheme" class="p-2.5 text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
+            :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
             <svg v-if="isDark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
           </button>
+          <!-- User avatar in top bar (mobile) -->
+          <div class="flex items-center gap-2 pl-2 border-l border-surface-200 dark:border-surface-700">
+            <div class="w-8 h-8 rounded-full overflow-hidden bg-primary-100 dark:bg-primary-900/50 hidden sm:block">
+              <img v-if="auth.user?.avatar && !avatarErrorMob" :src="auth.user.avatar" :alt="auth.user.name" class="w-full h-full object-cover" @error="avatarErrorMob = true" />
+              <div v-if="!auth.user?.avatar || avatarErrorMob" class="w-full h-full flex items-center justify-center">
+                <span class="text-xs font-bold text-primary-600 dark:text-primary-400">{{ auth.user?.name?.charAt(0).toUpperCase() }}</span>
+              </div>
+            </div>
+            <span class="hidden sm:block text-sm font-medium text-surface-600 dark:text-surface-300">{{ auth.user?.name }}</span>
+          </div>
         </div>
       </header>
 
-      <!-- Mobile Sidebar Overlay -->
-      <div v-if="showMobileMenu" @click="showMobileMenu = false" class="fixed inset-0 z-40 bg-black/50 lg:hidden"></div>
-      <aside v-if="showMobileMenu" class="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-surface-800 shadow-xl lg:hidden">
-        <div class="p-6">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-2">
+      <!-- Mobile Sidebar -->
+      <div v-if="showMobileMenu" @click="showMobileMenu = false" class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"></div>
+      <aside v-if="showMobileMenu" class="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-surface-800 shadow-2xl lg:hidden flex flex-col">
+        <div class="p-6 border-b border-surface-200 dark:border-surface-700">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-2.5">
               <div v-if="siteLogo" class="w-8 h-8 flex items-center justify-center">
                 <img :src="siteLogo" alt="Logo" class="w-full h-full object-contain" />
               </div>
-              <div v-else class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+              <div v-else class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center">
                 <span class="text-white font-bold">M</span>
               </div>
-              <span class="font-bold text-lg">MY SHOP</span>
+              <span class="font-bold text-lg text-surface-800 dark:text-white">{{ $t('app.name') }}</span>
             </div>
-            <button @click="showMobileMenu = false" class="p-1">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <button @click="showMobileMenu = false" class="p-2 text-surface-400 hover:text-surface-600 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
+          <div class="flex items-center gap-3 px-3 py-2.5 bg-surface-50 dark:bg-surface-700/50 rounded-xl">
+            <div class="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-primary-100 dark:bg-primary-900/50">
+              <img v-if="auth.user?.avatar && !avatarMobile" :src="auth.user.avatar" alt="" class="w-full h-full object-cover" @error="avatarMobile = true" />
+              <div v-if="!auth.user?.avatar || avatarMobile" class="w-full h-full flex items-center justify-center">
+                <span class="text-sm font-bold text-primary-600 dark:text-primary-400">{{ auth.user?.name?.charAt(0).toUpperCase() }}</span>
+              </div>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-surface-800 dark:text-white truncate">{{ auth.user?.name }}</p>
+              <p class="text-xs text-surface-500 truncate">{{ auth.user?.email }}</p>
+            </div>
+          </div>
         </div>
-        <nav class="px-3 space-y-1">
-          <router-link v-for="item in navItems" :key="item.path" :to="item.path" @click="showMobileMenu = false"
-            class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all"
-            :class="$route.path === item.path ? 'bg-primary-50 text-primary-600' : 'text-surface-600 hover:bg-surface-50'">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="item.icon"></svg>
-            <span>{{ item.label }}</span>
-          </router-link>
+        <nav class="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+          <template v-for="item in navItems" :key="item.path || item.label">
+            <router-link v-if="!item.type" :to="item.path!" @click="showMobileMenu = false"
+              class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
+              :class="$route.path === item.path ? 'bg-primary-50 text-primary-600' : 'text-surface-600 hover:bg-surface-50'">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="item.icon"></svg>
+              <span>{{ item.label }}</span>
+            </router-link>
+            <div v-else class="space-y-0.5">
+              <button @click="toggleGroup('users-group')"
+                class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
+                :class="isGroupOpen('users-group') ? 'bg-primary-50 text-primary-600' : 'text-surface-600 hover:bg-surface-50'">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="item.icon"></svg>
+                <span class="flex-1 text-left">{{ item.label }}</span>
+                <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isGroupOpen('users-group') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              <div v-if="isGroupOpen('users-group')" class="ml-8 space-y-0.5">
+                <router-link v-for="child in item.children" :key="child.path" :to="child.path" @click="showMobileMenu = false"
+                  class="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
+                  :class="$route.path === child.path ? 'bg-primary-50 text-primary-600' : 'text-surface-500 hover:text-surface-700 hover:bg-surface-50'">
+                  <span class="w-1.5 h-1.5 rounded-full" :class="$route.path === child.path ? 'bg-primary-500' : 'bg-surface-300'"></span>
+                  <span>{{ child.label }}</span>
+                </router-link>
+              </div>
+            </div>
+          </template>
         </nav>
-      </aside>
+        <div class="p-3 border-t border-surface-200 dark:border-surface-700">
+          <button @click="handleLogout" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 w-full transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span>{{ $t('nav.signOut') }}</span>
+        </button>
+      </div>
+    </aside>
 
       <!-- Content -->
-      <main class="flex-1 overflow-auto p-4 sm:p-6">
+      <main class="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
         <router-view />
       </main>
     </div>
@@ -94,9 +189,11 @@
 import { computed, ref, inject, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useI18n } from 'vue-i18n'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const siteLogo = inject('siteLogo', ref('')) as Ref<string>
+const { t, locale } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -104,21 +201,56 @@ const auth = useAuthStore()
 
 const showMobileMenu = ref(false)
 const isDark = ref(localStorage.getItem('theme') === 'dark')
+const avatarError = ref(false)
+const avatarErrorMob = ref(false)
+const avatarMobile = ref(false)
 
-const navItems = [
-  { path: '/', label: 'Dashboard', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>' },
-  { path: '/products', label: 'Products', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>' },
-  { path: '/categories', label: 'Categories', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>' },
-  { path: '/orders', label: 'Orders', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>' },
-  { path: '/users', label: 'Users', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>' },
-  { path: '/transactions', label: 'Transactions', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z"/>' },
-  { path: '/hero-slides', label: 'Hero Slides', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>' },
-  { path: '/settings', label: 'Settings', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>' },
-]
+interface NavItem {
+  path?: string
+  label: string
+  icon?: string
+  type?: 'group'
+  children?: { path: string; label: string }[]
+}
+
+const navItems = computed<NavItem[]>(() => [
+  { path: '/', label: t('nav.dashboard'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>' },
+  { path: '/products', label: t('nav.products'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>' },
+  { path: '/categories', label: t('nav.categories'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>' },
+  { path: '/orders', label: t('nav.orders'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>' },
+  { type: 'group', label: t('nav.users'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>',
+    children: [
+      { path: '/users', label: t('nav.allUsers') },
+      { path: '/roles', label: t('nav.roles') },
+    ]
+  },
+  { path: '/transactions', label: t('nav.transactions'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z"/>' },
+  { path: '/hero-slides', label: t('nav.heroSlides'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>' },
+  { path: '/settings', label: t('nav.settings'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>' },
+])
+
+const openGroups = ref<string[]>(['users-group'])
+
+function toggleGroup(label: string) {
+  if (openGroups.value.includes(label)) {
+    openGroups.value = openGroups.value.filter(g => g !== label)
+  } else {
+    openGroups.value.push(label)
+  }
+}
+
+function isGroupOpen(label: string) {
+  return openGroups.value.includes(label)
+}
 
 const pageTitle = computed(() => {
-  const item = navItems.find(n => n.path === route.path)
-  return item?.label || 'Dashboard'
+  const flatItems = navItems.value.flatMap((item: any) => item.children ? [item, ...item.children] : [item])
+  const item = flatItems.find((n: any) => n.path === route.path || route.path.startsWith(n.path + '/'))
+  return item?.label || t('nav.dashboard')
+})
+
+const currentDate = computed(() => {
+  return new Date().toLocaleDateString(locale.value, { weekday: 'long', month: 'long', day: 'numeric' })
 })
 
 function handleLogout() {

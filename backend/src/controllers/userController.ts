@@ -92,10 +92,15 @@ const updateUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { name, role } = req.body;
+    const { name, role, permissions } = req.body;
+    const updateData: Record<string, any> = {};
+    if (name !== undefined) updateData.name = name;
+    if (role !== undefined) updateData.role = role;
+    if (permissions !== undefined) updateData.permissions = permissions;
+
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      { name, role },
+      updateData,
       { new: true, runValidators: true }
     ).select('-password');
 
@@ -271,4 +276,96 @@ const getUserLoginHistory = async (
   }
 };
 
-export { getUsers, getUser, updateUser, deleteUser, getUserOrders, getUserLoginHistory, getDashboardStats };
+const createAdminUser = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { name, email, password, permissions } = req.body;
+
+    if (!name || !email || !password) {
+      res.status(400).json({ success: false, message: 'Name, email, and password are required' });
+      return;
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      res.status(409).json({ success: false, message: 'A user with this email already exists' });
+      return;
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role: 'admin',
+      provider: 'local',
+      isVerified: true,
+      permissions: permissions || [],
+    });
+
+    res.status(201).json({
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        provider: user.provider,
+        permissions: user.permissions,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const bulkDeleteUsers = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      res.status(400).json({ success: false, message: 'User IDs array is required' });
+      return;
+    }
+
+    // Don't allow deleting yourself
+    const filteredIds = ids.filter((id: string) => id !== req.user?.id);
+
+    await User.deleteMany({ _id: { $in: filteredIds } });
+
+    res.json({ success: true, message: `${filteredIds.length} users deleted successfully` });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getPermissionsList = async (
+  _req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const permissionDefs = [
+      { resource: 'dashboard', label: 'Dashboard', description: 'View dashboard analytics' },
+      { resource: 'products', label: 'Products', description: 'Manage products (CRUD)' },
+      { resource: 'categories', label: 'Categories', description: 'Manage categories' },
+      { resource: 'orders', label: 'Orders', description: 'Manage orders and status' },
+      { resource: 'users', label: 'Users', description: 'Manage users' },
+      { resource: 'roles', label: 'Roles & Permissions', description: 'Manage admin roles and permissions' },
+      { resource: 'transactions', label: 'Transactions', description: 'View and manage transactions' },
+      { resource: 'heroSlides', label: 'Hero Slides', description: 'Manage hero slideshows' },
+      { resource: 'settings', label: 'Settings', description: 'Manage site settings' },
+    ];
+
+    res.json({ success: true, permissions: permissionDefs });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { getUsers, getUser, updateUser, deleteUser, getUserOrders, getUserLoginHistory, getUserLoginHistory as getUserLoginHistoryAlt, getDashboardStats, createAdminUser, bulkDeleteUsers, getPermissionsList };

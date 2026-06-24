@@ -7,6 +7,9 @@ import {
   getUserOrders,
   getUserLoginHistory,
   getDashboardStats,
+  createAdminUser,
+  bulkDeleteUsers,
+  getPermissionsList,
 } from '../controllers/userController';
 import { protect, authorize } from '../middlewares/auth';
 
@@ -20,5 +23,8 @@ router.get('/:id/orders', protect, authorize('admin'), getUserOrders);
 router.put('/:id', protect, authorize('admin'), updateUser);
 router.get('/:id/login-history', protect, authorize('admin'), getUserLoginHistory);
 router.delete('/:id', protect, authorize('admin'), deleteUser);
+router.delete('/bulk/delete', protect, authorize('admin'), bulkDeleteUsers);
+router.post('/create-admin', protect, authorize('admin'), createAdminUser);
+router.get('/permissions/list', protect, authorize('admin'), getPermissionsList);
 
 export default router;

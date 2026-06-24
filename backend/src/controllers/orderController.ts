@@ -286,6 +286,34 @@ const cancelOrder = async (
   }
 };
 
+const bulkDeleteOrders = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      res.status(400).json({ success: false, message: 'Order IDs array is required' });
+      return;
+    }
+
+    const orders = await Order.find({ _id: { $in: ids } });
+    for (const order of orders) {
+      for (const item of order.products) {
+        await Product.findByIdAndUpdate(item.productId, {
+          $inc: { stock: item.quantity, sold: -item.quantity },
+        });
+      }
+    }
+    await Order.deleteMany({ _id: { $in: ids } });
+
+    res.json({ success: true, message: `${ids.length} orders deleted successfully` });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export {
   createOrder,
   getMyOrders,
@@ -294,4 +322,5 @@ export {
   updateOrderStatus,
   cancelOrder,
   deleteOrder,
+  bulkDeleteOrders,
 };
