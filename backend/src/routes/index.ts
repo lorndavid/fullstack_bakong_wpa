@@ -7,6 +7,7 @@ import paymentRoutes from './paymentRoutes';
 import userRoutes from './userRoutes';
 import heroSlideRoutes from './heroSlideRoutes';
 import settingsRoutes from './settingsRoutes';
+import promotionRoutes from './promotionRoutes';
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.use('/payment', paymentRoutes);
 router.use('/users', userRoutes);
 router.use('/hero-slides', heroSlideRoutes);
 router.use('/settings', settingsRoutes);
+router.use('/promotions', promotionRoutes);
 
 // Health check
 router.get('/health', (_req, res) => {

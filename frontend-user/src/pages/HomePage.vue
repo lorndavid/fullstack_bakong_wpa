@@ -17,13 +17,10 @@
                     {{ slide.title || 'Welcome to MY SHOP' }}
                   </h1>
                   <p v-if="slide.description" class="text-white/80 text-xs xs:text-sm sm:text-base leading-relaxed">{{ slide.description }}</p>
-                  <div class="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 xs:gap-3">
-                    <router-link :to="slide.link || '/search'" class="inline-flex items-center justify-center px-4 xs:px-5 py-2.5 bg-white text-primary-500 font-semibold rounded-lg hover:bg-primary-50 transition-all text-xs xs:text-sm sm:text-base shadow-lg">
+                  <div class="flex items-stretch xs:items-center gap-2 xs:gap-3">
+                    <router-link :to="slide.link || '/search'" class="inline-flex items-center justify-center px-3 xs:px-5 py-2 xs:py-2.5 bg-white text-primary-500 font-semibold rounded-lg hover:bg-primary-50 transition-all text-xs xs:text-sm sm:text-base shadow-lg whitespace-nowrap">
+                      <svg class="w-3.5 h-3.5 xs:w-4 xs:h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                       {{ $t('home.shopNow') }}
-                      <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-                    </router-link>
-                    <router-link to="/categories" class="inline-flex items-center justify-center px-4 xs:px-5 py-2.5 text-white border border-white/30 font-medium rounded-lg hover:bg-white/10 transition-all text-xs xs:text-sm sm:text-base backdrop-blur-sm">
-                      {{ $t('home.browseCategories') }}
                     </router-link>
                   </div>
                 </div>
@@ -172,7 +169,50 @@
       </div>
     </section>
 
-    <!-- Promotion Banner -->
+    <!-- Active Promotions -->
+    <section v-if="activePromotions.length > 0" class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg sm:text-xl font-bold text-surface-800 dark:text-white">{{ $t('home.promotions') }}</h2>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div
+          v-for="promo in activePromotions"
+          :key="promo._id"
+          @click="goToSearchPromotion"
+          class="group relative bg-white dark:bg-surface-800 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-250 overflow-hidden cursor-pointer hover:-translate-y-1 border border-surface-100 dark:border-surface-700"
+        >
+          <!-- Banner Image -->
+          <div v-if="promo.bannerImage" class="relative aspect-video bg-surface-100 dark:bg-surface-700 overflow-hidden">
+            <img :src="promo.bannerImage.secure_url" :alt="promo.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+            <div class="absolute bottom-3 left-3 right-3 z-10">
+              <span class="px-2.5 py-1 bg-rose-500 text-white text-xs font-bold rounded-lg shadow-sm">-{{ promo.discountPercent }}% OFF</span>
+            </div>
+          </div>
+          <div v-else class="relative aspect-video bg-gradient-to-br from-rose-100 via-rose-50 to-orange-50 dark:from-rose-900/30 dark:via-rose-800/20 dark:to-orange-900/20 flex items-center justify-center">
+            <div class="text-center">
+              <span class="inline-block px-3 py-1.5 bg-rose-500 text-white text-sm font-bold rounded-lg shadow-sm">-{{ promo.discountPercent }}% OFF</span>
+            </div>
+          </div>
+
+          <div class="p-4 space-y-2">
+            <h3 class="font-semibold text-surface-800 dark:text-white truncate group-hover:text-rose-500 transition-colors">{{ promo.name }}</h3>
+            <p v-if="promo.description" class="text-xs text-surface-500 line-clamp-2">{{ promo.description }}</p>
+
+            <!-- Countdown Timer -->
+            <div class="flex items-center gap-2 text-xs">
+              <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span class="text-surface-400">Ends in</span>
+              <span class="font-semibold text-rose-500 tabular-nums">{{ getPromoTimeLeft(promo.endDate) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Static Promotion Banner (Free Shipping) -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6">
       <div class="bg-gradient-to-r from-accent-500 to-accent-600 rounded-2xl p-6 sm:p-8 text-white animate-fade-in overflow-hidden relative">
         <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
@@ -294,6 +334,20 @@ interface Product {
   createdAt: string
 }
 
+interface Promotion {
+  _id: string
+  name: string
+  description: string
+  discountPercent: number
+  selectedProducts: any[]
+  selectedCategories: any[]
+  applyToAll: boolean
+  startDate: string
+  endDate: string
+  isActive: boolean
+  bannerImage?: { public_id: string; secure_url: string }
+}
+
 const router = useRouter()
 
 // State
@@ -301,12 +355,39 @@ const categories = ref<Category[]>([])
 const flashSaleProducts = ref<Product[]>([])
 const newArrivals = ref<Product[]>([])
 const heroSlides = ref<any[]>([])
+const activePromotions = ref<Promotion[]>([])
 const currentHeroSlide = ref(0)
 const loading = ref(true)
 const categoriesError = ref<string | null>(null)
 const flashError = ref<string | null>(null)
 const arrivalsError = ref<string | null>(null)
 const heroSlidesError = ref<string | null>(null)
+const promotionsError = ref<string | null>(null)
+
+// Promotion countdown timers (updated every second)
+const promoTimeLeft = ref<Record<string, string>>({})
+let promoInterval: ReturnType<typeof setInterval> | null = null
+
+function getPromoTimeLeft(endDate: string): string {
+  return promoTimeLeft.value[endDate] || '--:--:--'
+}
+
+function updatePromoTimers() {
+  const now = new Date().getTime()
+  activePromotions.value.forEach(promo => {
+    const end = new Date(promo.endDate).getTime()
+    const diff = Math.floor((end - now) / 1000)
+    const key = promo._id
+    if (diff > 0) {
+      const h = Math.floor(diff / 3600)
+      const m = Math.floor((diff % 3600) / 60)
+      const s = diff % 60
+      promoTimeLeft.value[key] = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+    } else {
+      promoTimeLeft.value[key] = 'Expired'
+    }
+  })
+}
 
 // Flash sale countdown timer
 const flashRemaining = ref(0)
@@ -336,6 +417,10 @@ function goToProduct(id: string) {
 
 function goToCategory(id: string) {
   router.push(`/category/${id}`)
+}
+
+function goToSearchPromotion() {
+  router.push('/search?sort=discount')
 }
 
 async function fetchCategories() {
@@ -385,6 +470,19 @@ async function fetchHeroSlides() {
   }
 }
 
+async function fetchActivePromotions() {
+  try {
+    const data: any = await api.get('/promotions/active')
+    activePromotions.value = data.promotions || []
+    if (activePromotions.value.length > 0) {
+      updatePromoTimers()
+    }
+  } catch (err: any) {
+    promotionsError.value = 'Failed to load promotions'
+    console.error('Failed to fetch active promotions:', err)
+  }
+}
+
 let heroSlideInterval: ReturnType<typeof setInterval> | null = null
 
 onMounted(async () => {
@@ -396,6 +494,7 @@ onMounted(async () => {
     fetchFlashSale(),
     fetchNewArrivals(),
     fetchHeroSlides(),
+    fetchActivePromotions(),
   ])
 
   loading.value = false
@@ -406,6 +505,13 @@ onMounted(async () => {
       flashRemaining.value--
     }
   }, 1000)
+
+  // Start promotion countdown
+  if (activePromotions.value.length > 0) {
+    promoInterval = setInterval(() => {
+      updatePromoTimers()
+    }, 1000)
+  }
 
   // Auto-rotate hero slides
   if (heroSlides.value.length > 1) {
@@ -419,6 +525,10 @@ onUnmounted(() => {
   if (timerInterval) {
     clearInterval(timerInterval)
     timerInterval = null
+  }
+  if (promoInterval) {
+    clearInterval(promoInterval)
+    promoInterval = null
   }
   if (heroSlideInterval) {
     clearInterval(heroSlideInterval)

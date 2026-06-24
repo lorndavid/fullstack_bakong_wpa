@@ -59,6 +59,7 @@
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('orders.customer') }}</th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('orders.items') }}</th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('orders.total') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('orders.promoDiscount') }}</th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('orders.payment') }}</th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('orders.status') }}</th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('orders.date') }}</th>
@@ -85,6 +86,10 @@
               </td>
               <td class="px-4 py-3 text-sm text-surface-600 dark:text-surface-300">{{ order.products?.length || 0 }} {{ $t('orders.items') }}</td>
               <td class="px-4 py-3 text-sm font-semibold text-surface-800 dark:text-white">${{ (order.total || 0).toFixed(2) }}</td>
+              <td class="px-4 py-3 text-sm">
+                <span v-if="order.promotionDiscount > 0" class="text-accent-500 font-medium">-${{ (order.promotionDiscount || 0).toFixed(2) }}</span>
+                <span v-else class="text-surface-400 text-xs">—</span>
+              </td>
               <td class="px-4 py-3 text-sm">
                 <span class="px-2 py-0.5 rounded text-xs font-medium" :class="order.paymentMethod === 'khqr' ? 'bg-primary-100 text-primary-700' : 'bg-surface-100 text-surface-600'">
                   {{ order.paymentMethod === 'khqr' ? 'KHQR' : 'COD' }}
@@ -171,6 +176,7 @@ interface Order {
   products: { productId: string; name: string; image: string; price: number; quantity: number }[]
   subtotal: number
   shipping: number
+  promotionDiscount: number
   total: number
   status: string
   shippingAddress: { fullName: string; phone: string }

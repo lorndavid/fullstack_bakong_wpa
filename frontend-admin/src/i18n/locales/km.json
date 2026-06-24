@@ -6,6 +6,8 @@
   "nav": {
     "dashboard": "ផ្ទាំងគ្រប់គ្រង",
     "products": "ផលិតផល",
+    "allProducts": "ផលិតផលទាំងអស់",
+    "promotions": "ការផ្សព្វផ្សាយ",
     "categories": "ប្រភេទ",
     "orders": "ការបញ្ជាទិញ",
     "users": "អ្នកប្រើប្រាស់",
@@ -109,7 +111,9 @@
     "noRecentOrders": "មិនទាន់មានការបញ្ជាទិញថ្មីៗ",
     "orderStatus": "ស្ថានភាពការបញ្ជាទិញ",
     "noOrders": "មិនទាន់មានការបញ្ជាទិញ",
-    "items": "ទំនិញ"
+    "items": "ទំនិញ",
+    "promotionDiscounts": "ការបញ្ចុះតម្លៃពីការផ្សព្វផ្សាយ",
+    "acrossOrders": "លើ {count} ការបញ្ជាទិញ"
   },
   "orders": {
     "title": "ការបញ្ជាទិញ",
@@ -131,6 +135,7 @@
     "deleteDesc": "លុបការបញ្ជាទិញ #{id}? នឹងស្តារស្តុកផលិតផលឡើងវិញ",
     "showingOf": "បង្ហាញ {count} ក្នុងចំណោម {total} ការបញ្ជាទិញ",
     "pageOf": "ទំព័រ {page} នៃ {pages}",
+    "promoDiscount": "បញ្ចុះតម្លៃពីការផ្សព្វផ្សាយ",
     "statusUpdated": "បានធ្វើបច្ចុប្បន្នភាពស្ថានភាព",
     "statusUpdateFailed": "បច្ចុប្បន្នភាពស្ថានភាពបរាជ័យ",
     "orderDeleted": "បានលុបការបញ្ជាទិញ",
@@ -250,6 +255,33 @@
     "saveSettings": "រក្សាទុកការកំណត់",
     "saving": "កំពុងរក្សាទុក...",
     "savedSuccessfully": "រក្សាទុកការកំណត់ដោយជោគជ័យ!"
+  },
+    "promotions": {
+    "title": "ការផ្សព្វផ្សាយ",
+    "addPromotion": "បន្ថែមការផ្សព្វផ្សាយ",
+    "editPromotion": "កែសម្រួលការផ្សព្វផ្សាយ",
+    "createPromotion": "បង្កើតការផ្សព្វផ្សាយ",
+    "updatePromotion": "កែប្រែការផ្សព្វផ្សាយ",
+    "deleteTitle": "លុបការផ្សព្វផ្សាយ",
+    "deleteDesc": "តើអ្នកប្រាកដថាចង់លុប <strong>{name}</strong>? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ",
+    "noPromotions": "មិនទាន់មានការផ្សព្វផ្សាយ",
+    "noPromotionsDesc": "បង្កើតការផ្សព្វផ្សាយដំបូងដើម្បីផ្តល់ការបញ្ចុះតម្លៃដល់អតិថិជន",
+    "name": "ឈ្មោះការផ្សព្វផ្សាយ",
+    "description": "ការពិពណ៌នា",
+    "discountPercent": "បញ្ចុះតម្លៃ %",
+    "startDate": "កាលបរិច្ឆេទចាប់ផ្តើម",
+    "endDate": "កាលបរិច្ឆេទបញ្ចប់",
+    "bannerImage": "រូបភាពផ្ទាំង",
+    "applyTo": "អនុវត្តការផ្សព្វផ្សាយទៅ",
+    "allProducts": "ផលិតផលទាំងអស់",
+    "selectProducts": "ជ្រើសរើសផលិតផល",
+    "byCategory": "តាមប្រភេទ",
+    "byProduct": "តាមផលិតផល",
+    "searchProducts": "ស្វែងរកផលិតផល...",
+    "noProducts": "រកមិនឃើញផលិតផល",
+    "active": "សកម្ម",
+    "saveFailed": "រក្សាទុកការផ្សព្វផ្សាយបរាជ័យ",
+    "deleteFailed": "លុបការផ្សព្វផ្សាយបរាជ័យ"
   },
   "language": {
     "en": "អង់គ្លេស",

@@ -123,6 +123,32 @@
           </tbody>
         </table>
       </div>
+      <!-- Pagination (List View) -->
+      <div class="flex items-center justify-between px-4 py-3 border-t border-surface-200 dark:border-surface-700">
+        <p class="text-sm text-surface-500">
+          {{ $t('products.showingOf', { count: products.length, total: pagination.total }) }}
+        </p>
+        <div class="flex items-center gap-2">
+          <button @click="goToPage(pagination.page - 1)" :disabled="pagination.page <= 1"
+            class="px-3 py-1.5 text-sm border border-surface-200 dark:border-surface-600 rounded-lg text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700 disabled:opacity-40 disabled:cursor-not-allowed">
+            {{ $t('common.previous') }}
+          </button>
+          <button
+            v-for="p in pagination.pages"
+            :key="p"
+            @click="goToPage(p)"
+            class="px-3 py-1.5 text-sm rounded-lg transition-colors"
+            :class="p === pagination.page ? 'bg-primary-500 text-white' : 'border border-surface-200 dark:border-surface-600 text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700'"
+          >
+            {{ p }}
+          </button>
+          <button @click="goToPage(pagination.page + 1)" :disabled="pagination.page >= pagination.pages"
+            class="px-3 py-1.5 text-sm border border-surface-200 dark:border-surface-600 rounded-lg text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700 disabled:opacity-40 disabled:cursor-not-allowed">
+            {{ $t('common.next') }}
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Grid View (Cards) -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -168,151 +194,137 @@
         </div>
       </div>
     </div>
-      <!-- Pagination -->
-      <div class="flex items-center justify-between px-4 py-3 border-t border-surface-200 dark:border-surface-700">
-        <p class="text-sm text-surface-500">
-          {{ $t('products.showingOf', { count: products.length, total: pagination.total }) }}
-        </p>
-        <div class="flex items-center gap-2">
-          <button @click="goToPage(pagination.page - 1)" :disabled="pagination.page <= 1"
-            class="px-3 py-1.5 text-sm border border-surface-200 dark:border-surface-600 rounded-lg text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700 disabled:opacity-40 disabled:cursor-not-allowed">
-            {{ $t('common.previous') }}
-          </button>
-          <button
-            v-for="p in pagination.pages"
-            :key="p"
-            @click="goToPage(p)"
-            class="px-3 py-1.5 text-sm rounded-lg transition-colors"
-            :class="p === pagination.page ? 'bg-primary-500 text-white' : 'border border-surface-200 dark:border-surface-600 text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700'"
-          >
-            {{ p }}
-          </button>
-          <button @click="goToPage(pagination.page + 1)" :disabled="pagination.page >= pagination.pages"
-            class="px-3 py-1.5 text-sm border border-surface-200 dark:border-surface-600 rounded-lg text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700 disabled:opacity-40 disabled:cursor-not-allowed">
-            {{ $t('common.next') }}
-          </button>
-        </div>
-      </div>
-    </div>
 
-    <!-- Create/Edit Modal -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="closeModal">
-      <div class="fixed inset-0 bg-black/50" @click="closeModal"></div>
-      <div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-scale-in">
-        <div class="sticky top-0 bg-white dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 px-6 py-4 flex items-center justify-between z-10">
-          <h3 class="text-lg font-bold text-surface-800 dark:text-white">{{ editingProduct ? $t('products.editProduct') : $t('products.addProduct') }}</h3>
-          <button @click="closeModal" class="p-1 text-surface-400 hover:text-surface-600">
+    <!-- Slide-in Panel (Create/Edit) -->
+    <div v-if="showPanel" class="fixed inset-0 z-50" @click.self="closePanel">
+      <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="closePanel"></div>
+      <div class="fixed top-0 right-0 h-full w-full max-w-xl bg-white dark:bg-surface-800 shadow-2xl animate-slide-in-right flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-surface-200 dark:border-surface-700 flex-shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-sm">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-surface-800 dark:text-white">{{ editingProduct ? $t('products.editProduct') : $t('products.addProduct') }}</h3>
+              <p class="text-xs text-surface-400">{{ editingProduct ? 'Update product details' : 'Create a new product' }}</p>
+            </div>
+          </div>
+          <button @click="closePanel" class="p-2 text-surface-400 hover:text-surface-600 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
-        <form @submit.prevent="saveProduct" class="p-6 space-y-4">
-          <!-- Name -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('products.productName') }}</label>
-            <input v-model="form.name" required
-              class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" />
-          </div>
-          <!-- Description -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('products.description') }}</label>
-            <textarea v-model="form.description" required rows="3"
-              class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 resize-none"></textarea>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <!-- Price -->
+
+        <!-- Form Body (scrollable) -->
+        <div class="flex-1 overflow-y-auto px-6 py-5">
+          <form @submit.prevent="saveProduct" class="space-y-5">
+            <!-- Name -->
             <div>
-              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('products.priceLabel') }}</label>
-              <input v-model.number="form.price" type="number" step="0.01" min="0.01" required
-                class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" />
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('products.productName') }}</label>
+              <input v-model="form.name" required
+                class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 transition-all" />
             </div>
-            <!-- Discount -->
+            <!-- Description -->
             <div>
-              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('products.discountLabel') }}</label>
-              <input v-model.number="form.discount" type="number" min="0" max="100"
-                class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" />
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('products.description') }}</label>
+              <textarea v-model="form.description" required rows="3"
+                class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 resize-none transition-all"></textarea>
             </div>
-            <!-- Stock -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('products.priceLabel') }}</label>
+                <input v-model.number="form.price" type="number" step="0.01" min="0.01" required
+                  class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('products.discountLabel') }}</label>
+                <input v-model.number="form.discount" type="number" min="0" max="100"
+                  class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('products.stockLabel') }}</label>
+                <input v-model.number="form.stock" type="number" min="0" required
+                  class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('products.categoryLabel') }}</label>
+                <select v-model="form.category" required
+                  class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 transition-all">
+                  <option value="">{{ $t('products.selectCategory') }}</option>
+                  <option v-for="cat in categories" :key="cat._id" :value="cat._id">{{ cat.name }}</option>
+                </select>
+              </div>
+            </div>
+            <!-- Featured -->
+            <div class="flex items-center gap-2.5 p-3 bg-surface-50 dark:bg-surface-700/30 rounded-lg">
+              <input v-model="form.featured" type="checkbox" id="featured" class="w-4 h-4 text-primary-500 rounded focus:ring-primary-500" />
+              <label for="featured" class="text-sm font-medium text-surface-700 dark:text-surface-200 cursor-pointer">{{ $t('products.featuredProduct') }}</label>
+            </div>
+            <!-- Image URL -->
             <div>
-              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('products.stockLabel') }}</label>
-              <input v-model.number="form.stock" type="number" min="0" required
-                class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" />
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('products.imageUrl') }} <span class="text-surface-400 font-normal">{{ $t('products.imageUrlFallback') }}</span></label>
+              <input v-model="form.imageUrl" type="url" :placeholder="'https://example.com/product-image.jpg'"
+                class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 transition-all" />
             </div>
-            <!-- Category -->
+            <!-- File Upload -->
             <div>
-              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('products.categoryLabel') }}</label>
-              <select v-model="form.category" required
-                class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50">
-                <option value="">{{ $t('products.selectCategory') }}</option>
-                <option v-for="cat in categories" :key="cat._id" :value="cat._id">{{ cat.name }}</option>
-              </select>
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('products.uploadImageFile') }} <span class="text-surface-400 font-normal">{{ $t('products.uploadRecommended') }}</span></label>
+              <input ref="fileInput" type="file" accept="image/*" @change="handleFileChange"
+                class="w-full text-sm text-surface-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 dark:file:bg-primary-900/30 file:text-primary-600 dark:file:text-primary-400 hover:file:bg-primary-100 transition-all" />
             </div>
-          </div>
-          <!-- Featured -->
-          <div class="flex items-center gap-2">
-            <input v-model="form.featured" type="checkbox" id="featured" class="w-4 h-4 text-primary-500 rounded focus:ring-primary-500" />
-            <label for="featured" class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ $t('products.featuredProduct') }}</label>
-          </div>
-          <!-- Image URL (fallback when no file upload) -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('products.imageUrl') }} <span class="text-surface-400 font-normal">{{ $t('products.imageUrlFallback') }}</span></label>
-            <input v-model="form.imageUrl" type="url" :placeholder="'https://example.com/product-image.jpg'"
-              class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" />
-            <p class="text-xs text-surface-400 mt-1">{{ $t('products.imageUrlHint') }}</p>
-          </div>
-          <!-- File Upload -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('products.uploadImageFile') }} <span class="text-surface-400 font-normal">{{ $t('products.uploadRecommended') }}</span></label>
-            <input ref="fileInput" type="file" accept="image/*" @change="handleFileChange"
-              class="w-full text-sm text-surface-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 dark:file:bg-primary-900/30 file:text-primary-600 dark:file:text-primary-400 hover:file:bg-primary-100" />
-          </div>
-          <!-- Image Preview -->
-          <div v-if="imagePreview || form.imageUrl" class="relative w-24 h-24 rounded-lg overflow-hidden border border-surface-200 dark:border-surface-600">
-            <img :src="imagePreview || form.imageUrl" class="w-full h-full object-cover" />
-            <button v-if="imagePreview" type="button" @click="removeImage" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600">×</button>
-            <button v-else type="button" @click="form.imageUrl = ''" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600">×</button>
-          </div>
-          <!-- Validation Errors -->
-          <div v-if="Object.keys(fieldErrors).length > 0" class="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 space-y-1">
-            <p class="text-xs font-semibold text-red-600 dark:text-red-400 uppercase">{{ $t('common.error') }}:</p>
-            <ul class="list-disc list-inside text-xs text-red-500 space-y-0.5">
-              <li v-for="(msg, field) in fieldErrors" :key="field">
-                <span class="font-medium capitalize">{{ field }}:</span> {{ msg }}
-              </li>
-            </ul>
-          </div>
-          <!-- Submit Error -->
-          <div v-else-if="submitError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg">
-            {{ submitError }}
-          </div>
-          <div class="flex gap-3 pt-2">
-            <button type="button" @click="closeModal" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-surface-50 dark:hover:bg-surface-700">
-              {{ $t('common.cancel') }}
-            </button>
-            <button type="submit" :disabled="saving" class="flex-1 py-2.5 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 disabled:opacity-50">
-              <span v-if="saving" class="flex items-center justify-center gap-2">
-                <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                {{ $t('common.saving') }}
-              </span>
-              <span v-else>{{ editingProduct ? $t('products.updateProduct') : $t('products.createProduct') }}</span>
-            </button>
-          </div>
-        </form>
+            <!-- Image Preview -->
+            <div v-if="imagePreview || form.imageUrl" class="relative w-28 h-28 rounded-xl overflow-hidden border-2 border-surface-200 dark:border-surface-600">
+              <img :src="imagePreview || form.imageUrl" class="w-full h-full object-cover" />
+              <button v-if="imagePreview" type="button" @click="removeImage" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 shadow-sm transition-all">×</button>
+              <button v-else type="button" @click="form.imageUrl = ''" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 shadow-sm transition-all">×</button>
+            </div>
+            <!-- Validation Errors -->
+            <div v-if="Object.keys(fieldErrors).length > 0" class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 space-y-1.5">
+              <p class="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider">{{ $t('common.error') }}:</p>
+              <ul class="list-disc list-inside text-xs text-red-500 space-y-0.5">
+                <li v-for="(msg, field) in fieldErrors" :key="field">
+                  <span class="font-medium capitalize">{{ field }}:</span> {{ msg }}
+                </li>
+              </ul>
+            </div>
+            <!-- Submit Error -->
+            <div v-else-if="submitError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3.5 rounded-xl">
+              {{ submitError }}
+            </div>
+          </form>
+        </div>
+
+        <!-- Footer Actions (sticky) -->
+        <div class="flex items-center gap-3 px-6 py-4 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50 flex-shrink-0">
+          <button type="button" @click="closePanel" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-white dark:hover:bg-surface-700 transition-all">
+            {{ $t('common.cancel') }}
+          </button>
+          <button type="submit" @click="saveProduct" :disabled="saving" class="flex-1 py-2.5 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 disabled:opacity-50 transition-all shadow-sm">
+            <span v-if="saving" class="flex items-center justify-center gap-2">
+              <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              {{ $t('common.saving') }}
+            </span>
+            <span v-else>{{ editingProduct ? $t('products.updateProduct') : $t('products.createProduct') }}</span>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Delete Confirmation -->
-    <div v-if="deletingProduct" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="fixed inset-0 bg-black/50" @click="deletingProduct = null"></div>
-      <div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-xl w-full max-w-sm p-6 animate-scale-in text-center">
-        <div class="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+    <!-- Delete Confirmation (slide-in) -->
+    <div v-if="deletingProduct" class="fixed inset-0 z-50">
+      <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="deletingProduct = null"></div>
+      <div class="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-surface-800 shadow-2xl animate-slide-in-right flex flex-col">
+        <div class="flex-1 flex flex-col items-center justify-center px-8 text-center">
+          <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-surface-800 dark:text-white mb-2">{{ $t('products.deleteTitle') }}</h3>
+          <p class="text-sm text-surface-500 mb-8" v-html="$t('products.deleteDesc', { name: deletingProduct.name })"></p>
+          <div v-if="deleteError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3.5 rounded-xl mb-4 w-full">{{ deleteError }}</div>
         </div>
-        <h3 class="text-lg font-bold text-surface-800 dark:text-white mb-2">{{ $t('products.deleteTitle') }}</h3>
-        <p class="text-sm text-surface-500 mb-6" v-html="$t('products.deleteDesc', { name: deletingProduct.name })"></p>
-        <div v-if="deleteError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg mb-4">{{ deleteError }}</div>
-        <div class="flex gap-3">
-          <button @click="deletingProduct = null" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-surface-50">{{ $t('common.cancel') }}</button>
-          <button @click="deleteProduct" :disabled="deleting" class="flex-1 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50">
+        <div class="flex items-center gap-3 px-6 py-4 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50">
+          <button @click="deletingProduct = null" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-white dark:hover:bg-surface-700 transition-all">{{ $t('common.cancel') }}</button>
+          <button @click="deleteProduct" :disabled="deleting" class="flex-1 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50 transition-all shadow-sm">
             {{ deleting ? $t('common.deleting') : $t('common.delete') }}
           </button>
         </div>
@@ -368,7 +380,7 @@ const categoryFilter = ref('')
 const pagination = ref<Pagination>({ page: 1, limit: 10, total: 0, pages: 0 })
 const viewMode = ref<'grid' | 'list'>('grid')
 
-const showModal = ref(false)
+const showPanel = ref(false)
 const editingProduct = ref<Product | null>(null)
 const saving = ref(false)
 const submitError = ref<string | null>(null)
@@ -476,7 +488,7 @@ function openCreateModal() {
   submitError.value = null
   fieldErrors.value = {}
   if (fileInput.value) fileInput.value.value = ''
-  showModal.value = true
+  showPanel.value = true
 }
 
 function openEditModal(product: Product) {
@@ -497,11 +509,11 @@ function openEditModal(product: Product) {
   submitError.value = null
   fieldErrors.value = {}
   if (fileInput.value) fileInput.value.value = ''
-  showModal.value = true
+  showPanel.value = true
 }
 
-function closeModal() {
-  showModal.value = false
+function closePanel() {
+  showPanel.value = false
   editingProduct.value = null
   submitError.value = null
 }
@@ -558,7 +570,7 @@ async function saveProduct() {
       })
     }
 
-    closeModal()
+    closePanel()
     fetchProducts()
   } catch (err: any) {
     if (err.errors) {
@@ -593,3 +605,19 @@ async function deleteProduct() {
   }
 }
 </script>
+
+<style scoped>
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+</style>

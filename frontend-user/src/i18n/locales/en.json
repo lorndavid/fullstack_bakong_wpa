@@ -26,7 +26,8 @@
     "alwaysFreeShipping": "Always Free Shipping",
     "sold": "sold",
     "noFlashSale": "No flash sale items available",
-    "noNewArrivals": "No new arrivals yet"
+    "noNewArrivals": "No new arrivals yet",
+    "promotions": "🔥 Promotions"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -41,7 +42,8 @@
     "proceedToCheckout": "Proceed to Checkout",
     "couponPlaceholder": "Enter coupon code",
     "apply": "Apply",
-    "remove": "Remove"
+    "remove": "Remove",
+    "promotionDiscount": "Promotion Discount"
   },
   "checkout": {
     "title": "Checkout",
@@ -197,6 +199,9 @@
   },
   "banner": {
     "freeShipping": "Free Shipping on all orders — No minimum required!"
+  },
+  "promotion": {
+    "discount": "Get {percent}% OFF with this promotion"
   },
   "search": {
     "title": "Search",

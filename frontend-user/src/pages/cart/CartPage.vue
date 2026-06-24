@@ -50,22 +50,7 @@
         </div>
       </div>
 
-      <!-- Coupon -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-4 shadow-card">
-        <div class="flex gap-2">
-          <input v-model="couponCode" type="text" :placeholder="$t('cart.couponPlaceholder')"
-            class="flex-1 px-4 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-sm"
-          />
-          <button @click="applyCoupon" class="px-5 py-2.5 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors text-sm whitespace-nowrap">
-            {{ $t('cart.apply') }}
-          </button>
-        </div>
-        <div v-if="cart.coupon" class="mt-2 flex items-center gap-2 text-sm text-accent-500">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-          {{ $t('cart.discount') }} "{{ cart.coupon }}" ( -${{ cart.discountAmount.toFixed(2) }} )
-          <button @click="cart.removeCoupon()" class="text-red-500 hover:text-red-600">{{ $t('cart.remove') }}</button>
-        </div>
-      </div>
+
 
       <!-- Order Summary -->
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
@@ -81,10 +66,13 @@
               {{ cart.shipping === 0 ? $t('cart.free') : '$' + cart.shipping.toFixed(2) }}
             </span>
           </div>
-          <div v-if="cart.discountAmount > 0" class="flex justify-between text-accent-500">
-            <span>{{ $t('cart.discount') }}</span>
-            <span>- ${{ cart.discountAmount.toFixed(2) }}</span>
+
+          <!-- Promotion Savings -->
+          <div v-if="cart.promotionSavings > 0" class="flex justify-between">
+            <span class="text-accent-500 font-medium">{{ $t('cart.promotionDiscount') }}</span>
+            <span class="text-accent-500 font-medium">- ${{ cart.promotionSavings.toFixed(2) }}</span>
           </div>
+
           <hr class="border-surface-200 dark:border-surface-700" />
           <div class="flex justify-between text-base font-bold">
             <span class="text-surface-800 dark:text-white">{{ $t('cart.total') }}</span>
@@ -100,24 +88,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { onMounted } from 'vue'
 import { useCartStore } from '@/stores/cart'
-import { useToast } from '@/composables/useToast'
-import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
 const cart = useCartStore()
-const toast = useToast()
-const couponCode = ref('')
 
-function applyCoupon() {
-  if (!couponCode.value.trim()) return
-  const success = cart.applyCoupon(couponCode.value)
-  if (success) {
-    toast.success(t('cart.couponPlaceholder') + ' applied!')
-    couponCode.value = ''
-  } else {
-    toast.error('Invalid coupon code')
-  }
-}
+onMounted(() => {
+  cart.fetchPromotions()
+})
 </script>

@@ -8,14 +8,22 @@ export interface IOrderProduct {
   quantity: number;
 }
 
+export interface IAppliedPromotion {
+  promotionId: string;
+  name: string;
+  discountPercent: number;
+}
+
 export interface IOrderDocument extends Document {
   userId: mongoose.Types.ObjectId;
   products: IOrderProduct[];
   subtotal: number;
   shipping: number;
+  promotionDiscount: number;
   total: number;
   coupon?: string;
   discountAmount?: number;
+  appliedPromotions: IAppliedPromotion[];
   status: 'pending' | 'confirmed' | 'shipping' | 'delivered' | 'cancelled';
   shippingAddress: {
     fullName: string;
@@ -52,6 +60,11 @@ const orderSchema = new Schema<IOrderDocument>(
       required: true,
       default: 0,
     },
+    promotionDiscount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     total: {
       type: Number,
       required: true,
@@ -64,6 +77,13 @@ const orderSchema = new Schema<IOrderDocument>(
       type: Number,
       default: 0,
     },
+    appliedPromotions: [
+      {
+        promotionId: { type: String },
+        name: { type: String },
+        discountPercent: { type: Number },
+      },
+    ],
     status: {
       type: String,
       enum: ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled'],

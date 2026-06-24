@@ -84,11 +84,13 @@
 
       <!-- Summary -->
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 shadow-card">
-        <h3 class="font-semibold text-surface-800 dark:text-white mb-3">{{ $t('checkout.summary') }}</h3>
-        <div class="space-y-2 text-sm">
+        <h3 class="font-semibold text-surface-800 dark:text-white mb-3">{{ $t('checkout.summary') }}</h3>          <div class="space-y-2 text-sm">
           <div class="flex justify-between"><span class="text-surface-500">{{ $t('cart.subtotal') }}</span><span>${{ cart.subtotal.toFixed(2) }}</span></div>
           <div class="flex justify-between"><span class="text-surface-500">{{ $t('cart.shipping') }}</span><span class="text-accent-500" v-if="cart.shipping === 0">{{ $t('cart.free') }}</span><span v-else>${{ cart.shipping.toFixed(2) }}</span></div>
-          <div v-if="cart.discountAmount > 0" class="flex justify-between text-accent-500"><span>{{ $t('cart.discount') }}</span><span>- ${{ cart.discountAmount.toFixed(2) }}</span></div>
+          <div v-if="cart.promotionSavings > 0" class="flex justify-between">
+            <span class="text-accent-500 font-medium">{{ $t('cart.promotionDiscount') }}</span>
+            <span class="text-accent-500 font-medium">- ${{ cart.promotionSavings.toFixed(2) }}</span>
+          </div>
           <hr class="border-surface-200 dark:border-surface-700" />
           <div class="flex justify-between font-bold text-base"><span>{{ $t('cart.total') }}</span><span class="text-primary-500">${{ cart.total.toFixed(2) }}</span></div>
         </div>
@@ -147,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useAuthStore } from '@/stores/auth'
@@ -163,6 +165,10 @@ const paymentStore = usePaymentStore()
 const cart = useCartStore()
 const auth = useAuthStore()
 const toast = useToast()
+
+onMounted(() => {
+  cart.fetchPromotions()
+})
 
 const steps = computed(() => [t('checkout.contact'), t('checkout.review'), t('checkout.payment')])
 const currentStep = ref(0)
@@ -187,15 +193,20 @@ async function placeOrder() {
   try {
     // Create order via API
     const res: any = await api.post('/orders', {
-      products: cart.items.map(item => ({
-        productId: item.productId,
-        name: item.name,
-        image: item.image || '',
-        price: item.originalPrice,
-        quantity: item.quantity,
-      })),
+      products: cart.items.map(item => {
+        const { basePrice } = cart.getItemEffectivePrice(item)
+        return {
+          productId: item.productId,
+          name: item.name,
+          image: item.image || '',
+          price: basePrice,
+          quantity: item.quantity,
+        }
+      }),
       shippingAddress: { ...address },
       paymentMethod: paymentMethod.value,
+      promotionDiscount: cart.promotionSavings,
+      appliedPromotions: cart.appliedPromotions,
     })
 
     const order = res.order

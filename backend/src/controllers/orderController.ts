@@ -9,7 +9,7 @@ const createOrder = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { products, shippingAddress, paymentMethod } = req.body;
+    const { products, shippingAddress, paymentMethod, promotionDiscount, appliedPromotions } = req.body;
 
     if (!products || products.length === 0) {
       res.status(400).json({
@@ -40,31 +40,36 @@ const createOrder = async (
         return;
       }
 
-      const discountPrice =
-        product.discount > 0
+      // Use the price sent from frontend (which includes product discount)
+      const itemPrice = item.price ||
+        (product.discount > 0
           ? product.price * (1 - product.discount / 100)
-          : product.price;
+          : product.price);
 
       orderProducts.push({
         productId: product._id.toString(),
         name: product.name,
         image: product.images[0]?.secure_url || '',
-        price: discountPrice,
+        price: itemPrice,
         quantity: item.quantity,
       });
 
-      subtotal += discountPrice * item.quantity;
+      subtotal += itemPrice * item.quantity;
     }
 
     const shipping = 0;
-    const total = subtotal + shipping;
+    const rawPromoDiscount = Math.max(0, Number(promotionDiscount) || 0);
+    const promoDiscount = Math.min(rawPromoDiscount, subtotal);
+    const total = subtotal + shipping - promoDiscount;
 
     const order = await Order.create({
       userId: req.user!.id,
       products: orderProducts,
       subtotal,
       shipping,
+      promotionDiscount: promoDiscount,
       total,
+      appliedPromotions: appliedPromotions || [],
       shippingAddress,
       paymentMethod,
       status: paymentMethod === 'cod' ? 'confirmed' : 'pending',

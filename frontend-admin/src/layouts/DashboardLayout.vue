@@ -39,20 +39,19 @@
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="item.icon"></svg>
             <span>{{ item.label }}</span>
           </router-link>
-          <!-- Group nav item (expandable) -->
-          <div v-else class="space-y-0.5">
-            <button @click="toggleGroup('users-group')"
+          <!-- Group nav item (expandable) -->            <div v-else class="space-y-0.5">
+            <button @click="toggleGroup(item.groupKey || item.label)"
               class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group"
-              :class="isGroupOpen('users-group')
+              :class="isGroupOpen(item.groupKey || item.label)
                 ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 shadow-sm'
                 : 'text-surface-600 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-700/50'">
               <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="item.icon"></svg>
               <span class="flex-1 text-left">{{ item.label }}</span>
-              <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isGroupOpen('users-group') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isGroupOpen(item.groupKey || item.label) }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
               </svg>
             </button>
-            <div v-if="isGroupOpen('users-group')" class="ml-8 space-y-0.5 overflow-hidden">
+            <div v-if="isGroupOpen(item.groupKey || item.label)" class="ml-8 space-y-0.5 overflow-hidden">
               <router-link v-for="child in item.children" :key="child.path" :to="child.path"
                 class="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
                 :class="$route.path === child.path
@@ -149,16 +148,16 @@
               <span>{{ item.label }}</span>
             </router-link>
             <div v-else class="space-y-0.5">
-              <button @click="toggleGroup('users-group')"
+              <button @click="toggleGroup(item.groupKey || item.label)"
                 class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
-                :class="isGroupOpen('users-group') ? 'bg-primary-50 text-primary-600' : 'text-surface-600 hover:bg-surface-50'">
+                :class="isGroupOpen(item.groupKey || item.label) ? 'bg-primary-50 text-primary-600' : 'text-surface-600 hover:bg-surface-50'">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="item.icon"></svg>
                 <span class="flex-1 text-left">{{ item.label }}</span>
-                <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isGroupOpen('users-group') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isGroupOpen(item.groupKey || item.label) }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
               </button>
-              <div v-if="isGroupOpen('users-group')" class="ml-8 space-y-0.5">
+              <div v-if="isGroupOpen(item.groupKey || item.label)" class="ml-8 space-y-0.5">
                 <router-link v-for="child in item.children" :key="child.path" :to="child.path" @click="showMobileMenu = false"
                   class="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
                   :class="$route.path === child.path ? 'bg-primary-50 text-primary-600' : 'text-surface-500 hover:text-surface-700 hover:bg-surface-50'">
@@ -210,15 +209,21 @@ interface NavItem {
   label: string
   icon?: string
   type?: 'group'
+  groupKey?: string
   children?: { path: string; label: string }[]
 }
 
 const navItems = computed<NavItem[]>(() => [
   { path: '/', label: t('nav.dashboard'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>' },
-  { path: '/products', label: t('nav.products'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>' },
+  { type: 'group', groupKey: 'products-group', label: t('nav.products'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>',
+    children: [
+      { path: '/products', label: t('nav.allProducts') },
+      { path: '/promotions', label: t('nav.promotions') },
+    ]
+  },
   { path: '/categories', label: t('nav.categories'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>' },
   { path: '/orders', label: t('nav.orders'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>' },
-  { type: 'group', label: t('nav.users'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>',
+  { type: 'group', groupKey: 'users-group', label: t('nav.users'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>',
     children: [
       { path: '/users', label: t('nav.allUsers') },
       { path: '/roles', label: t('nav.roles') },
@@ -229,7 +234,7 @@ const navItems = computed<NavItem[]>(() => [
   { path: '/settings', label: t('nav.settings'), icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>' },
 ])
 
-const openGroups = ref<string[]>(['users-group'])
+const openGroups = ref<string[]>(['products-group', 'users-group'])
 
 function toggleGroup(label: string) {
   if (openGroups.value.includes(label)) {

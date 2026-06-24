@@ -185,6 +185,7 @@ const getDashboardStats = async (
       totalOrders,
       totalProducts,
       totalRevenueResult,
+      totalPromotionDiscountResult,
       recentOrders,
       salesData,
     ] = await Promise.all([
@@ -200,6 +201,10 @@ const getDashboardStats = async (
         .limit(5)
         .populate('userId', 'name email'),
       Order.aggregate([
+        { $match: { status: { $ne: 'cancelled' } } },
+        { $group: { _id: null, total: { $sum: '$promotionDiscount' } } },
+      ]),
+      Order.aggregate([
         { $match: { createdAt: { $gte: lastMonth }, status: { $ne: 'cancelled' } } },
         {
           $group: {
@@ -213,6 +218,7 @@ const getDashboardStats = async (
     ]);
 
     const revenue = totalRevenueResult[0]?.total || 0;
+    const totalPromotionDiscount = totalPromotionDiscountResult[0]?.total || 0;
 
     const statusCounts = await Order.aggregate([
       { $group: { _id: '$status', count: { $sum: 1 } } },
@@ -230,6 +236,7 @@ const getDashboardStats = async (
         totalOrders,
         totalProducts,
         revenue,
+        totalPromotionDiscount,
         orderStatusCounts,
         recentOrders,
         salesData,

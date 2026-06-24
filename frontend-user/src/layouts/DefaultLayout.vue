@@ -66,8 +66,11 @@
             <!-- User Menu -->
             <div v-if="auth.isAuthenticated" class="relative">
               <button @click="showUserMenu = !showUserMenu" class="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors">
-                <div class="w-8 h-8 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
-                  <span class="text-primary-600 dark:text-primary-300 font-semibold text-sm">{{ auth.user?.name?.charAt(0).toUpperCase() }}</span>
+                <div class="w-8 h-8 rounded-full overflow-hidden ring-2 ring-primary-100 dark:ring-primary-900/50 flex-shrink-0">
+                  <img v-if="auth.user?.avatar" :src="auth.user.avatar" :alt="auth.user?.name" class="w-full h-full object-cover" @error="avatarError = true" />
+                  <div v-if="!auth.user?.avatar || avatarError" class="w-full h-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                    <span class="text-primary-600 dark:text-primary-300 font-semibold text-sm">{{ auth.user?.name?.charAt(0).toUpperCase() }}</span>
+                  </div>
                 </div>
                 <span class="hidden sm:block text-sm font-medium text-surface-700 dark:text-surface-200">{{ auth.user?.name }}</span>
               </button>
@@ -181,6 +184,7 @@ const theme = useThemeStore()
 const router = useRouter()
 
 const showUserMenu = ref(false)
+const avatarError = ref(false)
 
 // Toast system
 const { toasts: toastList, remove: removeToast } = useToast()

@@ -6,6 +6,8 @@
   "nav": {
     "dashboard": "Dashboard",
     "products": "Products",
+    "allProducts": "All Products",
+    "promotions": "Promotions",
     "categories": "Categories",
     "orders": "Orders",
     "users": "Users",
@@ -109,7 +111,9 @@
     "noRecentOrders": "No recent orders",
     "orderStatus": "Order Status",
     "noOrders": "No orders yet",
-    "items": "items"
+    "items": "items",
+    "promotionDiscounts": "Promotion Discounts",
+    "acrossOrders": "Across {count} orders"
   },
   "orders": {
     "title": "Orders",
@@ -131,6 +135,7 @@
     "deleteDesc": "Delete order #{id}? This will restore product stock.",
     "showingOf": "Showing {count} of {total} orders",
     "pageOf": "Page {page} of {pages}",
+    "promoDiscount": "Promo Discount",
     "statusUpdated": "Status updated",
     "statusUpdateFailed": "Failed to update status",
     "orderDeleted": "Order deleted",
@@ -250,6 +255,33 @@
     "saveSettings": "Save Settings",
     "saving": "Saving...",
     "savedSuccessfully": "Settings saved successfully!"
+  },
+    "promotions": {
+    "title": "Promotions",
+    "addPromotion": "Add Promotion",
+    "editPromotion": "Edit Promotion",
+    "createPromotion": "Create Promotion",
+    "updatePromotion": "Update Promotion",
+    "deleteTitle": "Delete Promotion",
+    "deleteDesc": "Are you sure you want to delete <strong>{name}</strong>? This action cannot be undone.",
+    "noPromotions": "No promotions yet",
+    "noPromotionsDesc": "Create your first promotion to offer discounts to customers",
+    "name": "Promotion Name",
+    "description": "Description",
+    "discountPercent": "Discount %",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "bannerImage": "Banner Image",
+    "applyTo": "Apply Promotion To",
+    "allProducts": "All Products",
+    "selectProducts": "Select Specific Products",
+    "byCategory": "By Category",
+    "byProduct": "By Product",
+    "searchProducts": "Search products...",
+    "noProducts": "No products found",
+    "active": "Active",
+    "saveFailed": "Failed to save promotion",
+    "deleteFailed": "Failed to delete promotion"
   },
   "language": {
     "en": "English",
