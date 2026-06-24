@@ -1,103 +1,106 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
     <!-- Breadcrumb -->
-    <nav class="flex items-center space-x-1.5 xs:space-x-2 text-xs xs:text-sm text-surface-500 mb-4 overflow-x-auto scrollbar-hide whitespace-nowrap">
-      <router-link to="/" class="hover:text-primary-500 flex-shrink-0">{{ $t('nav.home') }}</router-link>
-      <svg class="w-3 h-3 xs:w-4 xs:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-      <router-link to="/categories" class="hover:text-primary-500 flex-shrink-0">{{ $t('nav.categories') }}</router-link>
-      <svg class="w-3 h-3 xs:w-4 xs:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-      <span class="text-surface-800 dark:text-white truncate max-w-[120px] xs:max-w-[200px]">{{ categoryName }}</span>
+    <nav class="flex items-center gap-1.5 text-xs sm:text-sm text-[#C4A8B6] mb-4 overflow-x-auto scrollbar-hide whitespace-nowrap">
+      <router-link to="/" class="hover:text-[#FF7AA2] transition-colors flex-shrink-0">Home</router-link>
+      <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <router-link to="/categories" class="hover:text-[#FF7AA2] transition-colors flex-shrink-0">{{ $t('nav.categories') }}</router-link>
+      <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <span class="text-[#1A1A1A] font-medium truncate max-w-[140px]">{{ categoryName }}</span>
     </nav>
 
-    <div class="flex items-center justify-between gap-2 mb-6 flex-wrap">
-      <h1 class="text-xl sm:text-2xl font-bold text-surface-800 dark:text-white">{{ categoryName }}</h1>
-      <select v-model="sortBy" class="px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50">
-        <option value="latest">{{ $t('search.sortLatest') }}</option>
-        <option value="lowhigh">{{ $t('search.sortLowHigh') }}</option>
-        <option value="highlow">{{ $t('search.sortHighLow') }}</option>
-        <option value="bestselling">{{ $t('search.sortBestSelling') }}</option>
-      </select>
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+      <div>
+        <span class="badge-pink mb-2 inline-block">{{ $t('category.title') }}</span>
+        <h1 class="font-display text-xl sm:text-2xl font-bold text-[#1A1A1A]">{{ categoryName }}</h1>
+      </div>
+      <div class="relative">
+        <select v-model="sortBy" @change="fetchProducts"
+          class="appearance-none w-full sm:w-auto px-4 py-2.5 bg-white border border-[#F1E6EA] text-[#1A1A1A] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7AA2]/20 focus:border-[#FF7AA2] pr-10 cursor-pointer">
+          <option value="latest">{{ $t('search.sortLatest') }}</option>
+          <option value="lowhigh">{{ $t('search.sortLowHigh') }}</option>
+          <option value="highlow">{{ $t('search.sortHighLow') }}</option>
+          <option value="bestselling">{{ $t('search.sortBestSelling') }}</option>
+        </select>
+        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#C4A8B6] pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </div>
     </div>
 
-    <!-- Loading -->
-    <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-      <div v-for="i in 8" :key="i" class="bg-white dark:bg-surface-800 rounded-card shadow-card overflow-hidden animate-pulse">
-        <div class="aspect-square bg-surface-200 dark:bg-surface-700"></div>
-        <div class="p-3 space-y-2">
-          <div class="h-4 bg-surface-200 dark:bg-surface-700 rounded w-3/4"></div>
-          <div class="h-4 bg-surface-200 dark:bg-surface-700 rounded w-1/2"></div>
+    <!-- Loading Skeleton -->
+    <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5">
+      <div v-for="i in 8" :key="i" class="bg-white rounded-2xl overflow-hidden border border-[#F1E6EA] animate-pulse">
+        <div class="aspect-square bg-[#FFF4F7]"></div>
+        <div class="p-4 space-y-2">
+          <div class="h-4 bg-[#FFF4F7] rounded w-3/4"></div>
+          <div class="h-4 bg-[#FFF4F7] rounded w-1/2"></div>
         </div>
       </div>
     </div>
 
     <!-- Error -->
-    <div v-else-if="error" class="text-center py-16">
-      <p class="text-surface-500 mb-4">{{ error }}</p>
-      <button @click="fetchProducts" class="px-4 py-2 bg-primary-500 text-white text-sm rounded-lg hover:bg-primary-600">{{ $t('common.retry') }}</button>
+    <div v-else-if="error" class="text-center py-20 animate-fade-in">
+      <div class="w-16 h-16 mx-auto bg-[#FFF4F7] rounded-full flex items-center justify-center mb-4">
+        <svg class="w-8 h-8 text-[#FF7AA2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <p class="text-sm text-[#666666] mb-4">{{ error }}</p>
+      <button @click="fetchProducts" class="px-5 py-2.5 bg-gradient-to-r from-[#FF7AA2] to-[#C084FC] text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-all shadow-button">{{ $t('common.retry') }}</button>
     </div>
 
     <!-- Empty -->
-    <div v-else-if="products.length === 0" class="text-center py-16">
-      <p class="text-surface-500">{{ $t('home.noNewArrivals') }}</p>
+    <div v-else-if="products.length === 0" class="text-center py-20 animate-fade-in">
+      <div class="w-20 h-20 mx-auto bg-[#FFF8FA] rounded-full flex items-center justify-center mb-4">
+        <span class="text-4xl">🧴</span>
+      </div>
+      <p class="text-sm text-[#666666]">{{ $t('home.noNewArrivals') }}</p>
     </div>
 
     <!-- Products Grid -->
-    <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-      <div
-        v-for="product in products"
-        :key="product._id"
+    <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5 animate-fade-in-up">
+      <div v-for="product in products" :key="product._id"
         @click="goToProduct(product._id)"
-        class="group bg-white dark:bg-surface-800 rounded-card shadow-card hover:shadow-card-hover transition-all duration-250 overflow-hidden cursor-pointer hover:-translate-y-1"
-      >
-        <div class="aspect-square bg-surface-100 dark:bg-surface-700 relative overflow-hidden">
-          <img
-            v-if="product.images && product.images.length > 0"
-            :src="product.images[0].secure_url"
-            :alt="product.name"
-            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-          />
+        class="product-card cursor-pointer group">
+        <div class="relative product-image aspect-square overflow-hidden bg-[#FFF8FA] rounded-t-2xl">
+          <img v-if="product.images?.[0]" :src="product.images[0].secure_url" :alt="product.name"
+            class="w-full h-full object-cover" loading="lazy" />
           <div v-else class="w-full h-full flex items-center justify-center">
-            <svg class="w-12 h-12 text-surface-300 dark:text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
+            <span class="text-4xl">✨</span>
           </div>
-          <span v-if="product.discount > 0" class="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded">-{{ product.discount }}%</span>
+          <div v-if="product.discount > 0" class="absolute top-3 left-3 px-2.5 py-1 bg-[#FF7AA2] text-white text-xs font-bold rounded-full shadow-sm">
+            -{{ product.discount }}%
+          </div>
         </div>
-        <div class="p-3">
-          <h3 class="text-sm font-semibold text-surface-800 dark:text-white truncate">{{ product.name }}</h3>
-          <div class="flex items-baseline space-x-2 mt-1">
-            <span class="text-sm font-bold text-primary-500">${{ product.price.toFixed(2) }}</span>
-          </div>
-          <div class="flex items-center space-x-1 mt-1">
-            <div class="flex">
-              <svg v-for="s in 5" :key="s" class="w-3 h-3" :class="s <= Math.round(product.rating || 4) ? 'text-yellow-400' : 'text-surface-300'" fill="currentColor" viewBox="0 0 20 20">
+        <div class="p-3 sm:p-4">
+          <h3 class="font-display font-semibold text-sm text-[#1A1A1A] truncate group-hover:text-[#FF7AA2] transition-colors">{{ product.name }}</h3>
+          <div class="flex items-center mt-1.5">
+            <div class="flex items-center gap-0.5">
+              <svg v-for="s in 5" :key="s" class="w-3 h-3" :class="s <= Math.round(product.rating || 4) ? 'text-amber-400' : 'text-[#F1E6EA]'" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
               </svg>
             </div>
-            <span class="text-xs text-surface-400">({{ product.numReviews || 0 }})</span>
+            <span class="text-xs text-[#C4A8B6] ml-1.5">({{ product.numReviews || 0 }})</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="font-bold text-base text-[#1A1A1A]">${{ product.price.toFixed(2) }}</span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Pagination -->
-    <div v-if="totalPages > 1" class="flex items-center justify-center space-x-2 mt-8">
+    <div v-if="totalPages > 1" class="flex items-center justify-center gap-2 mt-10 animate-fade-in">
       <button @click="prevPage" :disabled="currentPage <= 1"
-        class="w-9 h-9 xs:w-10 xs:h-10 flex items-center justify-center border border-surface-200 dark:border-surface-600 rounded-lg text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors disabled:opacity-50">
-        <svg class="w-3.5 h-3.5 xs:w-4 xs:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        class="w-10 h-10 flex items-center justify-center border border-[#F1E6EA] rounded-xl text-[#666666] hover:bg-[#FFF8FA] hover:border-[#FF7AA2] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </button>
-      <button
-        v-for="p in totalPages"
-        :key="p"
-        @click="goToPage(p)"
-        class="w-9 h-9 xs:w-10 xs:h-10 rounded-lg text-xs xs:text-sm font-medium transition-all"
-        :class="p === currentPage ? 'bg-primary-500 text-white' : 'border border-surface-200 dark:border-surface-600 text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700'">
+      <button v-for="p in totalPages" :key="p" @click="goToPage(p)"
+        class="w-10 h-10 rounded-xl text-sm font-medium transition-all"
+        :class="p === currentPage ? 'bg-gradient-to-r from-[#FF7AA2] to-[#C084FC] text-white shadow-soft' : 'border border-[#F1E6EA] text-[#666666] hover:bg-[#FFF8FA]'">
         {{ p }}
       </button>
       <button @click="nextPage" :disabled="currentPage >= totalPages"
-        class="w-9 h-9 xs:w-10 xs:h-10 flex items-center justify-center border border-surface-200 dark:border-surface-600 rounded-lg text-surface-500 hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors disabled:opacity-50">
-        <svg class="w-3.5 h-3.5 xs:w-4 xs:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        class="w-10 h-10 flex items-center justify-center border border-[#F1E6EA] rounded-xl text-[#666666] hover:bg-[#FFF8FA] hover:border-[#FF7AA2] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
       </button>
     </div>
   </div>
@@ -145,30 +148,23 @@ async function fetchProducts() {
   }
 }
 
-function goToProduct(id: string) {
-  router.push(`/product/${id}`)
-}
+function goToProduct(id: string) { router.push(`/product/${id}`) }
+function prevPage() { if (currentPage.value > 1) { currentPage.value--; fetchProducts() } }
+function nextPage() { if (currentPage.value < totalPages.value) { currentPage.value++; fetchProducts() } }
+function goToPage(p: number) { currentPage.value = p; fetchProducts() }
 
-function prevPage() {
-  if (currentPage.value > 1) {
-    currentPage.value--
-    fetchProducts()
-  }
-}
-
-function nextPage() {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-    fetchProducts()
-  }
-}
-
-function goToPage(p: number) {
-  currentPage.value = p
-  fetchProducts()
-}
-
-onMounted(() => {
-  fetchProducts()
-})
+onMounted(() => { fetchProducts() })
 </script>
+
+<style scoped>
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in-up { animation: fade-in-up 0.5s ease-out; }
+.animate-fade-in { animation: fade-in 0.3s ease-out; }
+</style>

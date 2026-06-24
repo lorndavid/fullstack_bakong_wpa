@@ -1,19 +1,18 @@
 <template>
-  <div class="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-6">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 animate-fade-in-up">
     <!-- Header -->
-    <div class="flex items-center justify-between">
-      <h1 class="text-xl sm:text-2xl font-bold text-surface-800 dark:text-white">{{ $t('profile.title') }}</h1>
+    <div class="text-center sm:text-left">
+      <span class="badge-pink mb-2 inline-block">{{ $t('nav.profile') }}</span>
+      <h1 class="font-display text-2xl sm:text-3xl font-bold text-[#1A1A1A]">{{ $t('profile.title') }}</h1>
     </div>
 
     <!-- Tab Navigation -->
-    <div class="flex bg-white dark:bg-surface-800 rounded-xl p-1 shadow-card border border-surface-100 dark:border-surface-700">
-      <button
-        v-for="tab in tabs" :key="tab.key"
-        @click="activeTab = tab.key"
-        class="flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-all duration-200"
+    <div class="flex bg-white rounded-2xl p-1.5 border border-[#F1E6EA] shadow-soft">
+      <button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key"
+        class="flex-1 py-2.5 px-4 text-sm font-medium rounded-xl transition-all duration-200"
         :class="activeTab === tab.key
-          ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 shadow-sm'
-          : 'text-surface-500 dark:text-surface-400 hover:text-surface-700 dark:hover:text-surface-200'"
+          ? 'bg-gradient-to-r from-[#FF7AA2] to-[#C084FC] text-white shadow-soft'
+          : 'text-[#666666] hover:text-[#FF7AA2]'"
       >
         <span class="sm:hidden">{{ tab.icon }}</span>
         <span class="hidden sm:inline">{{ tab.label }}</span>
@@ -23,27 +22,17 @@
     <!-- Tab: Profile Info -->
     <div v-if="activeTab === 'profile'" class="space-y-5">
       <!-- Avatar Card -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
+      <div class="bg-white rounded-3xl p-6 border border-[#F1E6EA] shadow-card">
         <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-          <!-- Avatar with Google profile image -->
           <div class="relative flex-shrink-0">
-            <div class="w-24 h-24 rounded-full overflow-hidden ring-4 ring-primary-100 dark:ring-primary-900/50 shadow-lg">
-              <img
-                v-if="auth.user?.avatar"
-                :src="auth.user.avatar"
-                :alt="auth.user?.name"
-                class="w-full h-full object-cover"
-                @error="avatarError = true"
-              />
-              <div
-                v-else
-                class="w-full h-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center"
-              >
-                <span class="text-3xl font-bold text-white">{{ auth.user?.name?.charAt(0).toUpperCase() }}</span>
+            <div class="w-24 h-24 rounded-full overflow-hidden ring-4 ring-[#F8D7E3] shadow-lg">
+              <img v-if="auth.user?.avatar" :src="auth.user.avatar" :alt="auth.user?.name"
+                class="w-full h-full object-cover" @error="avatarError = true" />
+              <div v-else class="w-full h-full bg-gradient-to-br from-[#FF7AA2] to-[#C084FC] flex items-center justify-center">
+                <span class="text-3xl font-bold text-white font-display">{{ auth.user?.name?.charAt(0).toUpperCase() }}</span>
               </div>
             </div>
-            <!-- Google badge -->
-            <div class="absolute -bottom-1 -right-1 w-7 h-7 bg-white dark:bg-surface-700 rounded-full flex items-center justify-center shadow-md border-2 border-white dark:border-surface-700">
+            <div class="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-white">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -52,12 +41,11 @@
               </svg>
             </div>
           </div>
-
           <div class="flex-1 text-center sm:text-left">
-            <h2 class="text-xl font-bold text-surface-800 dark:text-white">{{ auth.user?.name }}</h2>
-            <p class="text-sm text-surface-500 dark:text-surface-400 mt-0.5">{{ auth.user?.email }}</p>
+            <h2 class="font-display text-xl font-bold text-[#1A1A1A]">{{ auth.user?.name }}</h2>
+            <p class="text-sm text-[#666666] mt-0.5">{{ auth.user?.email }}</p>
             <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
-              <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-medium rounded-full">
+              <span class="inline-flex items-center gap-1 px-3 py-1 bg-[#E6FFE6] text-[#34C759] text-xs font-medium rounded-full border border-[#B8FFB8]">
                 <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                 {{ $t('profile.connectedWithGoogle') }}
               </span>
@@ -66,185 +54,141 @@
         </div>
       </div>
 
-      <!-- Account Info -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-5">
-        <h3 class="text-base font-semibold text-surface-800 dark:text-white">{{ $t('profile.accountInfo') }}</h3>
-
-        <div class="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-medium text-surface-500 dark:text-surface-400 mb-1.5 uppercase tracking-wider">{{ $t('auth.name') }}</label>
-            <div class="w-full px-4 py-2.5 bg-surface-50 dark:bg-surface-700/50 text-surface-800 dark:text-white rounded-lg text-sm border border-surface-200 dark:border-surface-600">
-              {{ auth.user?.name }}
-            </div>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-surface-500 dark:text-surface-400 mb-1.5 uppercase tracking-wider">{{ $t('auth.email') }}</label>
-            <div class="w-full px-4 py-2.5 bg-surface-50 dark:bg-surface-700/50 text-surface-500 dark:text-surface-400 rounded-lg text-sm border border-surface-200 dark:border-surface-600">
-              {{ auth.user?.email }}
-            </div>
-          </div>
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-3 gap-3">
+        <div class="bg-white rounded-2xl p-4 border border-[#F1E6EA] text-center hover:shadow-card transition-all duration-200">
+          <p class="text-2xl font-bold text-[#FF7AA2] font-display">{{ orders.length }}</p>
+          <p class="text-xs text-[#666666] mt-1">{{ $t('profile.totalOrders') }}</p>
         </div>
-
-        <div v-if="memberSinceText" class="pt-2">
-          <label class="block text-xs font-medium text-surface-500 dark:text-surface-400 mb-1.5 uppercase tracking-wider">{{ $t('profile.memberSince', { date: '' }) }}</label>
-          <p class="text-sm text-surface-700 dark:text-surface-200">{{ memberSinceText }}</p>
+        <div class="bg-white rounded-2xl p-4 border border-[#F1E6EA] text-center hover:shadow-card transition-all duration-200">
+          <p class="text-2xl font-bold text-[#C084FC] font-display">${{ totalSpent.toFixed(0) }}</p>
+          <p class="text-xs text-[#666666] mt-1">Spent</p>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-[#F1E6EA] text-center hover:shadow-card transition-all duration-200">
+          <p class="text-2xl font-bold text-[#34C759] font-display">{{ orders.filter(o => o.status === 'delivered').length }}</p>
+          <p class="text-xs text-[#666666] mt-1">Delivered</p>
         </div>
       </div>
 
-      <!-- Quick Stats -->
-      <div class="grid grid-cols-3 gap-3">
-        <div class="bg-white dark:bg-surface-800 rounded-xl p-4 shadow-card text-center">
-          <p class="text-2xl font-bold text-primary-600 dark:text-primary-400">{{ orders.length }}</p>
-          <p class="text-xs text-surface-500 mt-1">{{ $t('profile.totalOrders') }}</p>
-        </div>
-        <div class="bg-white dark:bg-surface-800 rounded-xl p-4 shadow-card text-center">
-          <p class="text-2xl font-bold text-accent-600 dark:text-accent-400">${{ totalSpent.toFixed(0) }}</p>
-          <p class="text-xs text-surface-500 mt-1">Spent</p>
-        </div>
-        <div class="bg-white dark:bg-surface-800 rounded-xl p-4 shadow-card text-center">
-          <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ orders.filter(o => o.status === 'delivered').length }}</p>
-          <p class="text-xs text-surface-500 mt-1">Delivered</p>
+      <!-- Account Info -->
+      <div class="bg-white rounded-3xl p-6 border border-[#F1E6EA] shadow-card space-y-5">
+        <h3 class="font-display font-semibold text-base text-[#1A1A1A]">{{ $t('profile.accountInfo') }}</h3>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-[#666666] mb-1.5 uppercase tracking-wider">{{ $t('auth.name') }}</label>
+            <div class="w-full px-4 py-2.5 bg-[#FFF8FA] text-[#1A1A1A] rounded-xl text-sm border border-[#F1E6EA]">{{ auth.user?.name }}</div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[#666666] mb-1.5 uppercase tracking-wider">{{ $t('auth.email') }}</label>
+            <div class="w-full px-4 py-2.5 bg-[#FFF8FA] text-[#666666] rounded-xl text-sm border border-[#F1E6EA]">{{ auth.user?.email }}</div>
+          </div>
         </div>
       </div>
 
       <!-- Sign Out -->
-      <button @click="handleLogout" class="w-full py-3 flex items-center justify-center gap-2 border-2 border-red-200 dark:border-red-800/50 text-red-500 font-semibold rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 transition-all">
+      <button @click="handleLogout" class="w-full py-3 flex items-center justify-center gap-2 border-2 border-[#F8D7E3] text-red-500 font-semibold rounded-2xl hover:bg-[#FFF4F7] hover:border-red-200 transition-all active:scale-[0.98]">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
         {{ $t('profile.signOut') }}
       </button>
     </div>
 
     <!-- Tab: Orders -->
-    <div v-if="activeTab === 'orders'" class="space-y-4">
+    <div v-if="activeTab === 'orders'" class="space-y-4 animate-fade-in-up">
       <div class="flex items-center justify-between">
-        <h3 class="text-base font-semibold text-surface-800 dark:text-white">{{ $t('profile.recentOrders') }}</h3>
-        <router-link to="/orders" class="text-sm text-primary-500 hover:text-primary-600 font-medium transition-colors">
+        <h3 class="font-display font-semibold text-base text-[#1A1A1A]">{{ $t('profile.recentOrders') }}</h3>
+        <router-link to="/orders" class="text-sm font-medium text-[#FF7AA2] hover:text-[#E8608A] transition-colors">
           {{ $t('profile.viewAllOrders') }} →
         </router-link>
       </div>
 
-      <!-- Loading -->
-      <div v-if="loadingOrders" class="bg-white dark:bg-surface-800 rounded-2xl p-8 shadow-card text-center">
-        <div class="w-8 h-8 border-3 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto"></div>
-        <p class="text-sm text-surface-500 mt-3">{{ $t('common.loading') }}</p>
+      <div v-if="loadingOrders" class="bg-white rounded-2xl p-8 border border-[#F1E6EA] text-center">
+        <div class="w-8 h-8 border-3 border-[#F8D7E3] border-t-[#FF7AA2] rounded-full animate-spin mx-auto"></div>
+        <p class="text-sm text-[#666666] mt-3">{{ $t('common.loading') }}</p>
       </div>
 
-      <!-- No orders -->
-      <div v-else-if="orders.length === 0" class="bg-white dark:bg-surface-800 rounded-2xl p-8 shadow-card text-center">
-        <div class="w-16 h-16 bg-surface-100 dark:bg-surface-700 rounded-full flex items-center justify-center mx-auto">
-          <svg class="w-8 h-8 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <div v-else-if="orders.length === 0" class="bg-white rounded-2xl p-8 border border-[#F1E6EA] text-center animate-fade-in">
+        <div class="w-16 h-16 mx-auto bg-[#FFF8FA] rounded-full flex items-center justify-center mb-4">
+          <span class="text-3xl">🛍️</span>
         </div>
-        <p class="text-sm text-surface-500 mt-3">{{ $t('profile.noRecentOrders') }}</p>
-        <router-link to="/" class="inline-block mt-4 px-5 py-2 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors">
+        <p class="text-sm text-[#666666] mb-4">{{ $t('profile.noRecentOrders') }}</p>
+        <router-link to="/" class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-[#FF7AA2] to-[#C084FC] text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-all shadow-button">
           {{ $t('order.startShopping') }}
         </router-link>
       </div>
 
-      <!-- Order List -->
       <div v-else class="space-y-3">
-        <div
-          v-for="order in recentOrders"
-          :key="order._id"
+        <div v-for="order in recentOrders" :key="order._id"
           @click="router.push(`/order/${order._id}`)"
-          class="bg-white dark:bg-surface-800 rounded-xl p-4 shadow-card hover:shadow-md transition-all cursor-pointer border border-surface-100 dark:border-surface-700"
-        >
+          class="bg-white rounded-2xl p-4 border border-[#F1E6EA] hover:shadow-card-hover hover:border-[#F8D7E3] transition-all duration-200 cursor-pointer group">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3 min-w-0">
-              <div class="w-10 h-10 bg-surface-100 dark:bg-surface-700 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+              <div class="w-10 h-10 bg-[#FFF8FA] rounded-xl flex items-center justify-center flex-shrink-0 border border-[#F1E6EA]">
+                <svg class="w-5 h-5 text-[#FF7AA2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
               </div>
               <div class="min-w-0">
-                <p class="text-sm font-medium text-surface-800 dark:text-white truncate">
-                  #{{ order._id.slice(-8).toUpperCase() }}
-                </p>
-                <p class="text-xs text-surface-500 mt-0.5">{{ formatDate(order.createdAt) }}</p>
+                <p class="text-sm font-semibold text-[#1A1A1A] truncate group-hover:text-[#FF7AA2] transition-colors">#{{ order._id.slice(-8).toUpperCase() }}</p>
+                <p class="text-xs text-[#666666] mt-0.5">{{ formatDate(order.createdAt) }}</p>
               </div>
             </div>
             <div class="text-right flex-shrink-0 ml-3">
-              <p class="text-sm font-semibold text-surface-800 dark:text-white">${{ order.total.toFixed(2) }}</p>
-              <span
-                class="inline-block mt-1 px-2 py-0.5 text-[11px] font-medium rounded-full"
-                :class="statusClass(order.status)"
-              >
-                {{ $t(`order.status.${order.status}`) }}
-              </span>
+              <p class="text-sm font-bold text-[#1A1A1A]">${{ order.total.toFixed(2) }}</p>
+              <span class="inline-block mt-1 px-2 py-0.5 text-[11px] font-medium rounded-full" :class="statusClass(order.status)">{{ $t(`order.status.${order.status}`) }}</span>
             </div>
           </div>
-          <div class="mt-2 pt-2 border-t border-surface-100 dark:border-surface-700">
-            <p class="text-xs text-surface-500">
-              {{ order.products.length }} {{ $t('order.items') }} · {{ order.paymentMethod === 'khqr' ? 'KHQR' : 'COD' }}
-            </p>
+          <div class="mt-2 pt-2 border-t border-[#F1E6EA]">
+            <p class="text-xs text-[#666666]">{{ order.products.length }} {{ $t('order.items') }} · {{ order.paymentMethod === 'khqr' ? 'KHQR' : 'COD' }}</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Tab: Settings -->
-    <div v-if="activeTab === 'settings'" class="space-y-4">
-      <!-- Theme -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
-        <h3 class="text-base font-semibold text-surface-800 dark:text-white mb-4">{{ $t('profile.theme') }}</h3>
+    <div v-if="activeTab === 'settings'" class="space-y-4 animate-fade-in-up">
+      <div class="bg-white rounded-3xl p-6 border border-[#F1E6EA] shadow-card">
+        <h3 class="font-display font-semibold text-base text-[#1A1A1A] mb-4">{{ $t('profile.appearance') }}</h3>
         <div class="flex gap-3">
-          <button
-            @click="setTheme(false)"
+          <button @click="setTheme(false)"
             class="flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border-2 transition-all"
-            :class="!theme.isDark
-              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600'
-              : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'"
-          >
+            :class="!theme.isDark ? 'border-[#FF7AA2] bg-[#FFF4F7] text-[#FF7AA2]' : 'border-[#F1E6EA] text-[#666666] hover:border-[#FF7AA2]/50'">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             <span class="text-sm font-medium">{{ $t('profile.themeLight') }}</span>
           </button>
-          <button
-            @click="setTheme(true)"
+          <button @click="setTheme(true)"
             class="flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border-2 transition-all"
-            :class="theme.isDark
-              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600'
-              : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'"
-          >
+            :class="theme.isDark ? 'border-[#FF7AA2] bg-[#FFF4F7] text-[#FF7AA2]' : 'border-[#F1E6EA] text-[#666666] hover:border-[#FF7AA2]/50'">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
             <span class="text-sm font-medium">{{ $t('profile.themeDark') }}</span>
           </button>
         </div>
       </div>
 
-      <!-- Language -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
-        <h3 class="text-base font-semibold text-surface-800 dark:text-white mb-4">{{ $t('profile.language') }}</h3>
+      <div class="bg-white rounded-3xl p-6 border border-[#F1E6EA] shadow-card">
+        <h3 class="font-display font-semibold text-base text-[#1A1A1A] mb-4">{{ $t('profile.language') }}</h3>
         <div class="flex gap-3">
-          <button
-            @click="setLocale('en')"
+          <button @click="setLocale('en')"
             class="flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border-2 transition-all"
-            :class="locale === 'en'
-              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600'
-              : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'"
-          >
+            :class="locale === 'en' ? 'border-[#FF7AA2] bg-[#FFF4F7] text-[#FF7AA2]' : 'border-[#F1E6EA] text-[#666666] hover:border-[#FF7AA2]/50'">
             <span class="text-lg">🇺🇸</span>
             <span class="text-sm font-medium">English</span>
           </button>
-          <button
-            @click="setLocale('km')"
+          <button @click="setLocale('km')"
             class="flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border-2 transition-all"
-            :class="locale === 'km'
-              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600'
-              : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'"
-          >
+            :class="locale === 'km' ? 'border-[#FF7AA2] bg-[#FFF4F7] text-[#FF7AA2]' : 'border-[#F1E6EA] text-[#666666] hover:border-[#FF7AA2]/50'">
             <span class="text-lg">🇰🇭</span>
             <span class="text-sm font-medium">ភាសាខ្មែរ</span>
           </button>
         </div>
       </div>
 
-      <!-- Account Type -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
-        <h3 class="text-base font-semibold text-surface-800 dark:text-white mb-3">{{ $t('profile.accountInfo') }}</h3>
-        <div class="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700/50 rounded-xl">
-          <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-            <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+      <div class="bg-white rounded-3xl p-6 border border-[#F1E6EA] shadow-card">
+        <h3 class="font-display font-semibold text-base text-[#1A1A1A] mb-3">{{ $t('profile.accountInfo') }}</h3>
+        <div class="flex items-center gap-3 p-4 bg-[#FFF8FA] rounded-xl border border-[#F1E6EA]">
+          <div class="w-10 h-10 bg-[#E6FFE6] rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-[#34C759]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
           </div>
           <div>
-            <p class="text-sm font-medium text-surface-800 dark:text-white">{{ $t('profile.connectedWithGoogle') }}</p>
-            <p class="text-xs text-surface-500 mt-0.5">{{ auth.user?.email }}</p>
+            <p class="text-sm font-medium text-[#1A1A1A]">{{ $t('profile.connectedWithGoogle') }}</p>
+            <p class="text-xs text-[#666666] mt-0.5">{{ auth.user?.email }}</p>
           </div>
         </div>
       </div>
@@ -260,23 +204,14 @@ import { useThemeStore } from '@/stores/theme'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api'
 
-interface OrderItem {
-  productId: string
-  name: string
-  image: string
-  price: number
-  quantity: number
-}
-
 interface Order {
   _id: string
-  userId: string
-  products: OrderItem[]
+  products: any[]
   subtotal: number
   shipping: number
   total: number
-  status: 'pending' | 'confirmed' | 'shipping' | 'delivered' | 'cancelled'
-  paymentMethod: 'khqr' | 'cod'
+  status: string
+  paymentMethod: string
   createdAt: string
 }
 
@@ -299,18 +234,10 @@ const tabs = computed<{ key: TabKey; label: string; icon: string }[]>(() => [
   { key: 'settings', label: t('profile.tabSettings'), icon: '⚙️' },
 ])
 
-const memberSinceText = computed(() => {
-  // createdAt is available from /auth/me response but not stored in the auth store
-  // Could be enhanced later by storing createdAt in the auth store
-  return ''
-})
-
 const recentOrders = computed(() => orders.value.slice(0, 5))
 
 onMounted(async () => {
-  if (auth.isAuthenticated) {
-    await fetchOrders()
-  }
+  if (auth.isAuthenticated) await fetchOrders()
 })
 
 async function fetchOrders() {
@@ -318,50 +245,41 @@ async function fetchOrders() {
   try {
     const data: any = await api.get('/orders')
     orders.value = data.orders || []
-    totalSpent.value = orders.value
-      .filter(o => o.status !== 'cancelled')
-      .reduce((sum, o) => sum + o.total, 0)
-  } catch {
-    // Silently fail - orders will show empty
-  } finally {
-    loadingOrders.value = false
-  }
+    totalSpent.value = orders.value.filter(o => o.status !== 'cancelled').reduce((sum, o) => sum + o.total, 0)
+  } catch { /* silent fail */ }
+  finally { loadingOrders.value = false }
 }
 
-function setTheme(dark: boolean) {
-  if (theme.isDark !== dark) {
-    theme.toggle()
-  }
-}
-
-function setLocale(localeCode: string) {
-  locale.value = localeCode
-  localStorage.setItem('locale', localeCode)
-  document.documentElement.lang = localeCode
-}
+function setTheme(dark: boolean) { if (theme.isDark !== dark) theme.toggle() }
+function setLocale(localeCode: string) { locale.value = localeCode; localStorage.setItem('locale', localeCode); document.documentElement.lang = localeCode }
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
+  return new Date(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 function statusClass(status: string): string {
   const map: Record<string, string> = {
-    pending: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400',
-    confirmed: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400',
-    shipping: 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400',
-    delivered: 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400',
-    cancelled: 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400',
+    pending: 'bg-[#FFF4F7] text-[#FF7AA2]',
+    confirmed: 'bg-[#F5F3FF] text-[#C084FC]',
+    shipping: 'bg-[#FEF3C7] text-amber-600',
+    delivered: 'bg-[#E6FFE6] text-[#34C759]',
+    cancelled: 'bg-[#FFF4F7] text-red-500',
   }
-  return map[status] || map.pending
+  return map[status] || 'bg-[#FFF8FA] text-[#666666]'
 }
 
-function handleLogout() {
-  auth.logout()
-  router.push('/')
-}
+function handleLogout() { auth.logout(); router.push('/') }
 </script>
+
+<style scoped>
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in-up { animation: fade-in-up 0.5s ease-out; }
+.animate-fade-in { animation: fade-in 0.3s ease-out; }
+</style>

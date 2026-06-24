@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,21 +9,62 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-surface-50 dark:bg-surface-900 text-surface-800 dark:text-surface-200;
-    font-family: 'Battambang', 'Inter', sans-serif;
+    @apply bg-[#FFF8FA] text-[#1A1A1A];
+    font-family: 'Battambang', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    @apply bg-[#F8D7E3] text-[#1A1A1A];
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-[#F1E6EA] rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-[#E0D0D8];
   }
 }
 
 @layer components {
   .table-header {
-    @apply px-4 py-3 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider;
+    @apply px-4 py-3 text-left text-xs font-semibold text-[#666666] uppercase tracking-wider;
   }
   .table-cell {
-    @apply px-4 py-3 text-sm;
+    @apply px-4 py-3 text-sm text-[#1A1A1A];
+  }
+  .card-admin {
+    @apply bg-white rounded-2xl border border-[#F1E6EA] shadow-soft transition-all duration-200;
+  }
+  .card-admin:hover {
+    @apply shadow-card border-[#F8D7E3];
+  }
+  .btn-admin-primary {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-[#FF7AA2] text-white text-sm font-semibold rounded-xl hover:bg-[#E8608A] active:scale-[0.98] transition-all duration-200 shadow-button hover:shadow-button-hover;
+  }
+  .btn-admin-secondary {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-[#F1E6EA] text-[#666666] text-sm font-medium rounded-xl hover:bg-[#FFF8FA] hover:border-[#FF7AA2] active:scale-[0.98] transition-all duration-200;
+  }
+  .input-admin {
+    @apply w-full px-3 py-2 bg-white border border-[#F1E6EA] text-[#1A1A1A] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7AA2]/20 focus:border-[#FF7AA2] placeholder:text-[#C4A8B6] transition-all duration-200;
+  }
+  .badge-admin {
+    @apply inline-flex items-center px-2.5 py-1 bg-[#FFF4F7] text-[#FF7AA2] text-xs font-semibold rounded-full border border-[#F8D7E3];
   }
 }
 
 @layer utilities {
+  .font-khmer {
+    font-family: 'Battambang', 'Khmer OS', 'Hanuman', serif;
+  }
   .animate-slide-down {
     animation: slide-down 0.2s ease-out;
   }
@@ -31,37 +74,24 @@
   .animate-slide-up {
     animation: slide-up 0.3s ease-out;
   }
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
 }
 
 @keyframes slide-down {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
-
 @keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

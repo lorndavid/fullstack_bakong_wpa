@@ -1,41 +1,46 @@
 <template>
   <div class="text-center animate-fade-in px-4">
-    <!-- Clean Success Icon -->
-    <div class="mx-auto w-[72px] h-[72px] bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mb-5 animate-bounce-in">
-      <div class="w-[52px] h-[52px] bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
+    <!-- Success Icon with Beauty Gradient -->
+    <div class="mx-auto w-20 h-20 bg-gradient-to-br from-[#FFD5E0] to-[#FFF4F7] rounded-full flex items-center justify-center mb-5 animate-bounce-in">
+      <div class="w-14 h-14 bg-gradient-to-br from-[#FF7AA2] to-[#C084FC] text-white rounded-full flex items-center justify-center shadow-lg">
         <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
           <path class="animate-draw-check" d="M5 13l4 4L19 7" />
         </svg>
       </div>
     </div>
 
-    <h2 class="text-[22px] font-bold text-surface-900 dark:text-white mb-1.5">
+    <h2 class="font-display text-2xl font-bold text-[#1A1A1A] mb-1">
       Payment Successful
     </h2>
-    <p class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mb-6 font-mono tracking-tight">
-      ${{ amount.toFixed(2) }} <span class="text-lg">USD</span>
-    </p>
+    <p class="text-sm text-[#666666] mb-4">Your transaction has been completed</p>
+    
+    <div class="text-center mb-6">
+      <p class="text-3xl font-bold text-[#1A1A1A] font-display">
+        ${{ amount.toFixed(2) }}
+        <span class="text-base font-medium text-[#666666]">USD</span>
+      </p>
+    </div>
 
     <!-- Details Box -->
-    <div class="bg-surface-50 dark:bg-surface-800/80 rounded-xl p-4 border border-surface-100 dark:border-surface-700 mb-8 text-left space-y-3">
+    <div class="bg-[#FFF8FA] rounded-2xl p-4 border border-[#F1E6EA] mb-6 text-left space-y-2.5">
       <div v-if="transactionId" class="flex items-center justify-between">
-        <span class="text-sm font-medium text-surface-500">Transaction ID</span>
-        <span class="text-sm font-semibold text-surface-900 dark:text-surface-100 font-mono tracking-tight">{{ transactionId }}</span>
+        <span class="text-xs font-medium text-[#666666]">Transaction ID</span>
+        <span class="text-xs font-semibold text-[#1A1A1A] font-mono">{{ transactionId }}</span>
       </div>
       <div class="flex items-center justify-between">
-        <span class="text-sm font-medium text-surface-500">Merchant</span>
-        <span class="text-sm font-semibold text-surface-900 dark:text-surface-100">{{ merchant }}</span>
+        <span class="text-xs font-medium text-[#666666]">Merchant</span>
+        <span class="text-xs font-semibold text-[#1A1A1A]">{{ merchant }}</span>
       </div>
-      <div class="flex items-center justify-between">
-        <span class="text-sm font-medium text-surface-500">Time</span>
-        <span class="text-sm font-semibold text-surface-900 dark:text-surface-100">{{ paidTime }}</span>
+      <div v-if="paidTime" class="flex items-center justify-between">
+        <span class="text-xs font-medium text-[#666666]">Time</span>
+        <span class="text-xs font-semibold text-[#1A1A1A]">{{ paidTime }}</span>
       </div>
     </div>
 
     <!-- Done Button -->
     <button
       @click="$emit('continue')"
-      class="w-full h-12 bg-[#E2001A] text-white font-semibold text-[15px] rounded-xl hover:bg-red-700 active:scale-[0.98] transition-all focus:outline-none shadow-[0_4px_14px_rgba(226,0,26,0.3)]"
+      class="w-full h-12 bg-gradient-to-r from-[#FF7AA2] to-[#C084FC] text-white font-semibold text-sm rounded-xl hover:opacity-90 active:scale-[0.98] transition-all shadow-button focus:outline-none"
     >
       Done
     </button>
@@ -56,10 +61,6 @@ defineEmits<{
 </script>
 
 <style scoped>
-@keyframes ping-slow {
-  0%, 100% { transform: scale(1); opacity: 0.3; }
-  50% { transform: scale(1.5); opacity: 0; }
-}
 @keyframes bounce-in {
   0% { transform: scale(0); opacity: 0; }
   50% { transform: scale(1.15); }
@@ -74,7 +75,6 @@ defineEmits<{
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-ping-slow { animation: ping-slow 2s ease-out infinite; }
 .animate-bounce-in { animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; }
 .animate-draw-check { stroke-dasharray: 30; stroke-dashoffset: 30; animation: draw-check 0.5s ease-out 0.4s forwards; }
 .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }

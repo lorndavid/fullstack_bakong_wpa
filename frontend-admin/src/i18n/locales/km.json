@@ -171,7 +171,9 @@
     "priceError": "តម្លៃត្រូវតែច្រើនជាង $0.00",
     "stockError": "ស្តុកមិនអាចជាលេខអវិជ្ជមានទេ",
     "categoryError": "សូមជ្រើសរើសប្រភេទ",
-    "noDiscount": "—"
+    "noDiscount": "—",
+    "lowStock": "ស្តុកតិច",
+    "inStock": "នៅក្នុងស្តុក"
   },
   "categories": {
     "title": "ប្រភេទ",

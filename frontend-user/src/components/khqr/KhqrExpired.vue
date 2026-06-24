@@ -1,29 +1,31 @@
 <template>
   <div class="text-center animate-fade-in px-4 py-4">
-    <!-- Simple Error Icon -->
-    <div class="mx-auto w-16 h-16 bg-surface-100 dark:bg-surface-800 rounded-full flex items-center justify-center mb-5 animate-bounce-in">
-      <svg class="w-8 h-8 text-surface-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="12" y1="8" x2="12" y2="12" />
-        <line x1="12" y1="16" x2="12.01" y2="16" />
-      </svg>
+    <!-- Soft Error Icon -->
+    <div class="mx-auto w-16 h-16 bg-[#FFF4F7] rounded-full flex items-center justify-center mb-4 animate-bounce-in">
+      <div class="w-12 h-12 bg-[#F8D7E3] rounded-full flex items-center justify-center">
+        <svg class="w-6 h-6 text-[#FF7AA2]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+      </div>
     </div>
 
-    <h2 class="text-[20px] font-bold text-surface-900 dark:text-white mb-2">QR Code Expired</h2>
-    <p class="text-[14px] text-surface-500 dark:text-surface-400 mb-8 max-w-[260px] mx-auto leading-relaxed">
+    <h2 class="font-display text-xl font-bold text-[#1A1A1A] mb-2">QR Code Expired</h2>
+    <p class="text-sm text-[#666666] mb-7 max-w-[240px] mx-auto leading-relaxed">
       This payment code is no longer valid. Please generate a new one to proceed.
     </p>
 
     <div class="space-y-3">
       <button
         @click="$emit('generate')"
-        class="w-full h-12 bg-[#E2001A] text-white font-semibold text-[15px] rounded-xl hover:bg-red-700 active:scale-[0.98] transition-all focus:outline-none shadow-[0_4px_14px_rgba(226,0,26,0.3)]"
+        class="w-full h-12 bg-gradient-to-r from-[#FF7AA2] to-[#C084FC] text-white font-semibold text-sm rounded-xl hover:opacity-90 active:scale-[0.98] transition-all shadow-button focus:outline-none"
       >
         Generate New QR
       </button>
       <button
         @click="$emit('back')"
-        class="w-full h-12 bg-white dark:bg-surface-800 text-surface-700 dark:text-surface-300 font-semibold text-[15px] rounded-xl border border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-700 active:scale-[0.98] transition-all"
+        class="w-full h-12 bg-white text-[#666666] font-semibold text-sm rounded-xl border border-[#F1E6EA] hover:bg-[#FFF8FA] active:scale-[0.98] transition-all"
       >
         Cancel
       </button>

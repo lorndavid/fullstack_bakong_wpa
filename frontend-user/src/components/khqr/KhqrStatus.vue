@@ -1,12 +1,12 @@
 <template>
-  <div class="bg-surface-50 dark:bg-surface-800/50 rounded-2xl px-5 py-4 text-center border border-surface-100 dark:border-surface-700/30">
-    <p class="text-sm font-medium text-surface-500 dark:text-surface-400 flex items-center justify-center gap-2">
+  <div class="bg-[#FFF8FA] rounded-2xl px-5 py-4 text-center border border-[#F1E6EA]">
+    <p class="text-sm font-semibold text-[#FF7AA2] flex items-center justify-center gap-2">
       <span class="relative flex w-2.5 h-2.5">
-        <span class="animate-ping absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-75" />
-        <span class="relative inline-flex w-2.5 h-2.5 rounded-full bg-emerald-500" />
+        <span class="animate-ping absolute inline-flex w-full h-full rounded-full bg-[#FF7AA2] opacity-75" />
+        <span class="relative inline-flex w-2.5 h-2.5 rounded-full bg-[#FF7AA2]" />
       </span>
       <span>Waiting for payment</span>
-      <span class="inline-flex text-emerald-500 dark:text-emerald-400 font-bold">
+      <span class="inline-flex text-[#FF7AA2] font-bold">
         <span
           v-for="i in 3"
           :key="i"
@@ -15,7 +15,7 @@
         >.</span>
       </span>
     </p>
-    <p class="text-[11px] text-surface-400 dark:text-surface-500 mt-1.5">
+    <p class="text-xs text-[#666666] mt-1.5">
       Please scan the QR code using your banking app
     </p>
   </div>

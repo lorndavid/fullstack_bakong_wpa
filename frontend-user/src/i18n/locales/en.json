@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "MY SHOP",
-    "tagline": "Premium Shopping Experience"
+    "name": "Glow Beauty",
+    "tagline": "Premium Skincare for Radiant Skin"
   },
   "nav": {
     "home": "Home",
@@ -29,9 +29,9 @@
     "noNewArrivals": "No new arrivals yet"
   },
   "cart": {
-    "title": "Shopping Cart",
-    "empty": "Your cart is empty",
-    "emptyDesc": "Add some items to get started",
+    "title": "Shopping Bag",
+    "empty": "Your bag is empty",
+    "emptyDesc": "Add some glow to your routine",
     "continueShopping": "Continue Shopping",
     "subtotal": "Subtotal",
     "shipping": "Shipping",
@@ -106,13 +106,13 @@
     "outOfStock": "Out of Stock",
     "quantity": "Quantity",
     "addToCart": "Add to Cart",
-    "addedToCart": "Added to cart!",
+    "addedToCart": "Added to your bag!",
     "description": "Description",
     "reviews": "Reviews",
     "noReviews": "No reviews yet",
     "shipping": "Free shipping on all orders",
     "returns": "30-day returns",
-    "relatedProducts": "Related Products",
+    "relatedProducts": "Complete Your Routine",
     "notFound": "Product Not Found"
   },
   "category": {
@@ -134,7 +134,7 @@
     "registerTitle": "Create Account",
     "loginSubtitle": "Sign in to your account",
     "registerSubtitle": "Join us today",
-    "welcomeTitle": "Welcome to MY SHOP",
+    "welcomeTitle": "Welcome to Glow Beauty",
     "welcomeSubtitle": "Continue with Google to shop easily",
     "or": "or",
     "continueWithGoogle": "Continue with Google",
@@ -196,7 +196,7 @@
     "appearance": "Appearance"
   },
   "banner": {
-    "freeShipping": "Free Shipping on all orders — No minimum required!"
+    "freeShipping": "✨ Free Shipping on all orders — No minimum required! ✨"
   },
   "search": {
     "title": "Search",
