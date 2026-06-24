@@ -2,8 +2,18 @@
   <div class="space-y-4">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <h2 class="text-xl font-bold text-surface-800 dark:text-white">{{ $t('transactions.title') }}</h2>
       <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z"/></svg>
+        </div>
+        <h2 class="text-xl font-bold text-surface-800 dark:text-white">{{ $t('transactions.title') }}</h2>
+      </div>
+      <div class="flex items-center gap-3">
+        <button v-if="selectedIds.size > 0" @click="confirmBulkDelete"
+          class="px-3 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-all flex items-center gap-2 shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          Delete Selected ({{ selectedIds.size }})
+        </button>
         <!-- Live indicator -->
         <div v-if="isLive" class="flex items-center gap-1.5 text-xs text-accent-500 font-medium">
           <span class="w-2 h-2 bg-accent-500 rounded-full animate-pulse"></span>
@@ -62,6 +72,10 @@
         <table class="w-full">
           <thead>
             <tr class="border-b border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50">
+              <th class="w-10 px-4 py-3">
+                <input type="checkbox" @change="toggleSelectAll" :checked="selectedIds.size === transactions.length && transactions.length > 0"
+                  class="w-4 h-4 text-primary-500 rounded focus:ring-primary-500 cursor-pointer" />
+              </th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.hash') }}</th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.order') }}</th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.amount') }}</th>
@@ -75,6 +89,10 @@
             <tr v-for="tx in transactions" :key="tx._id"
               class="hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors"
               :class="{ 'animate-highlight': highlightedIds.has(tx._id) }">
+              <td class="px-4 py-3" @click.stop>
+                <input type="checkbox" :checked="selectedIds.has(tx._id)" @change="toggleSelect(tx._id)"
+                  class="w-4 h-4 text-primary-500 rounded focus:ring-primary-500 cursor-pointer" />
+              </td>
               <td class="px-4 py-3 font-mono text-xs text-surface-500">{{ tx._id?.slice(-8) }}</td>
               <td class="px-4 py-3">
                 <router-link :to="`/orders`" class="font-mono text-sm text-primary-500 hover:text-primary-600 font-medium">
@@ -152,9 +170,25 @@
       </div>
     </div>
 
-    <!-- Delete Confirmation -->
+    <!-- Bulk Delete Confirmation -->
+    <div v-if="showBulkConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="showBulkConfirm = false"></div>
+      <div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-xl w-full max-w-sm p-6 animate-scale-in text-center">
+        <div class="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+        </div>
+        <h3 class="text-lg font-bold text-surface-800 dark:text-white mb-2">Delete {{ selectedIds.size }} Transactions</h3>
+        <p class="text-sm text-surface-500 mb-6">Are you sure you want to delete {{ selectedIds.size }} transaction(s)? This cannot be undone.</p>
+        <div class="flex gap-3">
+          <button @click="showBulkConfirm = false" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-surface-50">{{ $t('common.cancel') }}</button>
+          <button @click="bulkDeleteTransactions" :disabled="deleting" class="flex-1 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50">{{ deleting ? $t('common.deleting') : $t('common.delete') }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Single Delete Confirmation -->
     <div v-if="deletingTx" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="fixed inset-0 bg-black/50" @click="deletingTx = null"></div>
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="deletingTx = null"></div>
       <div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-xl w-full max-w-sm p-6 animate-scale-in text-center">
         <div class="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
@@ -207,6 +241,10 @@ const statusFilter = ref('all')
 const highlightedIds = ref(new Set<string>())
 const toastMessage = ref<string | null>(null)
 const isLive = ref(false)
+// Bulk selection
+const selectedIds = ref<Set<string>>(new Set())
+const showBulkConfirm = ref(false)
+
 const deletingTx = ref<Transaction | null>(null)
 const deleting = ref(false)
 
@@ -390,6 +428,41 @@ async function copyMd5(md5?: string) {
     showToast('MD5 copied to clipboard')
   } catch {
     showToast('Failed to copy')
+  }
+}
+
+function toggleSelect(id: string) {
+  const newSet = new Set(selectedIds.value)
+  if (newSet.has(id)) newSet.delete(id)
+  else newSet.add(id)
+  selectedIds.value = newSet
+}
+
+function toggleSelectAll() {
+  if (selectedIds.value.size === transactions.value.length) {
+    selectedIds.value = new Set()
+  } else {
+    selectedIds.value = new Set(transactions.value.map(t => t._id))
+  }
+}
+
+function confirmBulkDelete() {
+  showBulkConfirm.value = true
+}
+
+async function bulkDeleteTransactions() {
+  deleting.value = true
+  try {
+    const ids = Array.from(selectedIds.value)
+    await Promise.all(ids.map(id => api.delete(`/payment/transactions/${id}`)))
+    showBulkConfirm.value = false
+    selectedIds.value = new Set()
+    showToast('Transactions deleted')
+    await fetchTransactions()
+  } catch (err: any) {
+    showToast(err.message || 'Failed to delete')
+  } finally {
+    deleting.value = false
   }
 }
 

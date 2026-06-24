@@ -7,6 +7,7 @@ interface AdminUser {
   name: string
   email: string
   role: string
+  avatar?: string
 }
 
 export const useAuthStore = defineStore('auth', () => {

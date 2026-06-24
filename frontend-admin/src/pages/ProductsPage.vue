@@ -1,12 +1,32 @@
 <template>
   <div class="space-y-4">
     <!-- Header -->
-    <div class="flex items-center justify-between">
-      <h2 class="text-xl font-bold text-surface-800 dark:text-white">{{ $t('products.title') }}</h2>
-      <button @click="openCreateModal" class="px-4 py-2 bg-primary-500 text-white text-sm font-semibold rounded-lg hover:bg-primary-600 transition-all flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        {{ $t('products.addProduct') }}
-      </button>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-md">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        </div>
+        <h2 class="text-xl font-bold text-surface-800 dark:text-white">{{ $t('products.title') }}</h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <!-- View Toggle -->
+        <div class="flex items-center bg-surface-100 dark:bg-surface-700 rounded-lg p-0.5 border border-surface-200 dark:border-surface-600">
+          <button @click="viewMode = 'grid'"
+            class="p-1.5 rounded-md transition-all duration-150"
+            :class="viewMode === 'grid' ? 'bg-white dark:bg-surface-600 shadow-sm text-primary-500' : 'text-surface-400 hover:text-surface-600 dark:hover:text-surface-300'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          </button>
+          <button @click="viewMode = 'list'"
+            class="p-1.5 rounded-md transition-all duration-150"
+            :class="viewMode === 'list' ? 'bg-white dark:bg-surface-600 shadow-sm text-primary-500' : 'text-surface-400 hover:text-surface-600 dark:hover:text-surface-300'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+          </button>
+        </div>
+        <button @click="openCreateModal" class="px-4 py-2 bg-primary-500 text-white text-sm font-semibold rounded-lg hover:bg-primary-600 transition-all flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          {{ $t('products.addProduct') }}
+        </button>
+      </div>
     </div>
 
     <!-- Search & Filter -->
@@ -48,8 +68,8 @@
       <button @click="openCreateModal" class="px-4 py-2 bg-primary-500 text-white text-sm rounded-lg">{{ $t('products.addProduct') }}</button>
     </div>
 
-    <!-- Table -->
-    <div v-else class="bg-white dark:bg-surface-800 rounded-2xl shadow-card overflow-hidden">
+    <!-- List View (Table) -->
+    <div v-if="viewMode === 'list'" class="bg-white dark:bg-surface-800 rounded-2xl shadow-card overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead>
@@ -103,6 +123,51 @@
           </tbody>
         </table>
       </div>
+
+    <!-- Grid View (Cards) -->
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div v-for="product in products" :key="product._id"
+        class="bg-white dark:bg-surface-800 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden group border border-surface-100 dark:border-surface-700">
+        <!-- Image -->
+        <div class="aspect-square bg-surface-100 dark:bg-surface-700 overflow-hidden relative">
+          <img v-if="product.images && product.images[0]" :src="product.images[0].secure_url" :alt="product.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <div v-else class="w-full h-full flex items-center justify-center">
+            <svg class="w-12 h-12 text-surface-300 dark:text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <!-- Discount Badge -->
+          <div v-if="product.discount > 0" class="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-lg shadow-sm">
+            -{{ product.discount }}%
+          </div>
+          <!-- Stock Badge -->
+          <div v-if="product.stock <= 5" class="absolute top-2 right-2 px-2 py-1 bg-orange-500 text-white text-xs font-medium rounded-lg shadow-sm">
+            Low Stock
+          </div>
+        </div>
+        <!-- Content -->
+        <div class="p-4 space-y-2">
+          <div>
+            <p class="text-xs text-surface-400 uppercase tracking-wider">{{ getCategoryName(product.category) }}</p>
+            <h3 class="text-sm font-semibold text-surface-800 dark:text-white line-clamp-1">{{ product.name }}</h3>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span v-if="product.discount > 0" class="text-xs text-surface-400 line-through">${{ product.price.toFixed(2) }}</span>
+              <span class="text-base font-bold text-surface-800 dark:text-white">${{ ((product.price * (100 - product.discount)) / 100).toFixed(2) }}</span>
+            </div>
+            <span class="text-xs" :class="product.stock <= 10 ? 'text-red-500 font-medium' : 'text-surface-400'">{{ product.stock }} in stock</span>
+          </div>
+          <!-- Actions -->
+          <div class="flex items-center gap-2 pt-2 border-t border-surface-100 dark:border-surface-700">
+            <button @click="openEditModal(product)" class="flex-1 py-1.5 text-xs font-medium text-primary-500 bg-primary-50 dark:bg-primary-900/30 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors">
+              Edit
+            </button>
+            <button @click="confirmDelete(product)" class="py-1.5 px-2 text-xs font-medium text-red-500 bg-red-50 dark:bg-red-900/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
       <!-- Pagination -->
       <div class="flex items-center justify-between px-4 py-3 border-t border-surface-200 dark:border-surface-700">
         <p class="text-sm text-surface-500">
@@ -301,6 +366,7 @@ const error = ref<string | null>(null)
 const searchQuery = ref('')
 const categoryFilter = ref('')
 const pagination = ref<Pagination>({ page: 1, limit: 10, total: 0, pages: 0 })
+const viewMode = ref<'grid' | 'list'>('grid')
 
 const showModal = ref(false)
 const editingProduct = ref<Product | null>(null)

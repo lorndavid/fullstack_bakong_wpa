@@ -1,12 +1,32 @@
 <template>
   <div class="space-y-4">
     <!-- Header -->
-    <div class="flex items-center justify-between">
-      <h2 class="text-xl font-bold text-surface-800 dark:text-white">{{ $t('categories.title') }}</h2>
-      <button @click="openCreateModal" class="px-4 py-2 bg-primary-500 text-white text-sm font-semibold rounded-lg hover:bg-primary-600 transition-all flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        {{ $t('categories.addCategory') }}
-      </button>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl flex items-center justify-center shadow-md">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        </div>
+        <h2 class="text-xl font-bold text-surface-800 dark:text-white">{{ $t('categories.title') }}</h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <!-- View Toggle -->
+        <div class="flex items-center bg-surface-100 dark:bg-surface-700 rounded-lg p-0.5 border border-surface-200 dark:border-surface-600">
+          <button @click="viewMode = 'grid'"
+            class="p-1.5 rounded-md transition-all duration-150"
+            :class="viewMode === 'grid' ? 'bg-white dark:bg-surface-600 shadow-sm text-primary-500' : 'text-surface-400 hover:text-surface-600 dark:hover:text-surface-300'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          </button>
+          <button @click="viewMode = 'list'"
+            class="p-1.5 rounded-md transition-all duration-150"
+            :class="viewMode === 'list' ? 'bg-white dark:bg-surface-600 shadow-sm text-primary-500' : 'text-surface-400 hover:text-surface-600 dark:hover:text-surface-300'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+          </button>
+        </div>
+        <button @click="openCreateModal" class="px-4 py-2 bg-primary-500 text-white text-sm font-semibold rounded-lg hover:bg-primary-600 transition-all flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          {{ $t('categories.addCategory') }}
+        </button>
+      </div>
     </div>
 
     <!-- Loading -->
@@ -31,8 +51,8 @@
       <button @click="openCreateModal" class="px-4 py-2 bg-primary-500 text-white text-sm rounded-lg">{{ $t('categories.addCategory') }}</button>
     </div>
 
-    <!-- Table -->
-    <div v-else class="bg-white dark:bg-surface-800 rounded-2xl shadow-card overflow-hidden">
+    <!-- List View (Table) -->
+    <div v-if="viewMode === 'list'" class="bg-white dark:bg-surface-800 rounded-2xl shadow-card overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead>
@@ -67,6 +87,27 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Grid View (Cards) -->
+    <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+      <div v-for="cat in categories" :key="cat._id"
+        class="bg-white dark:bg-surface-800 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-200 p-5 text-center group cursor-pointer border border-surface-100 dark:border-surface-700 hover:border-primary-200 dark:hover:border-primary-800"
+        @click="openEditModal(cat)">
+        <div class="w-14 h-14 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/30 dark:to-primary-800/30 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3 group-hover:scale-110 transition-transform duration-200">
+          {{ cat.icon }}
+        </div>
+        <h3 class="text-sm font-semibold text-surface-800 dark:text-white truncate">{{ cat.name }}</h3>
+        <p class="text-[10px] text-surface-400 mt-1">{{ formatDate(cat.createdAt) }}</p>
+        <div class="mt-3 pt-3 border-t border-surface-100 dark:border-surface-700 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button @click.stop="openEditModal(cat)" class="p-1.5 text-primary-500 hover:text-primary-600 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors" :title="$t('common.edit')">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </button>
+          <button @click.stop="confirmDelete(cat)" class="p-1.5 text-red-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors" :title="$t('common.delete')">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -163,6 +204,7 @@ interface Category {
 const categories = ref<Category[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
+const viewMode = ref<'grid' | 'list'>('grid')
 
 // Modal
 const showModal = ref(false)

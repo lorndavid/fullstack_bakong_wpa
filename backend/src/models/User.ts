@@ -1,11 +1,17 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+export interface IPermission {
+  resource: string;
+  actions: string[];
+}
+
 export interface IUserDocument extends Document {
   name: string;
   email: string;
   password?: string;
   role: 'user' | 'admin';
+  permissions?: IPermission[];
   googleId?: string;
   avatar?: string;
   provider: string;
@@ -38,6 +44,13 @@ const userSchema = new Schema<IUserDocument>(
       type: String,
       enum: ['user', 'admin'],
       default: 'user',
+    },
+    permissions: {
+      type: [{
+        resource: { type: String, required: true },
+        actions: [{ type: String }],
+      }],
+      default: [],
     },
     googleId: {
       type: String,
