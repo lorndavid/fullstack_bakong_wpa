@@ -90,6 +90,105 @@
         </div>
         <div class="flex items-center space-x-2">
           <LanguageSwitcher />
+
+          <!-- Low Stock Alert -->
+          <div class="relative" ref="lowStockRef">
+            <button @click="toggleLowStock" class="relative p-2.5 text-surface-500 hover:text-amber-600 dark:hover:text-amber-400 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+              :title="'Low Stock Products'" :class="{ 'text-amber-500': lowStockCount > 0 }">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <!-- Red badge -->
+              <span v-if="lowStockCount > 0"
+                class="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-sm animate-scale-badge">
+                {{ lowStockCount > 99 ? '99+' : lowStockCount }}
+              </span>
+            </button>
+
+            <!-- Dropdown Panel -->
+            <Transition name="dropdown">
+              <div v-if="showLowStock"
+                class="absolute right-0 top-full mt-2 w-[380px] sm:w-[420px] bg-white dark:bg-surface-800 rounded-2xl shadow-2xl border border-surface-200 dark:border-surface-700 overflow-hidden z-50">
+                <div class="px-5 py-3.5 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between bg-surface-50 dark:bg-surface-800/80">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
+                      <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-bold text-surface-800 dark:text-white">Low Stock Alert</h4>
+                      <p class="text-[11px] text-surface-400">{{ lowStockCount }} product{{ lowStockCount !== 1 ? 's' : '' }} at or below {{ lowStockThreshold }} units</p>
+                    </div>
+                  </div>
+                  <button @click="showLowStock = false" class="p-1.5 text-surface-400 hover:text-surface-600 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                </div>
+
+                <!-- Loading -->
+                <div v-if="lowStockLoading" class="p-8 text-center">
+                  <div class="inline-block w-6 h-6 border-3 border-amber-200 border-t-amber-500 rounded-full animate-spin"></div>
+                  <p class="text-xs text-surface-400 mt-2">Loading...</p>
+                </div>
+
+                <!-- Empty -->
+                <div v-else-if="lowStockProducts.length === 0" class="p-8 text-center">
+                  <svg class="w-10 h-10 mx-auto text-surface-300 dark:text-surface-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <p class="text-sm text-surface-500">All products are well-stocked!</p>
+                </div>
+
+                <!-- Product List -->
+                <div v-else class="max-h-[380px] overflow-y-auto divide-y divide-surface-100 dark:divide-surface-700">
+                  <div
+                    v-for="product in lowStockProducts"
+                    :key="product._id"
+                    class="flex items-center gap-3 px-5 py-3 hover:bg-surface-50 dark:hover:bg-surface-700/50 cursor-pointer transition-all group"
+                    @click="editProduct(product)">
+                    <!-- Image -->
+                    <div class="w-11 h-11 rounded-xl overflow-hidden bg-surface-100 dark:bg-surface-700 flex-shrink-0 border border-surface-200 dark:border-surface-600">
+                      <img v-if="product.images && product.images[0]" :src="product.images[0].secure_url" :alt="product.name" class="w-full h-full object-cover" />
+                      <div v-else class="w-full h-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                      </div>
+                    </div>
+                    <!-- Info -->
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-surface-800 dark:text-white truncate group-hover:text-primary-500 transition-colors">{{ product.name }}</p>
+                      <p class="text-xs text-surface-400 truncate">{{ getCategoryLabel(product.category) }} · ${{ product.price.toFixed(2) }}</p>
+                    </div>
+                    <!-- Stock Badge -->
+                    <div class="flex-shrink-0">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                        :class="product.stock <= 0
+                          ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                          : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                        </svg>
+                        {{ product.stock }}
+                      </span>
+                    </div>
+                    <!-- Edit icon -->
+                    <svg class="w-4 h-4 text-surface-300 dark:text-surface-600 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- View All button -->
+                <div v-if="lowStockProducts.length > 0" class="px-5 py-3 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50">
+                  <router-link to="/products" @click="showLowStock = false"
+                    class="block w-full text-center py-2 text-sm font-medium text-primary-500 hover:text-primary-600 bg-white dark:bg-surface-700 rounded-lg border border-surface-200 dark:border-surface-600 hover:bg-surface-50 dark:hover:bg-surface-600 transition-all">
+                    View All Products
+                  </router-link>
+                </div>
+              </div>
+            </Transition>
+          </div>
+
           <button @click="toggleTheme" class="p-2.5 text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
             :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
             <svg v-if="isDark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -107,6 +206,7 @@
           </div>
         </div>
       </header>
+
 
       <!-- Mobile Sidebar -->
       <div v-if="showMobileMenu" @click="showMobileMenu = false" class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"></div>
@@ -185,11 +285,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, inject, type Ref } from 'vue'
+import { computed, ref, inject, onMounted, onUnmounted, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useI18n } from 'vue-i18n'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
+import api from '@/services/api'
 
 const siteLogo = inject('siteLogo', ref('')) as Ref<string>
 const { t, locale } = useI18n()
@@ -203,6 +304,70 @@ const isDark = ref(localStorage.getItem('theme') === 'dark')
 const avatarError = ref(false)
 const avatarErrorMob = ref(false)
 const avatarMobile = ref(false)
+
+// ─── Low Stock Alert ──────────────────────────────────────────
+const showLowStock = ref(false)
+const lowStockCount = ref(0)
+const lowStockLoading = ref(false)
+const lowStockProducts = ref<any[]>([])
+const lowStockThreshold = ref(5)
+const lowStockRef = ref<HTMLElement | null>(null)
+
+async function fetchLowStock() {
+  try {
+    // Fetch settings first for threshold
+    const settingsRes: any = await api.get('/settings')
+    lowStockThreshold.value = settingsRes.settings?.lowStockThreshold || 5
+
+    const res: any = await api.get(`/products/low-stock/overview?threshold=${lowStockThreshold.value}`)
+    lowStockCount.value = res.count || 0
+    lowStockProducts.value = res.products || []
+  } catch {
+    lowStockCount.value = 0
+    lowStockProducts.value = []
+  }
+}
+
+async function toggleLowStock() {
+  showLowStock.value = !showLowStock.value
+  if (showLowStock.value) {
+    lowStockLoading.value = true
+    await fetchLowStock()
+    lowStockLoading.value = false
+  }
+}
+
+function getCategoryLabel(cat: any): string {
+  if (!cat) return 'N/A'
+  if (typeof cat === 'object') return cat.name || 'N/A'
+  return 'N/A'
+}
+
+function editProduct(product: any) {
+  showLowStock.value = false
+  router.push(`/products?edit=${product._id}`)
+}
+
+// Close dropdown on outside click
+function handleOutsideClick(e: MouseEvent) {
+  if (lowStockRef.value && !lowStockRef.value.contains(e.target as Node)) {
+    showLowStock.value = false
+  }
+}
+
+let lowStockInterval: ReturnType<typeof setInterval>
+
+onMounted(() => {
+  document.addEventListener('click', handleOutsideClick)
+  fetchLowStock()
+  // Refresh badge every 30s to keep count current
+  lowStockInterval = setInterval(fetchLowStock, 30000)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleOutsideClick)
+  clearInterval(lowStockInterval)
+})
 
 interface NavItem {
   path?: string
@@ -269,3 +434,30 @@ function toggleTheme() {
   document.documentElement.classList.toggle('dark')
 }
 </script>
+
+<style scoped>
+.animate-scale-badge {
+  animation: scaleBadge 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+@keyframes scaleBadge {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* Dropdown transitions */
+.dropdown-enter-active {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dropdown-leave-active {
+  transition: all 0.15s ease-in;
+}
+.dropdown-enter-from {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.96);
+}
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+}
+</style>

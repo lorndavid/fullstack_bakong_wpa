@@ -22,6 +22,8 @@ export interface ISettingsDocument extends Document {
     endTime: Date;
     products: mongoose.Types.ObjectId[];
   };
+  // Low stock alert threshold
+  lowStockThreshold: number;
   updatedAt: Date;
 }
 
@@ -52,6 +54,10 @@ const settingsSchema = new Schema<ISettingsDocument>(
     flashSale: {
       endTime: { type: Date },
       products: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
+    },
+    lowStockThreshold: {
+      type: Number,
+      default: 5,
     },
   },
   {

@@ -334,8 +334,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import api from '@/services/api'
+
+const route = useRoute()
 
 interface Category {
   _id: string
@@ -413,9 +416,26 @@ function getCategoryName(cat: string | Category | null | undefined): string {
   return found?.name || 'N/A'
 }
 
-onMounted(() => {
-  fetchCategories()
-  fetchProducts()
+onMounted(async () => {
+  await fetchCategories()
+  await fetchProducts()
+  
+  // Handle edit query param (from low stock alert click)
+  const editId = route.query.edit as string
+  if (editId) {
+    const product = products.value.find(p => p._id === editId)
+    if (product) {
+      openEditModal(product)
+    } else {
+      // Product might not be in current page, fetch individually
+      try {
+        const data: any = await api.get(`/products/${editId}`)
+        if (data.product) {
+          openEditModal(data.product)
+        }
+      } catch {}
+    }
+  }
 })
 
 async function fetchCategories() {
@@ -461,6 +481,21 @@ function goToPage(page: number) {
   pagination.value.page = page
   fetchProducts()
 }
+
+// Watch for edit query param (from low stock alert click)
+watch(() => route.query.edit, async (editId) => {
+  if (editId && !showPanel.value) {
+    const product = products.value.find(p => p._id === editId)
+    if (product) {
+      openEditModal(product)
+    } else {
+      try {
+        const data: any = await api.get(`/products/${editId}`)
+        if (data.product) openEditModal(data.product)
+      } catch {}
+    }
+  }
+})
 
 function handleFileChange(event: Event) {
   const target = event.target as HTMLInputElement

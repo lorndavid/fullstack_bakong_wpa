@@ -75,6 +75,7 @@ const createOrder = async (
       status: paymentMethod === 'cod' ? 'confirmed' : 'pending',
     });
 
+    // Deduct stock for all payment methods (restored if cancelled)
     for (const item of products) {
       await Product.findByIdAndUpdate(item.productId, {
         $inc: { stock: -item.quantity, sold: item.quantity },

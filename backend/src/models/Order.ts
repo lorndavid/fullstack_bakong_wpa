@@ -29,7 +29,7 @@ export interface IOrderDocument extends Document {
     fullName: string;
     phone: string;
   };
-  paymentMethod: 'khqr' | 'cod';
+  paymentMethod: 'khqr' | 'cod' | 'aba_payway';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -95,7 +95,7 @@ const orderSchema = new Schema<IOrderDocument>(
     },
     paymentMethod: {
       type: String,
-      enum: ['khqr', 'cod'],
+      enum: ['khqr', 'cod', 'aba_payway'],
       required: true,
     },
   },

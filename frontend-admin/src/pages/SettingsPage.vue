@@ -61,6 +61,25 @@
         </div>
       </div>
 
+      <!-- Low Stock Alert -->
+      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-4">
+        <h3 class="text-lg font-bold text-surface-800 dark:text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Low Stock Alert
+        </h3>
+        <p class="text-sm text-surface-500">Set the stock threshold for low stock alerts. Products with stock at or below this number will trigger a notification in the top bar.</p>
+        <div class="max-w-xs">
+          <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">Threshold (units)</label>
+          <div class="flex items-center gap-3">
+            <input v-model.number="form.lowStockThreshold" type="number" min="1" max="100"
+              class="w-24 px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm font-semibold text-center focus:ring-2 focus:ring-primary-500/50 transition-all" />
+            <span class="text-sm text-surface-400">or fewer units</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Flash Sale -->
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-4">
         <h3 class="text-lg font-bold text-surface-800 dark:text-white flex items-center gap-2">
@@ -203,6 +222,7 @@ interface Settings {
   logo?: { public_id: string; secure_url: string }
   siteName: string
   siteDescription: string
+  lowStockThreshold: number
   flashSale?: { endTime: string; products: string[] }
 }
 
@@ -223,6 +243,7 @@ const activeTextTab = ref<'en' | 'km'>('en')
 const form = reactive({
   siteName: '',
   siteDescription: '',
+  lowStockThreshold: 5,
   colors: {
     primary: '#0055A4',
     accent: '#00C853',
@@ -314,6 +335,7 @@ async function fetchSettings() {
     }
     form.textOverrides = { ...(s.textOverrides || {}) }
     form.logoUrl = s.logo?.secure_url || ''
+    form.lowStockThreshold = s.lowStockThreshold || 5
     
     // Parse flash sale
     if (s.flashSale) {
@@ -376,6 +398,8 @@ function resetForm() {
     } else {
       form.flashSale = { endTime: '', products: [] }
     }
+
+    form.lowStockThreshold = originalSettings.lowStockThreshold || 5;
     
     logoPreview.value = null
     selectedLogo.value = null
@@ -390,6 +414,7 @@ async function saveSettings() {
     const formData = new FormData()
     formData.append('siteName', form.siteName)
     formData.append('siteDescription', form.siteDescription)
+    formData.append('lowStockThreshold', String(form.lowStockThreshold))
     formData.append('colors', JSON.stringify(form.colors))
     
     // Add Flash sale

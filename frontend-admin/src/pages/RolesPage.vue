@@ -111,95 +111,107 @@
       </div>
     </div>
 
-    <!-- Create Admin Modal -->
-    <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="showCreateModal = false"></div>
-      <div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-2xl w-full max-w-lg animate-scale-in">
-        <!-- Modal Header -->
-        <div class="px-6 py-4 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between">
+    <!-- Slide-in Panel: Create Admin -->
+    <div v-if="showCreateModal" class="fixed inset-0 z-50" @click.self="showCreateModal = false">
+      <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="showCreateModal = false"></div>
+      <div class="fixed top-0 right-0 h-full w-full max-w-xl bg-white dark:bg-surface-800 shadow-2xl animate-slide-in-right flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-surface-200 dark:border-surface-700 flex-shrink-0">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-sm">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
               </svg>
             </div>
-            <h3 class="text-lg font-bold text-surface-800 dark:text-white">{{ $t('roles.createAdmin') }}</h3>
+            <div>
+              <h3 class="text-lg font-bold text-surface-800 dark:text-white">{{ $t('roles.createAdmin') }}</h3>
+              <p class="text-xs text-surface-400">Create a new admin user with permissions</p>
+            </div>
           </div>
-          <button @click="showCreateModal = false" class="p-1.5 text-surface-400 hover:text-surface-600 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700">
+          <button @click="showCreateModal = false" class="p-2 text-surface-400 hover:text-surface-600 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
 
-        <form @submit.prevent="createAdminUser" class="p-6 space-y-5">
-          <!-- Name -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('roles.adminName') }}</label>
-            <div class="relative">
-              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-              <input v-model="createForm.name" required class="w-full pl-10 pr-4 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500" />
+        <!-- Form Body -->
+        <div class="flex-1 overflow-y-auto px-6 py-5">
+          <form @submit.prevent="createAdminUser" class="space-y-5">
+            <!-- Name -->
+            <div>
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('roles.adminName') }}</label>
+              <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <input v-model="createForm.name" required class="w-full pl-10 pr-4 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500" />
+              </div>
             </div>
-          </div>
-          <!-- Email -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('roles.adminEmail') }}</label>
-            <div class="relative">
-              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              <input v-model="createForm.email" type="email" required class="w-full pl-10 pr-4 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500" />
+            <!-- Email -->
+            <div>
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('roles.adminEmail') }}</label>
+              <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <input v-model="createForm.email" type="email" required class="w-full pl-10 pr-4 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500" />
+              </div>
             </div>
-          </div>
-          <!-- Password -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('roles.adminPassword') }}</label>
-            <div class="relative">
-              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-              <input v-model="createForm.password" type="password" required minlength="6" class="w-full pl-10 pr-4 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500" />
+            <!-- Password -->
+            <div>
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('roles.adminPassword') }}</label>
+              <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <input v-model="createForm.password" type="password" required minlength="6" class="w-full pl-10 pr-4 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500" />
+              </div>
             </div>
-          </div>
 
-          <!-- Permissions -->
-          <div class="border-t border-surface-200 dark:border-surface-700 pt-4">
-            <div class="flex items-center justify-between mb-3">
-              <label class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ $t('roles.permissions') }}</label>
-              <button type="button" @click="toggleAllPermissions" class="text-xs text-primary-500 hover:text-primary-600 font-medium">
-                {{ allPermissionsSelected ? $t('roles.deselectAll') : $t('roles.selectAll') }}
-              </button>
+            <!-- Permissions -->
+            <div class="border-t border-surface-200 dark:border-surface-700 pt-4">
+              <div class="flex items-center justify-between mb-3">
+                <label class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ $t('roles.permissions') }}</label>
+                <button type="button" @click="toggleAllPermissions" class="text-xs text-primary-500 hover:text-primary-600 font-medium">
+                  {{ allPermissionsSelected ? $t('roles.deselectAll') : $t('roles.selectAll') }}
+                </button>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <label v-for="perm in permissionDefs" :key="perm.resource"
+                  class="flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all"
+                  :class="selectedPermissions.includes(perm.resource)
+                    ? 'border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20'
+                    : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'">
+                  <input type="checkbox" :checked="selectedPermissions.includes(perm.resource)"
+                    @change="togglePermission(perm.resource)"
+                    class="w-4 h-4 text-primary-500 rounded focus:ring-primary-500" />
+                  <div class="flex-1 min-w-0">
+                    <span class="text-sm font-medium text-surface-700 dark:text-surface-200 block truncate">{{ perm.label }}</span>
+                    <span class="text-xs text-surface-400 truncate">{{ perm.description }}</span>
+                  </div>
+                </label>
+              </div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <label v-for="perm in permissionDefs" :key="perm.resource"
-                class="flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all"
-                :class="selectedPermissions.includes(perm.resource)
-                  ? 'border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20'
-                  : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'">
-                <input type="checkbox" :checked="selectedPermissions.includes(perm.resource)"
-                  @change="togglePermission(perm.resource)"
-                  class="w-4 h-4 text-primary-500 rounded focus:ring-primary-500" />
-                <div class="flex-1 min-w-0">
-                  <span class="text-sm font-medium text-surface-700 dark:text-surface-200 block truncate">{{ perm.label }}</span>
-                  <span class="text-xs text-surface-400 truncate">{{ perm.description }}</span>
-                </div>
-              </label>
-            </div>
-          </div>
 
-          <div v-if="createError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg">{{ createError }}</div>
+            <div v-if="createError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3.5 rounded-xl">{{ createError }}</div>
+          </form>
+        </div>
 
-          <div class="flex gap-3 pt-2">
-            <button type="button" @click="showCreateModal = false" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-xl text-sm font-medium hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors">
-              {{ $t('common.cancel') }}
-            </button>
-            <button type="submit" :disabled="creating" class="flex-1 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl text-sm font-medium hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 transition-all shadow-sm">
-              {{ creating ? $t('common.saving') : $t('roles.createAdmin') }}
-            </button>
-          </div>
-        </form>
+        <!-- Footer Actions -->
+        <div class="flex items-center gap-3 px-6 py-4 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50 flex-shrink-0">
+          <button type="button" @click="showCreateModal = false" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-white dark:hover:bg-surface-700 transition-all">
+            {{ $t('common.cancel') }}
+          </button>
+          <button type="submit" @click="createAdminUser" :disabled="creating" class="flex-1 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg text-sm font-medium hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 transition-all shadow-sm">
+            <span v-if="creating" class="flex items-center justify-center gap-2">
+              <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              {{ $t('common.saving') }}
+            </span>
+            <span v-else>{{ $t('roles.createAdmin') }}</span>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Edit Permissions Modal -->
-    <div v-if="editingAdmin" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="editingAdmin = null"></div>
-      <div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-2xl w-full max-w-lg animate-scale-in">
-        <div class="px-6 py-4 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between">
+    <!-- Slide-in Panel: Edit Permissions -->
+    <div v-if="editingAdmin" class="fixed inset-0 z-50" @click.self="editingAdmin = null">
+      <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="editingAdmin = null"></div>
+      <div class="fixed top-0 right-0 h-full w-full max-w-xl bg-white dark:bg-surface-800 shadow-2xl animate-slide-in-right flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-surface-200 dark:border-surface-700 flex-shrink-0">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-full overflow-hidden bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center">
               <span class="text-sm font-bold text-purple-600 dark:text-purple-400">{{ editingAdmin.name?.charAt(0).toUpperCase() }}</span>
@@ -209,74 +221,86 @@
               <p class="text-xs text-surface-400">{{ editingAdmin.name }} · {{ editingAdmin.email }}</p>
             </div>
           </div>
-          <button @click="editingAdmin = null" class="p-1.5 text-surface-400 hover:text-surface-600 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700">
+          <button @click="editingAdmin = null" class="p-2 text-surface-400 hover:text-surface-600 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
 
-        <form @submit.prevent="savePermissions" class="p-6 space-y-4">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ $t('roles.permissions') }}</label>
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-surface-400">{{ $t('roles.access') }}:</span>
-              <button type="button" @click="editAllPermissions = !editAllPermissions"
-                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-                :class="editAllPermissions ? 'bg-primary-500' : 'bg-surface-300 dark:bg-surface-600'">
-                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform" :class="editAllPermissions ? 'translate-x-6' : 'translate-x-1'"></span>
-              </button>
-              <span class="text-xs font-medium" :class="editAllPermissions ? 'text-accent-500' : 'text-surface-400'">{{ editAllPermissions ? $t('roles.fullAccess') : $t('roles.limitedAccess') }}</span>
-            </div>
-          </div>
-
-          <div v-if="!editAllPermissions" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <label v-for="perm in permissionDefs" :key="perm.resource"
-              class="flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all"
-              :class="editPermsList.includes(perm.resource)
-                ? 'border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20'
-                : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'">
-              <input type="checkbox" :checked="editPermsList.includes(perm.resource)"
-                @change="toggleEditPermission(perm.resource)"
-                class="w-4 h-4 text-primary-500 rounded focus:ring-primary-500" />
-              <div class="flex-1 min-w-0">
-                <span class="text-sm font-medium text-surface-700 dark:text-surface-200 block truncate">{{ perm.label }}</span>
-                <span class="text-xs text-surface-400 truncate">{{ perm.description }}</span>
+        <!-- Form Body -->
+        <div class="flex-1 overflow-y-auto px-6 py-5">
+          <form @submit.prevent="savePermissions" class="space-y-4">
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ $t('roles.permissions') }}</label>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-surface-400">{{ $t('roles.access') }}:</span>
+                <button type="button" @click="editAllPermissions = !editAllPermissions"
+                  class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                  :class="editAllPermissions ? 'bg-primary-500' : 'bg-surface-300 dark:bg-surface-600'">
+                  <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform" :class="editAllPermissions ? 'translate-x-6' : 'translate-x-1'"></span>
+                </button>
+                <span class="text-xs font-medium" :class="editAllPermissions ? 'text-accent-500' : 'text-surface-400'">{{ editAllPermissions ? $t('roles.fullAccess') : $t('roles.limitedAccess') }}</span>
               </div>
-            </label>
-          </div>
-          <div v-else class="p-4 bg-accent-50 dark:bg-accent-900/20 rounded-xl text-center">
-            <svg class="w-8 h-8 mx-auto text-accent-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
-            <p class="text-sm text-accent-700 dark:text-accent-400 font-medium">{{ $t('roles.fullAccess') }}</p>
-            <p class="text-xs text-accent-500 mt-1">{{ $t('roles.selectAll') }}</p>
-          </div>
+            </div>
 
-          <div v-if="permError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg">{{ permError }}</div>
+            <div v-if="!editAllPermissions" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <label v-for="perm in permissionDefs" :key="perm.resource"
+                class="flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all"
+                :class="editPermsList.includes(perm.resource)
+                  ? 'border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20'
+                  : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'">
+                <input type="checkbox" :checked="editPermsList.includes(perm.resource)"
+                  @change="toggleEditPermission(perm.resource)"
+                  class="w-4 h-4 text-primary-500 rounded focus:ring-primary-500" />
+                <div class="flex-1 min-w-0">
+                  <span class="text-sm font-medium text-surface-700 dark:text-surface-200 block truncate">{{ perm.label }}</span>
+                  <span class="text-xs text-surface-400 truncate">{{ perm.description }}</span>
+                </div>
+              </label>
+            </div>
+            <div v-else class="p-4 bg-accent-50 dark:bg-accent-900/20 rounded-xl text-center">
+              <svg class="w-8 h-8 mx-auto text-accent-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+              <p class="text-sm text-accent-700 dark:text-accent-400 font-medium">{{ $t('roles.fullAccess') }}</p>
+              <p class="text-xs text-accent-500 mt-1">{{ $t('roles.selectAll') }}</p>
+            </div>
 
-          <div class="flex gap-3 pt-2">
-            <button type="button" @click="editingAdmin = null" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-xl text-sm font-medium hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors">
-              {{ $t('common.cancel') }}
-            </button>
-            <button type="submit" :disabled="savingPerms" class="flex-1 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl text-sm font-medium hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 transition-all shadow-sm">
-              {{ savingPerms ? $t('common.saving') : $t('common.save') }}
-            </button>
-          </div>
-        </form>
+            <div v-if="permError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3.5 rounded-xl">{{ permError }}</div>
+          </form>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex items-center gap-3 px-6 py-4 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50 flex-shrink-0">
+          <button type="button" @click="editingAdmin = null" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-white dark:hover:bg-surface-700 transition-all">
+            {{ $t('common.cancel') }}
+          </button>
+          <button type="submit" @click="savePermissions" :disabled="savingPerms" class="flex-1 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg text-sm font-medium hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 transition-all shadow-sm">
+            <span v-if="savingPerms" class="flex items-center justify-center gap-2">
+              <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              {{ $t('common.saving') }}
+            </span>
+            <span v-else>{{ $t('common.save') }}</span>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Delete Confirmation -->
-    <div v-if="deletingAdmin" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="deletingAdmin = null"></div>
-      <div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-xl w-full max-w-sm p-6 animate-scale-in text-center">
-        <div class="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+    <!-- Slide-in Panel: Delete Confirmation -->
+    <div v-if="deletingAdmin" class="fixed inset-0 z-50">
+      <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="deletingAdmin = null"></div>
+      <div class="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-surface-800 shadow-2xl animate-slide-in-right flex flex-col">
+        <div class="flex-1 flex flex-col items-center justify-center px-8 text-center">
+          <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-surface-800 dark:text-white mb-2">{{ $t('roles.deleteTitle') }}</h3>
+          <p class="text-sm text-surface-500 mb-8" v-html="$t('roles.deleteDesc', { name: deletingAdmin.name })"></p>
         </div>
-        <h3 class="text-lg font-bold text-surface-800 dark:text-white mb-2">{{ $t('roles.deleteTitle') }}</h3>
-        <p class="text-sm text-surface-500 mb-6" v-html="$t('roles.deleteDesc', { name: deletingAdmin.name })"></p>
-        <div class="flex gap-3">
-          <button @click="deletingAdmin = null" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-surface-50">{{ $t('common.cancel') }}</button>
-          <button @click="deleteAdmin" :disabled="deleting" class="flex-1 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50">{{ deleting ? $t('common.deleting') : $t('common.delete') }}</button>
+        <div class="flex items-center gap-3 px-6 py-4 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50">
+          <button @click="deletingAdmin = null" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-white dark:hover:bg-surface-700 transition-all">{{ $t('common.cancel') }}</button>
+          <button @click="deleteAdmin" :disabled="deleting" class="flex-1 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50 transition-all shadow-sm">
+            {{ deleting ? $t('common.deleting') : $t('common.delete') }}
+          </button>
         </div>
       </div>
     </div>
@@ -495,3 +519,19 @@ function formatDate(dateStr: string): string {
   })
 }
 </script>
+
+<style scoped>
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+</style>

@@ -283,6 +283,31 @@ const deleteProduct = async (
   }
 };
 
+const getLowStockProducts = async (
+  _req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const settings = await Settings.findOne();
+    const threshold = parseInt(_req.query.threshold as string) || settings?.lowStockThreshold || 5;
+
+    const products = await Product.find({ stock: { $lte: threshold } })
+      .populate('category', 'name icon')
+      .sort({ stock: 1 })
+      .limit(50);
+
+    res.json({
+      success: true,
+      products,
+      count: products.length,
+      threshold,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getRelatedProducts = async (
   req: AuthRequest,
   res: Response,
@@ -319,4 +344,5 @@ export {
   updateProduct,
   deleteProduct,
   getRelatedProducts,
+  getLowStockProducts,
 };

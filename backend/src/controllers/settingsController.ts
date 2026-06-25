@@ -53,6 +53,10 @@ const updateSettings = async (
       };
     }
 
+    if (req.body.lowStockThreshold !== undefined) {
+      settings.lowStockThreshold = parseInt(req.body.lowStockThreshold, 10) || 5;
+    }
+
     // Handle logo upload
     if (req.file) {
       try {

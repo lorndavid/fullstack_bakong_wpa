@@ -2,6 +2,8 @@
   <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
     <!-- KHQR Bottom Sheet -->
     <KhqrCheckoutSheet />
+    <!-- ABA PayWay Bottom Sheet -->
+    <AbaKhqrCheckout />
 
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-xl sm:text-2xl font-bold text-surface-800 dark:text-white">{{ $t('checkout.title') }}</h1>
@@ -106,6 +108,24 @@
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
         <h2 class="text-lg font-bold text-surface-800 dark:text-white mb-4">{{ $t('checkout.choosePayment') }}</h2>
         <div class="space-y-3">
+          <!-- ABA PayWay -->
+          <label class="flex items-center p-3 xs:p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
+            :class="paymentMethod === 'aba_payway' 
+              ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20' 
+              : 'border-surface-200 dark:border-surface-600 hover:border-blue-300'">
+            <input type="radio" v-model="paymentMethod" value="aba_payway" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
+            <div class="ml-3 flex items-center gap-3">
+              <div class="w-10 h-10 xs:w-12 xs:h-12 bg-[#003288] rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-white font-bold text-sm">ABA</span>
+              </div>
+              <div class="min-w-0">
+                <p class="font-semibold text-surface-800 dark:text-white text-sm xs:text-base">ABA PayWay</p>
+                <p class="text-xs text-surface-500">Pay with ABA KHQR, Stripe-like checkout</p>
+              </div>
+            </div>
+          </label>
+
+          <!-- Bakong KHQR -->
           <label class="flex items-center p-3 xs:p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
             :class="paymentMethod === 'khqr' 
               ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
@@ -122,6 +142,7 @@
             </div>
           </label>
 
+          <!-- COD -->
           <label class="flex items-center p-3 xs:p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
             :class="paymentMethod === 'cod' 
               ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
@@ -157,6 +178,7 @@ import { useToast } from '@/composables/useToast'
 import { usePaymentStore } from '@/stores/payment.store'
 import { useI18n } from 'vue-i18n'
 import KhqrCheckoutSheet from '@/components/khqr/KhqrCheckoutSheet.vue'
+import AbaKhqrCheckout from '@/components/khqr/AbaKhqrCheckout.vue'
 import api from '@/services/api'
 
 const { t } = useI18n()
@@ -211,7 +233,13 @@ async function placeOrder() {
 
     const order = res.order
 
-    if (paymentMethod.value === 'khqr') {
+    if (paymentMethod.value === 'aba_payway') {
+      // Open the ABA PayWay checkout bottom sheet
+      paymentStore.abaOpenSheet({
+        orderId: order._id,
+        amount: order.total,
+      })
+    } else if (paymentMethod.value === 'khqr') {
       // Open the KHQR checkout bottom sheet
       paymentStore.openSheet({
         orderId: order._id,

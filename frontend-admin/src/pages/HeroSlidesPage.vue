@@ -78,95 +78,110 @@
       </div>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="closeModal">
-      <div class="fixed inset-0 bg-black/50" @click="closeModal"></div>
-      <div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-scale-in">
-        <div class="sticky top-0 bg-white dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 px-6 py-4 flex items-center justify-between z-10">
-          <h3 class="text-lg font-bold text-surface-800 dark:text-white">{{ editingSlide ? 'Edit Slide' : 'Add Slide' }}</h3>
-          <button @click="closeModal" class="p-1 text-surface-400 hover:text-surface-600">
+    <!-- Slide-in Panel: Create/Edit Slide -->
+    <div v-if="showModal" class="fixed inset-0 z-50" @click.self="closeModal">
+      <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="closeModal"></div>
+      <div class="fixed top-0 right-0 h-full w-full max-w-xl bg-white dark:bg-surface-800 shadow-2xl animate-slide-in-right flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-surface-200 dark:border-surface-700 flex-shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-sm">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-surface-800 dark:text-white">{{ editingSlide ? 'Edit Slide' : 'Add Slide' }}</h3>
+              <p class="text-xs text-surface-400">{{ editingSlide ? 'Update hero slide details' : 'Create a new hero slide' }}</p>
+            </div>
+          </div>
+          <button @click="closeModal" class="p-2 text-surface-400 hover:text-surface-600 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
-        <form @submit.prevent="saveSlide" class="p-6 space-y-4">
-          <!-- Image Upload -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">Slide Image *</label>
-            <input ref="fileInput" type="file" accept="image/*" @change="handleFileChange"
-              class="w-full text-sm text-surface-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 dark:file:bg-primary-900/30 file:text-primary-600 dark:file:text-primary-400 hover:file:bg-primary-100" />
-            <p class="text-xs text-surface-400 mt-1">Recommended: 1920x600px or similar landscape ratio</p>
-          </div>
-          <!-- Image Preview -->
-          <div v-if="imagePreview || (editingSlide && editingSlide.image?.secure_url)" class="relative w-full aspect-video rounded-lg overflow-hidden border border-surface-200 dark:border-surface-600">
-            <img :src="imagePreview || editingSlide?.image?.secure_url" class="w-full h-full object-cover" />
-            <button v-if="imagePreview" type="button" @click="removeImage" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600">×</button>
-          </div>
 
-          <!-- Title -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">Title</label>
-            <input v-model="form.title" maxlength="100" class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" placeholder="Shop Smarter, Save Bigger" />
-          </div>
-          <!-- Subtitle -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">Subtitle <span class="text-surface-400 font-normal">(badge text)</span></label>
-            <input v-model="form.subtitle" maxlength="100" class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" placeholder="Summer Sale 2024" />
-          </div>
-          <!-- Description -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">Description</label>
-            <textarea v-model="form.description" rows="2" maxlength="200" class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 resize-none"></textarea>
-          </div>
-          <!-- Link -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">Link <span class="text-surface-400 font-normal">(e.g., /search)</span></label>
-            <input v-model="form.link" class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" placeholder="/search" />
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <!-- Order -->
+        <!-- Form Body -->
+        <div class="flex-1 overflow-y-auto px-6 py-5">
+          <form @submit.prevent="saveSlide" class="space-y-5">
+            <!-- Image Upload -->
             <div>
-              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">Display Order</label>
-              <input v-model.number="form.order" type="number" min="0" class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" />
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">Slide Image *</label>
+              <input ref="fileInput" type="file" accept="image/*" @change="handleFileChange"
+                class="w-full text-sm text-surface-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 dark:file:bg-primary-900/30 file:text-primary-600 dark:file:text-primary-400 hover:file:bg-primary-100 transition-all" />
+              <p class="text-xs text-surface-400 mt-1.5">Recommended: 1920x600px or similar landscape ratio</p>
             </div>
-            <!-- Active -->
-            <div class="flex items-end pb-2">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input v-model="form.active" type="checkbox" class="w-4 h-4 text-primary-500 rounded focus:ring-primary-500" />
-                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">Active</span>
-              </label>
+            <!-- Image Preview -->
+            <div v-if="imagePreview || (editingSlide && editingSlide.image?.secure_url)" class="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-surface-200 dark:border-surface-600">
+              <img :src="imagePreview || editingSlide?.image?.secure_url" class="w-full h-full object-cover" />
+              <button v-if="imagePreview" type="button" @click="removeImage" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 shadow-sm transition-all">×</button>
             </div>
-          </div>
 
-          <!-- Error -->
-          <div v-if="submitError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg">{{ submitError }}</div>
+            <!-- Title -->
+            <div>
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">Title</label>
+              <input v-model="form.title" maxlength="100" class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 transition-all" placeholder="Shop Smarter, Save Bigger" />
+            </div>
+            <!-- Subtitle -->
+            <div>
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">Subtitle <span class="text-surface-400 font-normal">(badge text)</span></label>
+              <input v-model="form.subtitle" maxlength="100" class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 transition-all" placeholder="Summer Sale 2024" />
+            </div>
+            <!-- Description -->
+            <div>
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">Description</label>
+              <textarea v-model="form.description" rows="2" maxlength="200" class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 resize-none transition-all"></textarea>
+            </div>
+            <!-- Link -->
+            <div>
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">Link <span class="text-surface-400 font-normal">(e.g., /search)</span></label>
+              <input v-model="form.link" class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 transition-all" placeholder="/search" />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <!-- Order -->
+              <div>
+                <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">Display Order</label>
+                <input v-model.number="form.order" type="number" min="0" class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 transition-all" />
+              </div>
+              <!-- Active -->
+              <div class="flex items-end pb-2">
+                <label class="flex items-center gap-2.5 cursor-pointer p-3 bg-surface-50 dark:bg-surface-700/30 rounded-lg">
+                  <input v-model="form.active" type="checkbox" class="w-4 h-4 text-primary-500 rounded focus:ring-primary-500" />
+                  <span class="text-sm font-medium text-surface-700 dark:text-surface-200">Active</span>
+                </label>
+              </div>
+            </div>
 
-          <div class="flex gap-3 pt-2">
-            <button type="button" @click="closeModal" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-surface-50 dark:hover:bg-surface-700">Cancel</button>
-            <button type="submit" :disabled="saving" class="flex-1 py-2.5 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 disabled:opacity-50">
-              <span v-if="saving" class="flex items-center justify-center gap-2">
-                <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                Saving...
-              </span>
-              <span v-else>{{ editingSlide ? 'Update' : 'Create' }} Slide</span>
-            </button>
-          </div>
-        </form>
+            <div v-if="submitError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3.5 rounded-xl">{{ submitError }}</div>
+          </form>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex items-center gap-3 px-6 py-4 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50 flex-shrink-0">
+          <button type="button" @click="closeModal" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-white dark:hover:bg-surface-700 transition-all">Cancel</button>
+          <button type="submit" @click="saveSlide" :disabled="saving" class="flex-1 py-2.5 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 disabled:opacity-50 transition-all shadow-sm">
+            <span v-if="saving" class="flex items-center justify-center gap-2">
+              <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              Saving...
+            </span>
+            <span v-else>{{ editingSlide ? 'Update' : 'Create' }} Slide</span>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Delete Confirmation -->
-    <div v-if="deletingSlide" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="fixed inset-0 bg-black/50" @click="deletingSlide = null"></div>
-      <div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-xl w-full max-w-sm p-6 animate-scale-in text-center">
-        <div class="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+    <!-- Slide-in Panel: Delete Confirmation -->
+    <div v-if="deletingSlide" class="fixed inset-0 z-50">
+      <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="deletingSlide = null"></div>
+      <div class="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-surface-800 shadow-2xl animate-slide-in-right flex flex-col">
+        <div class="flex-1 flex flex-col items-center justify-center px-8 text-center">
+          <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-surface-800 dark:text-white mb-2">Delete Slide</h3>
+          <p class="text-sm text-surface-500 mb-8">Are you sure you want to delete this slide? This action cannot be undone.</p>
+          <div v-if="deleteError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3.5 rounded-xl mb-4 w-full">{{ deleteError }}</div>
         </div>
-        <h3 class="text-lg font-bold text-surface-800 dark:text-white mb-2">Delete Slide</h3>
-        <p class="text-sm text-surface-500 mb-6">Are you sure you want to delete this slide? This action cannot be undone.</p>
-        <div v-if="deleteError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg mb-4">{{ deleteError }}</div>
-        <div class="flex gap-3">
-          <button @click="deletingSlide = null" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-surface-50">Cancel</button>
-          <button @click="deleteSlide" :disabled="deleting" class="flex-1 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50">
+        <div class="flex items-center gap-3 px-6 py-4 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50">
+          <button @click="deletingSlide = null" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-white dark:hover:bg-surface-700 transition-all">Cancel</button>
+          <button @click="deleteSlide" :disabled="deleting" class="flex-1 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50 transition-all shadow-sm">
             {{ deleting ? 'Deleting...' : 'Delete' }}
           </button>
         </div>
@@ -368,3 +383,19 @@ async function moveSlide(id: string, direction: 'up' | 'down') {
   }
 }
 </script>
+
+<style scoped>
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+</style>

@@ -98,6 +98,7 @@
             </svg>
             Promo
           </span>
+        </div>
         <div class="p-3 space-y-1">
           <h3 class="text-sm font-semibold text-surface-800 dark:text-white truncate">{{ product.name }}</h3>
           <div class="flex items-center gap-2">

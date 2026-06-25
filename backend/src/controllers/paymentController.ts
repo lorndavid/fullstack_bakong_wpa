@@ -1,15 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import Transaction from '../models/Transaction';
 import Order from '../models/Order';
+import QRCode from 'qrcode';
 import { createKHQR, checkTransactionStatus } from '../services/bakong';
 import { confirmPayment, paymentEvents } from '../services/paymentWatcher';
+import { createPayment as serviceCreatePayment, checkPaymentByTransaction, confirmPayment as serviceConfirmPayment } from '../modules/payment/payment.service';
 import { AuthRequest } from '../types';
 
 /**
  * POST /api/payment/create
- * Body: { amount: number, orderId: string }
- * Backend calls: GET https://api.bakong-api.online/khqr/create?amount=X&bakongid=...&merchantname=...
- * Returns: { qr, tran, md5, expiresIn: 300 }
+ * Body: { provider: 'BAKONG' | 'ABA_PAYWAY', amount: number, orderId: string }
  */
 const createPayment = async (
   req: AuthRequest,
@@ -17,7 +17,7 @@ const createPayment = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { amount, orderId } = req.body;
+    const { amount, orderId, provider } = req.body;
 
     if (!amount || amount <= 0) {
       res.status(400).json({ success: false, message: 'Invalid amount' });
@@ -28,31 +28,56 @@ const createPayment = async (
       return;
     }
 
-    // Expire any existing pending transactions for this order first
-    await Transaction.updateMany(
-      { orderId, status: 'PENDING' },
-      { status: 'EXPIRED' }
-    );
+    const paymentProvider = provider === 'ABA_PAYWAY' ? 'ABA_PAYWAY' as const : 'BAKONG' as const;
 
-    // Create KHQR via local Bakong SDK
+    if (paymentProvider === 'ABA_PAYWAY') {
+      const result = await serviceCreatePayment('ABA_PAYWAY', amount, orderId);
+
+      // Generate QR image from qr string for display
+      let qrImage = '';
+      try {
+        qrImage = await QRCode.toDataURL(result.paymentResult.qrString, {
+          width: 400,
+          margin: 2,
+          color: { dark: '#000000', light: '#ffffff' },
+        });
+      } catch {}
+
+      res.status(201).json({
+        success: true,
+        provider: 'ABA_PAYWAY',
+        qr: qrImage,
+        qrString: result.paymentResult.qrString,
+        tranId: result.paymentResult.tranId,
+        expiresIn: result.paymentResult.expireInSec,
+        transactionId: result.transaction._id,
+      });
+      return;
+    }
+
+    // Default: Bakong KHQR
     const khqrResult = await createKHQR(amount, orderId);
 
-    // Save transaction
     const transaction = await Transaction.create({
       orderId,
       amount,
+      provider: 'BAKONG',
       tran: khqrResult.tran,
+      tranId: khqrResult.tran,
       md5: khqrResult.md5,
       qr: khqrResult.qr,
       status: 'PENDING',
+      expireAt: new Date(Date.now() + 180 * 1000),
     });
 
     res.status(201).json({
       success: true,
+      provider: 'BAKONG',
       qr: transaction.qr,
       tran: transaction.tran,
       md5: transaction.md5,
       expiresIn: 180,
+      transactionId: transaction._id,
     });
   } catch (error: any) {
     next(error);
@@ -60,10 +85,8 @@ const createPayment = async (
 };
 
 /**
- * GET /api/payment/status/:md5
- * Backend calls: GET https://api.bakong-api.online/check_by_md5?md5=...&bakongid=...
- * If responseCode==0 OR status=="SUCCESS": update to PAID
- * Returns: { success, status, amount?, transactionId?, paidTime? }
+ * POST /api/payment/check  (body: { tranId, provider })
+ * GET /api/payment/status/:md5  (backward-compatible, param: md5)
  */
 const checkPaymentStatus = async (
   req: Request,
@@ -71,70 +94,53 @@ const checkPaymentStatus = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { md5 } = req.params;
+    // Support both POST body and GET params
+    const md5 = req.params?.md5;
+    const { tranId, provider } = req.body;
+    const identifier = md5 || tranId;
 
-    if (!md5) {
-      res.status(400).json({ success: false, message: 'MD5 hash is required' });
+    if (!identifier) {
+      res.status(400).json({ success: false, message: 'Transaction identifier (tranId or md5) is required' });
       return;
     }
 
-    const transaction = await Transaction.findOne({ md5 });
+    // Find transaction by tranId or md5
+    let transaction: any = await Transaction.findOne({ tranId: identifier });
+    if (!transaction) {
+      transaction = await Transaction.findOne({ md5: identifier });
+    }
+
     if (!transaction) {
       res.status(404).json({ success: false, message: 'Transaction not found' });
       return;
     }
 
-    // Already paid
-    if (transaction.status === 'PAID') {
+    const result = await checkPaymentByTransaction(transaction);
+
+    if (result.success && result.status === 'PAID') {
       res.json({
         success: true,
         status: 'PAID',
         amount: transaction.amount,
         transactionId: transaction._id,
-        paidTime: transaction.updatedAt,
+        paidTime: transaction.paidAt || transaction.updatedAt,
       });
       return;
     }
 
-    // Already expired
-    if (transaction.status === 'EXPIRED') {
+    if (result.status === 'EXPIRED') {
       res.json({ success: false, status: 'EXPIRED' });
       return;
     }
 
-    // Check expiry (3 minutes)
-    const createdAt = new Date(transaction.createdAt).getTime();
-    const now = Date.now();
-    if (now - createdAt > 3 * 60 * 1000) {
-      transaction.status = 'EXPIRED';
-      await transaction.save();
-      res.json({ success: false, status: 'EXPIRED' });
+    // For ABA, also return meta for status indicators
+    if (transaction.provider === 'ABA_PAYWAY' && result.meta) {
+      res.json({
+        success: false,
+        status: 'PENDING',
+        meta: result.meta,
+      });
       return;
-    }
-
-    // Poll Bakong API
-    try {
-      const checkResult = await checkTransactionStatus(md5);
-
-      const isPaid =
-        checkResult.responseCode === 0 ||
-        checkResult.status === 'SUCCESS';
-
-      if (isPaid) {
-        await confirmPayment(transaction);
-
-        res.json({
-          success: true,
-          status: 'PAID',
-          amount: transaction.amount,
-          transactionId: transaction._id,
-          paidTime: transaction.updatedAt,
-        });
-        return;
-      }
-    } catch (error: any) {
-      console.error('Bakong check error:', error.message);
-      // If Bakong API fails, return PENDING so frontend retries
     }
 
     res.json({ success: false, status: 'PENDING' });
@@ -144,10 +150,68 @@ const checkPaymentStatus = async (
 };
 
 /**
+ * POST /api/payment/save
+ * Backward-compatible: saves a Bakong transaction created by frontend.
+ */
+const saveTransaction = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { orderId, amount, md5, tran, qr } = req.body;
+    if (!orderId || !amount || !md5 || !tran || !qr) {
+      res.status(400).json({ success: false, message: 'Missing required fields' });
+      return;
+    }
+    await Transaction.updateMany({ orderId, status: 'PENDING' }, { status: 'EXPIRED' });
+    const transaction = await Transaction.create({
+      orderId, amount, provider: 'BAKONG',
+      tran, tranId: tran, md5, qr,
+      status: 'PENDING',
+      expireAt: new Date(Date.now() + 180 * 1000),
+    });
+    res.status(201).json({
+      success: true,
+      _id: transaction._id, orderId: transaction.orderId,
+      amount: transaction.amount, md5: transaction.md5,
+      tran: transaction.tran, qr: transaction.qr,
+      status: transaction.status, createdAt: transaction.createdAt,
+    });
+  } catch (error: any) { next(error); }
+};
+
+/**
+ * PUT /api/payment/status/:md5
+ * Backward-compatible: updates transaction status from Bakong frontend polling.
+ */
+const updatePaymentStatus = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { md5 } = req.params;
+    const { status: newStatus } = req.body;
+    if (!md5) { res.status(400).json({ success: false, message: 'MD5 hash is required' }); return; }
+    if (!newStatus || !['PAID', 'EXPIRED'].includes(newStatus)) {
+      res.status(400).json({ success: false, message: 'Status must be PAID or EXPIRED' }); return;
+    }
+    const transaction = await Transaction.findOne({ md5 });
+    if (!transaction) { res.status(404).json({ success: false, message: 'Transaction not found' }); return; }
+    if (transaction.status === 'PAID') { res.json({ success: true, status: 'already_paid' }); return; }
+    transaction.status = newStatus;
+    await transaction.save();
+    if (newStatus === 'PAID') {
+      await confirmPayment(transaction);
+    }
+    res.json({ success: true, status: newStatus, _id: transaction._id, orderId: transaction.orderId, updatedAt: transaction.updatedAt });
+  } catch (error: any) { next(error); }
+};
+
+/**
  * POST /api/payment/webhook
  * Called by Bakong/third-party when payment is confirmed.
- * Body: { md5: string, status?: string, responseCode?: number, tran?: string }
- * Responds with 200 always (to acknowledge receipt).
  */
 const handleWebhook = async (
   req: Request,
@@ -157,14 +221,12 @@ const handleWebhook = async (
   try {
     const { md5, status: webhookStatus, responseCode, tran } = req.body;
 
-    // Try to find by md5 first, then by tran
     let transaction = md5 ? await Transaction.findOne({ md5 }) : null;
     if (!transaction && tran) {
       transaction = await Transaction.findOne({ tran });
     }
 
     if (!transaction) {
-      // Transaction not found — still return 200 so Bakong doesn't retry
       console.log(`[Webhook] Transaction not found (md5: ${md5}, tran: ${tran})`);
       res.json({ received: true });
       return;
@@ -175,7 +237,6 @@ const handleWebhook = async (
       return;
     }
 
-    // Check if webhook indicates success
     const isPaidByWebhook =
       webhookStatus === 'SUCCESS' ||
       webhookStatus === 'PAID' ||
@@ -184,47 +245,38 @@ const handleWebhook = async (
     if (isPaidByWebhook) {
       await confirmPayment(transaction);
       console.log(`[Webhook] ✅ Payment confirmed via webhook: ${transaction._id}`);
-    } else {
-      // Also double-check with Bakong API to be sure
-      if (transaction.md5) {
-        try {
-          const checkResult = await checkTransactionStatus(transaction.md5);
-          if (
-            checkResult.responseCode === 0 ||
-            checkResult.status === 'SUCCESS'
-          ) {
-            await confirmPayment(transaction);
-            console.log(`[Webhook] ✅ Payment confirmed via fallback check: ${transaction._id}`);
-          }
-        } catch {}
-      }
+    } else if (transaction.md5) {
+      try {
+        const checkResult = await checkTransactionStatus(transaction.md5);
+        if (checkResult.responseCode === 0 || checkResult.status === 'SUCCESS') {
+          await confirmPayment(transaction);
+        }
+      } catch {}
     }
 
     res.json({ received: true });
   } catch (error: any) {
     console.error('[Webhook] Error:', error.message);
-    // Always return 200 to prevent Bakong from retrying
     res.json({ received: true, error: error.message });
   }
 };
 
 /**
- * GET /api/payment/subscribe/:md5
+ * GET /api/payment/subscribe/:tranId  (new)
+ * GET /api/payment/subscribe/:md5     (backward-compatible)
  * Server-Sent Events endpoint for real-time payment notifications.
- * The client connects, and we push updates when payment is confirmed.
  */
 const subscribePayment = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { md5 } = req.params;
+  const identifier = req.params.tranId || req.params.md5;
 
-  if (!md5) {
-    res.status(400).json({ success: false, message: 'MD5 hash is required' });
+  if (!identifier) {
+    res.status(400).json({ success: false, message: 'Transaction ID is required' });
     return;
   }
 
-  // Set SSE headers
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
@@ -232,19 +284,17 @@ const subscribePayment = async (
     'X-Accel-Buffering': 'no',
   });
 
-  // Send initial connected event
-  res.write(`data: ${JSON.stringify({ type: 'connected', md5 })}\n\n`);
+  res.write(`data: ${JSON.stringify({ type: 'connected', identifier })}\n\n`);
 
-  // Check current status immediately
   try {
-    const transaction = await Transaction.findOne({ md5 });
+    const transaction = await Transaction.findOne({ $or: [{ tranId: identifier }, { md5: identifier }] });
     if (transaction && transaction.status === 'PAID') {
       res.write(`data: ${JSON.stringify({
         type: 'payment',
         status: 'PAID',
         amount: transaction.amount,
         transactionId: transaction._id,
-        paidTime: transaction.updatedAt,
+        paidTime: transaction.paidAt || transaction.updatedAt,
       })}\n\n`);
       res.end();
       return;
@@ -256,27 +306,23 @@ const subscribePayment = async (
     }
   } catch {}
 
-  // Subscribe to payment events for this md5
   const eventHandler = (data: any) => {
     res.write(`data: ${JSON.stringify({ type: 'payment', ...data })}\n\n`);
     res.end();
   };
 
-  const eventKey = `payment:${md5}`;
+  const eventKey = `payment:${identifier}`;
   paymentEvents.on(eventKey, eventHandler);
 
-  // Heartbeat to keep connection alive (every 15s)
   const heartbeat = setInterval(() => {
     res.write(`:heartbeat\n\n`);
   }, 15000);
 
-  // Cleanup on disconnect
   req.on('close', () => {
     paymentEvents.off(eventKey, eventHandler);
     clearInterval(heartbeat);
   });
 
-  // Timeout after 3 minutes (same as QR expiry)
   setTimeout(() => {
     paymentEvents.off(eventKey, eventHandler);
     clearInterval(heartbeat);
@@ -288,8 +334,7 @@ const subscribePayment = async (
 };
 
 /**
- * GET /api/payment/transactions
- * Admin-only. Returns paginated transactions with optional search and status filter.
+ * Admin: Delete transaction
  */
 const deleteTransaction = async (
   req: AuthRequest,
@@ -309,6 +354,9 @@ const deleteTransaction = async (
   }
 };
 
+/**
+ * Admin: Get all transactions with filters
+ */
 const getAllTransactions = async (
   req: AuthRequest,
   res: Response,
@@ -320,14 +368,17 @@ const getAllTransactions = async (
     const skip = (page - 1) * limit;
     const status = req.query.status as string;
     const search = req.query.search as string;
+    const provider = req.query.provider as string;
 
     const filter: Record<string, any> = {};
     if (status && status !== 'all') filter.status = status.toUpperCase();
+    if (provider && provider !== 'all') filter.provider = provider;
     if (search) {
       filter.$or = [
         { orderId: { $regex: search, $options: 'i' } },
         { md5: { $regex: search, $options: 'i' } },
         { tran: { $regex: search, $options: 'i' } },
+        { tranId: { $regex: search, $options: 'i' } },
       ];
     }
 
@@ -356,7 +407,7 @@ const getAllTransactions = async (
 
 /**
  * GET /api/payment/stream
- * Global SSE stream for admin dashboard. Pushes all payment events in real-time.
+ * Global SSE stream for admin dashboard.
  */
 const paymentStream = async (
   _req: Request,
@@ -371,128 +422,20 @@ const paymentStream = async (
 
   res.write(`data: ${JSON.stringify({ type: 'connected' })}\n\n`);
 
-  // Forward all global payment events
   const eventHandler = (data: any) => {
     res.write(`data: ${JSON.stringify({ type: 'payment', ...data })}\n\n`);
   };
 
   paymentEvents.on('payment:all', eventHandler);
 
-  // Heartbeat every 15s
   const heartbeat = setInterval(() => {
     res.write(`:heartbeat\n\n`);
   }, 15000);
 
-  // Cleanup on disconnect
   _req.on('close', () => {
     paymentEvents.off('payment:all', eventHandler);
     clearInterval(heartbeat);
   });
-};
-
-/**
- * POST /api/payment/save
- * Saves a transaction created by the frontend (direct Bakong API call).
- * Body: { orderId, amount, md5, tran, qr }
- */
-const saveTransaction = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { orderId, amount, md5, tran, qr } = req.body;
-
-    if (!orderId || !amount || !md5 || !tran || !qr) {
-      res.status(400).json({ success: false, message: 'Missing required fields: orderId, amount, md5, tran, qr' });
-      return;
-    }
-
-    // Expire any existing pending transactions for this order
-    await Transaction.updateMany(
-      { orderId, status: 'PENDING' },
-      { status: 'EXPIRED' }
-    );
-
-    const transaction = await Transaction.create({
-      orderId,
-      amount,
-      md5,
-      tran,
-      qr,
-      status: 'PENDING',
-    });
-
-    res.status(201).json({
-      success: true,
-      _id: transaction._id,
-      orderId: transaction.orderId,
-      amount: transaction.amount,
-      md5: transaction.md5,
-      tran: transaction.tran,
-      qr: transaction.qr,
-      status: transaction.status,
-      createdAt: transaction.createdAt,
-    });
-  } catch (error: any) {
-    next(error);
-  }
-};
-
-/**
- * PUT /api/payment/status/:md5
- * Updates transaction status when frontend detects payment via direct Bakong API polling.
- * Body: { status: 'PAID' | 'EXPIRED', transactionId?, paidTime? }
- */
-const updatePaymentStatus = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { md5 } = req.params;
-    const { status: newStatus, transactionId, paidTime } = req.body;
-
-    if (!md5) {
-      res.status(400).json({ success: false, message: 'MD5 hash is required' });
-      return;
-    }
-
-    if (!newStatus || !['PAID', 'EXPIRED'].includes(newStatus)) {
-      res.status(400).json({ success: false, message: 'Status must be PAID or EXPIRED' });
-      return;
-    }
-
-    const transaction = await Transaction.findOne({ md5 });
-    if (!transaction) {
-      res.status(404).json({ success: false, message: 'Transaction not found' });
-      return;
-    }
-
-    // Don't downgrade from PAID
-    if (transaction.status === 'PAID') {
-      res.json({ success: true, status: 'already_paid' });
-      return;
-    }
-
-    transaction.status = newStatus;
-    await transaction.save();
-
-    // If paid, also update the order and emit SSE event
-    if (newStatus === 'PAID') {
-      await confirmPayment(transaction);
-    }
-
-    res.json({
-      success: true,
-      status: newStatus,
-      _id: transaction._id,
-      orderId: transaction.orderId,
-      updatedAt: transaction.updatedAt,
-    });
-  } catch (error: any) {
-    next(error);
-  }
 };
 
 export {

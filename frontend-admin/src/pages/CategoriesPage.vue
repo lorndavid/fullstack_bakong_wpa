@@ -111,77 +111,94 @@
       </div>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="closeModal">
-      <div class="fixed inset-0 bg-black/50" @click="closeModal"></div>
-      <div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-xl w-full max-w-md animate-scale-in">
-        <div class="sticky top-0 bg-white dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 px-6 py-4 flex items-center justify-between">
-          <h3 class="text-lg font-bold text-surface-800 dark:text-white">{{ editingCategory ? $t('categories.editCategory') : $t('categories.addCategory') }}</h3>
-          <button @click="closeModal" class="p-1 text-surface-400 hover:text-surface-600">
+    <!-- Slide-in Panel: Create/Edit Category -->
+    <div v-if="showModal" class="fixed inset-0 z-50" @click.self="closeModal">
+      <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="closeModal"></div>
+      <div class="fixed top-0 right-0 h-full w-full max-w-xl bg-white dark:bg-surface-800 shadow-2xl animate-slide-in-right flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-surface-200 dark:border-surface-700 flex-shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl flex items-center justify-center shadow-sm">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-surface-800 dark:text-white">{{ editingCategory ? $t('categories.editCategory') : $t('categories.addCategory') }}</h3>
+              <p class="text-xs text-surface-400">{{ editingCategory ? 'Update category details' : 'Create a new category' }}</p>
+            </div>
+          </div>
+          <button @click="closeModal" class="p-2 text-surface-400 hover:text-surface-600 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
-        <form @submit.prevent="saveCategory" class="p-6 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('categories.categoryName') }}</label>
-            <input v-model="form.name" required :placeholder="$t('categories.iconPlaceholder')"
-              class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('categories.iconLabel') }}</label>
-            <div class="flex gap-3">
-              <input v-model="form.icon" required :placeholder="$t('categories.iconPlaceholder')" maxlength="4"
-                class="flex-1 px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 text-center text-2xl" />
-              <div class="w-12 h-12 bg-primary-50 dark:bg-primary-900/50 rounded-xl flex items-center justify-center text-2xl">
-                {{ form.icon || '?' }}
+
+        <!-- Form Body -->
+        <div class="flex-1 overflow-y-auto px-6 py-5">
+          <form @submit.prevent="saveCategory" class="space-y-5">
+            <!-- Name -->
+            <div>
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('categories.categoryName') }}</label>
+              <input v-model="form.name" required :placeholder="'e.g. Electronics'"
+                class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 transition-all" />
+            </div>
+            <!-- Icon -->
+            <div>
+              <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">{{ $t('categories.iconLabel') }}</label>
+              <div class="flex gap-3">
+                <input v-model="form.icon" required :placeholder="$t('categories.iconPlaceholder')" maxlength="4"
+                  class="flex-1 px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 text-center text-2xl transition-all" />
+                <div class="w-12 h-12 bg-primary-50 dark:bg-primary-900/50 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                  {{ form.icon || '?' }}
+                </div>
+              </div>
+              <p class="text-xs text-surface-400 mt-1.5">{{ $t('categories.iconHint') }}</p>
+            </div>
+            <!-- Quick emoji picker -->
+            <div>
+              <label class="block text-xs font-medium text-surface-500 mb-2">{{ $t('categories.quickPick') }}</label>
+              <div class="flex flex-wrap gap-2">
+                <button v-for="emoji in emojis" :key="emoji" type="button" @click="form.icon = emoji"
+                  class="w-9 h-9 flex items-center justify-center rounded-lg text-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
+                  :class="form.icon === emoji ? 'bg-primary-100 dark:bg-primary-900/50 ring-2 ring-primary-500' : ''">
+                  {{ emoji }}
+                </button>
               </div>
             </div>
-            <p class="text-xs text-surface-400 mt-1">{{ $t('categories.iconHint') }}</p>
-          </div>
-          <!-- Quick emoji picker -->
-          <div>
-            <label class="block text-xs font-medium text-surface-500 mb-2">{{ $t('categories.quickPick') }}</label>
-            <div class="flex flex-wrap gap-2">
-              <button v-for="emoji in emojis" :key="emoji" type="button" @click="form.icon = emoji"
-                class="w-9 h-9 flex items-center justify-center rounded-lg text-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
-                :class="form.icon === emoji ? 'bg-primary-100 dark:bg-primary-900/50 ring-2 ring-primary-500' : ''">
-                {{ emoji }}
-              </button>
+            <div v-if="submitError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3.5 rounded-xl">
+              {{ submitError }}
             </div>
-          </div>
-          <div v-if="submitError" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg">
-            {{ submitError }}
-          </div>
-          <div class="flex gap-3 pt-2">
-            <button type="button" @click="closeModal" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-surface-50 dark:hover:bg-surface-700">
-              {{ $t('common.cancel') }}
-            </button>
-            <button type="submit" :disabled="saving" class="flex-1 py-2.5 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 disabled:opacity-50">
-              <span v-if="saving" class="flex items-center justify-center gap-2">
-                <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                {{ $t('common.saving') }}
-              </span>
-              <span v-else>{{ editingCategory ? $t('categories.updateCategory') : $t('categories.createCategory') }}</span>
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex items-center gap-3 px-6 py-4 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50 flex-shrink-0">
+          <button type="button" @click="closeModal" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-white dark:hover:bg-surface-700 transition-all">
+            {{ $t('common.cancel') }}
+          </button>
+          <button type="submit" @click="saveCategory" :disabled="saving" class="flex-1 py-2.5 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 disabled:opacity-50 transition-all shadow-sm">
+            <span v-if="saving" class="flex items-center justify-center gap-2">
+              <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              {{ $t('common.saving') }}
+            </span>
+            <span v-else>{{ editingCategory ? $t('categories.updateCategory') : $t('categories.createCategory') }}</span>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Delete Confirmation -->
-    <div v-if="deletingCategory" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="fixed inset-0 bg-black/50" @click="deletingCategory = null"></div>
-      <div class="relative bg-white dark:bg-surface-800 rounded-2xl shadow-xl w-full max-w-sm p-6 animate-scale-in text-center">
-        <div class="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+    <!-- Slide-in Panel: Delete Confirmation -->
+    <div v-if="deletingCategory" class="fixed inset-0 z-50">
+      <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="deletingCategory = null"></div>
+      <div class="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-surface-800 shadow-2xl animate-slide-in-right flex flex-col">
+        <div class="flex-1 flex flex-col items-center justify-center px-8 text-center">
+          <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-surface-800 dark:text-white mb-2">{{ $t('categories.deleteTitle') }}</h3>
+          <p class="text-sm text-surface-500 mb-8" v-html="$t('categories.deleteDesc', { name: deletingCategory.name })"></p>
         </div>
-        <h3 class="text-lg font-bold text-surface-800 dark:text-white mb-2">{{ $t('categories.deleteTitle') }}</h3>
-        <p class="text-sm text-surface-500 mb-6">
-          <span v-html="$t('categories.deleteDesc', { name: deletingCategory.name })"></span>
-        </p>
-        <div class="flex gap-3">
-          <button @click="deletingCategory = null" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-surface-50">{{ $t('common.cancel') }}</button>
-          <button @click="deleteCategory" :disabled="saving" class="flex-1 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50">
+        <div class="flex items-center gap-3 px-6 py-4 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50">
+          <button @click="deletingCategory = null" class="flex-1 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-white dark:hover:bg-surface-700 transition-all">{{ $t('common.cancel') }}</button>
+          <button @click="deleteCategory" :disabled="saving" class="flex-1 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50 transition-all shadow-sm">
             {{ saving ? $t('common.deleting') : $t('common.delete') }}
           </button>
         </div>
@@ -295,3 +312,19 @@ function formatDate(date: string) {
   return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 </script>
+
+<style scoped>
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+</style>

@@ -39,6 +39,12 @@ export interface IProduct {
   updatedAt: Date;
 }
 
+export interface IAppliedPromotion {
+  promotionId: string;
+  name: string;
+  discountPercent: number;
+}
+
 export interface IOrder {
   _id: string;
   userId: string;
@@ -51,15 +57,17 @@ export interface IOrder {
   }[];
   subtotal: number;
   shipping: number;
+  promotionDiscount: number;
   total: number;
   coupon?: string;
   discountAmount?: number;
+  appliedPromotions: IAppliedPromotion[];
   status: 'pending' | 'confirmed' | 'shipping' | 'delivered' | 'cancelled';
   shippingAddress: {
     fullName: string;
     phone: string;
   };
-  paymentMethod: 'khqr' | 'cod';
+  paymentMethod: 'khqr' | 'cod' | 'aba_payway';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -68,10 +76,15 @@ export interface ITransaction {
   _id: string;
   orderId: string;
   amount: number;
+  provider: 'BAKONG' | 'ABA_PAYWAY';
+  tranId?: string;
+  providerReference?: string;
   tran?: string;
   md5?: string;
   qr?: string;
-  status: 'PENDING' | 'PAID' | 'EXPIRED' | 'failed';
+  status: 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED';
+  expireAt?: Date;
+  paidAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
