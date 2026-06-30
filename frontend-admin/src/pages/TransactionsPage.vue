@@ -31,6 +31,13 @@
             class="w-full sm:w-64 pl-10 pr-4 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50"
           />
         </div>
+        <!-- Provider filter -->
+        <select v-model="providerFilter" @change="fetchTransactions"
+          class="px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50">
+          <option value="all">All Providers</option>
+          <option value="BAKONG">Bakong</option>
+          <option value="ABA_PAYWAY">ABA PayWay</option>
+        </select>
         <!-- Status filter -->
         <select
           v-model="statusFilter"
@@ -40,7 +47,7 @@
           <option value="PAID">{{ $t('transactions.paid') }}</option>
           <option value="PENDING">{{ $t('transactions.pending') }}</option>
           <option value="EXPIRED">{{ $t('transactions.expired') }}</option>
-          <option value="failed">{{ $t('transactions.failed') }}</option>
+          <option value="FAILED">{{ $t('transactions.failed') }}</option>
         </select>
       </div>
     </div>
@@ -79,6 +86,7 @@
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.hash') }}</th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.order') }}</th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.amount') }}</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">Provider</th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.md5') }}</th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.status') }}</th>
               <th class="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{{ $t('transactions.date') }}</th>
@@ -101,6 +109,12 @@
               </td>
               <td class="px-4 py-3 text-sm font-semibold text-surface-800 dark:text-white">
                 ${{ (tx.amount || 0).toFixed(2) }}
+              </td>
+              <td class="px-4 py-3">
+                <span v-if="tx.provider" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium" :class="providerBadgeClass(tx.provider)">
+                  {{ tx.provider === 'ABA_PAYWAY' ? 'ABA PayWay' : 'Bakong' }}
+                </span>
+                <span v-else class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-surface-100 text-surface-500">Bakong</span>
               </td>
               <td class="px-4 py-3">
                 <span class="font-mono text-[10px] text-surface-400 bg-surface-100 dark:bg-surface-700 px-2 py-0.5 rounded" :title="tx.md5">
@@ -217,10 +231,12 @@ interface Transaction {
   _id: string
   orderId: string
   amount: number
+  provider?: string
+  tranId?: string
   tran?: string
   md5?: string
   qr?: string
-  status: 'PENDING' | 'PAID' | 'EXPIRED' | 'failed'
+  status: 'PENDING' | 'PAID' | 'EXPIRED' | 'FAILED'
   createdAt: string
   updatedAt: string
 }
@@ -238,6 +254,7 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const searchQuery = ref('')
 const statusFilter = ref('all')
+const providerFilter = ref('all')
 const highlightedIds = ref(new Set<string>())
 const toastMessage = ref<string | null>(null)
 const isLive = ref(false)
@@ -304,6 +321,7 @@ async function fetchTransactions() {
     }
     if (searchQuery.value) params.search = searchQuery.value
     if (statusFilter.value !== 'all') params.status = statusFilter.value
+    if (providerFilter.value !== 'all') params.provider = providerFilter.value
 
     const data: any = await api.get('/payment/transactions', { params })
     transactions.value = data.transactions || []
@@ -398,6 +416,11 @@ function showToast(msg: string) {
   toastTimeout = setTimeout(() => {
     toastMessage.value = null
   }, 4000)
+}
+
+function providerBadgeClass(provider: string) {
+  if (provider === 'ABA_PAYWAY') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+  return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
 }
 
 function statusBadgeClass(status: string) {

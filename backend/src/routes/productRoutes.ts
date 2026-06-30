@@ -9,6 +9,7 @@ import {
   updateProduct,
   deleteProduct,
   getRelatedProducts,
+  getLowStockProducts,
 } from '../controllers/productController';
 import { protect, authorize } from '../middlewares/auth';
 import { upload } from '../middlewares/upload';
@@ -21,6 +22,7 @@ router.get('/flash-sale', getFlashSaleProducts);
 router.get('/new-arrivals', getNewArrivals);
 router.get('/:id', getProduct);
 router.get('/:id/related', getRelatedProducts);
+router.get('/low-stock/overview', getLowStockProducts);
 router.post(
   '/',
   protect,

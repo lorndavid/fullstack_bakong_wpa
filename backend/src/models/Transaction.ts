@@ -1,12 +1,20 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export type PaymentProvider = 'BAKONG' | 'ABA_PAYWAY';
+export type TransactionStatus = 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED';
+
 export interface ITransactionDocument extends Document {
   orderId: string;
   amount: number;
+  provider: PaymentProvider;
+  tranId?: string;
+  providerReference?: string;
   tran?: string;
   md5?: string;
   qr?: string;
-  status: 'PENDING' | 'PAID' | 'EXPIRED' | 'failed';
+  status: TransactionStatus;
+  expireAt?: Date;
+  paidAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +30,17 @@ const transactionSchema = new Schema<ITransactionDocument>(
       required: [true, 'Amount is required'],
       min: 0,
     },
+    provider: {
+      type: String,
+      enum: ['BAKONG', 'ABA_PAYWAY'],
+      default: 'BAKONG',
+    },
+    tranId: {
+      type: String,
+    },
+    providerReference: {
+      type: String,
+    },
     tran: {
       type: String,
     },
@@ -33,8 +52,14 @@ const transactionSchema = new Schema<ITransactionDocument>(
     },
     status: {
       type: String,
-      enum: ['PENDING', 'PAID', 'EXPIRED', 'failed'],
+      enum: ['PENDING', 'PAID', 'FAILED', 'EXPIRED'],
       default: 'PENDING',
+    },
+    expireAt: {
+      type: Date,
+    },
+    paidAt: {
+      type: Date,
     },
   },
   {
@@ -45,5 +70,7 @@ const transactionSchema = new Schema<ITransactionDocument>(
 transactionSchema.index({ md5: 1 });
 transactionSchema.index({ orderId: 1 });
 transactionSchema.index({ status: 1 });
+transactionSchema.index({ tranId: 1 });
+transactionSchema.index({ provider: 1 });
 
 export default mongoose.model<ITransactionDocument>('Transaction', transactionSchema);

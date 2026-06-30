@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import Transaction from '../models/Transaction';
 import Order from '../models/Order';
 import { checkTransactionStatus } from './bakong';
+import { checkPaymentByProvider } from '../modules/payment/payment.factory';
 
 // Event emitter for real-time payment notifications
 export const paymentEvents = new EventEmitter();
@@ -22,6 +23,7 @@ export async function confirmPayment(transaction: any): Promise<boolean> {
     if (transaction.status === 'PAID') return true;
 
     transaction.status = 'PAID';
+    transaction.paidAt = new Date();
     await transaction.save();
 
     // Update the associated order
@@ -35,17 +37,23 @@ export async function confirmPayment(transaction: any): Promise<boolean> {
       status: 'PAID',
       amount: transaction.amount,
       transactionId: transaction._id,
-      paidTime: transaction.updatedAt,
+      paidTime: transaction.paidAt || transaction.updatedAt,
       orderId: transaction.orderId,
       md5: transaction.md5,
+      provider: transaction.provider,
     };
 
-    // Emit event for specific md5 subscribers
-    paymentEvents.emit(`payment:${transaction.md5}`, eventData);
+    // Emit event for specific tranId/md5 subscribers
+    if (transaction.tranId) {
+      paymentEvents.emit(`payment:${transaction.tranId}`, eventData);
+    }
+    if (transaction.md5) {
+      paymentEvents.emit(`payment:${transaction.md5}`, eventData);
+    }
     // Emit global event for admin dashboard
     paymentEvents.emit('payment:all', eventData);
 
-    console.log(`[PaymentWatcher] ✅ Transaction ${transaction._id} confirmed (md5: ${transaction.md5})`);
+    console.log(`[PaymentWatcher] ✅ Transaction ${transaction._id} confirmed (provider: ${transaction.provider})`);
     return true;
   } catch (error: any) {
     console.error(`[PaymentWatcher] Error confirming transaction ${transaction._id}:`, error.message);
@@ -54,34 +62,50 @@ export async function confirmPayment(transaction: any): Promise<boolean> {
 }
 
 /**
- * Check a single transaction's status against the Bakong API.
+ * Check a single transaction's status against the appropriate API.
  */
 async function checkTransaction(transaction: any): Promise<void> {
   try {
-    // Skip if already paid, expired, or cancelled
-    if (transaction.status === 'PAID' || transaction.status === 'EXPIRED' || transaction.status === 'CANCELLED') return;
+    // Skip if already paid or expired
+    if (transaction.status === 'PAID' || transaction.status === 'EXPIRED' || transaction.status === 'FAILED') return;
 
-    // Check if expired
-    const age = Date.now() - new Date(transaction.createdAt).getTime();
-    if (age > MAX_TRANSACTION_AGE_MS) {
-      transaction.status = 'EXPIRED';
-      await transaction.save();
-      paymentEvents.emit(`payment:${transaction.md5}`, { status: 'EXPIRED' });
-      paymentEvents.emit('payment:all', { status: 'EXPIRED', transactionId: transaction._id, orderId: transaction.orderId, md5: transaction.md5 });
-      return;
+    // Check if expired based on expireAt or max age
+    if (transaction.expireAt) {
+      if (new Date() > new Date(transaction.expireAt)) {
+        transaction.status = 'EXPIRED';
+        await transaction.save();
+        const eventData = { status: 'EXPIRED', transactionId: transaction._id, orderId: transaction.orderId, provider: transaction.provider };
+        if (transaction.tranId) paymentEvents.emit(`payment:${transaction.tranId}`, eventData);
+        paymentEvents.emit('payment:all', eventData);
+        return;
+      }
+    } else {
+      const age = Date.now() - new Date(transaction.createdAt).getTime();
+      if (age > MAX_TRANSACTION_AGE_MS) {
+        transaction.status = 'EXPIRED';
+        await transaction.save();
+        const eventData = { status: 'EXPIRED', transactionId: transaction._id, orderId: transaction.orderId, provider: transaction.provider };
+        if (transaction.md5) paymentEvents.emit(`payment:${transaction.md5}`, eventData);
+        paymentEvents.emit('payment:all', eventData);
+        return;
+      }
     }
 
-    // Check with Bakong API
-    if (!transaction.md5) return;
-
-    const checkResult = await checkTransactionStatus(transaction.md5);
-
-    const isPaid =
-      checkResult.responseCode === 0 ||
-      checkResult.status === 'SUCCESS';
-
-    if (isPaid) {
-      await confirmPayment(transaction);
+    // Route to the correct provider for status checking
+    if (transaction.provider === 'ABA_PAYWAY') {
+      if (!transaction.tranId) return;
+      const result = await checkPaymentByProvider('ABA_PAYWAY', transaction);
+      if (result.success) {
+        await confirmPayment(transaction);
+      }
+    } else {
+      // Bakong KHQR
+      if (!transaction.md5) return;
+      const checkResult = await checkTransactionStatus(transaction.md5);
+      const isPaid = checkResult.responseCode === 0 || checkResult.status === 'SUCCESS';
+      if (isPaid) {
+        await confirmPayment(transaction);
+      }
     }
   } catch (error: any) {
     // Silently fail - will retry on next poll

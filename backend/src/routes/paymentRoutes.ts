@@ -2,10 +2,10 @@ import { Router } from 'express';
 import {
   createPayment,
   checkPaymentStatus,
-  saveTransaction,
-  updatePaymentStatus,
   handleWebhook,
   subscribePayment,
+  saveTransaction,
+  updatePaymentStatus,
   getAllTransactions,
   deleteTransaction,
   paymentStream,
@@ -14,23 +14,23 @@ import { protect, authorize } from '../middlewares/auth';
 
 const router = Router();
 
-// POST /api/payment/create - Create a KHQR payment (public)
+// POST /api/payment/create - Create a payment (Bakong KHQR or ABA PayWay) (public)
 router.post('/create', createPayment);
 
-// GET /api/payment/status/:md5 - Check payment status by MD5 hash (public)
+// POST /api/payment/check - Check payment status by tranId/md5 + provider (public)
+router.post('/check', checkPaymentStatus);
+
+// Backward-compatible Bakong routes (keep for existing frontend)
 router.get('/status/:md5', checkPaymentStatus);
+router.post('/save', saveTransaction);
+router.put('/status/:md5', updatePaymentStatus);
+router.get('/subscribe/:md5', subscribePayment);
+
+// GET /api/payment/subscribe/:tranId - SSE for frontend payment push (public)
+router.get('/subscribe/tran/:tranId', subscribePayment);
 
 // POST /api/payment/webhook - Webhook for Bakong/third-party (public)
 router.post('/webhook', handleWebhook);
-
-// POST /api/payment/save - Save a transaction from frontend (public)
-router.post('/save', saveTransaction);
-
-// PUT /api/payment/status/:md5 - Update transaction status from frontend polling (public)
-router.put('/status/:md5', updatePaymentStatus);
-
-// GET /api/payment/subscribe/:md5 - SSE for frontend payment push (public)
-router.get('/subscribe/:md5', subscribePayment);
 
 // Admin-only routes below
 router.get('/transactions', protect, authorize('admin'), getAllTransactions);
