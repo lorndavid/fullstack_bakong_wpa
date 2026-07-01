@@ -27,8 +27,8 @@
             <span class="font-bold text-lg text-primary-500 dark:text-primary-300 hidden sm:block">{{ $t('app.name') }}</span>
           </router-link>
 
-          <!-- Search Bar -->
-          <div class="flex-1 max-w-md mx-4">
+          <!-- Search Bar (desktop only) -->
+          <div class="hidden sm:block flex-1 max-w-md mx-4">
             <router-link to="/search" class="block">
               <div class="relative">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,12 +44,23 @@
             </router-link>
           </div>
 
-          <!-- Language Switcher -->
-          <LanguageSwitcher />
-
           <!-- Right Actions -->
-          <div class="flex items-center space-x-3 sm:space-x-4">
-            <router-link to="/cart" class="relative p-2 text-surface-600 dark:text-surface-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
+          <div class="flex items-center gap-1 sm:gap-3">
+            <!-- Language Switcher -->
+            <LanguageSwitcher />
+
+            <!-- Theme Toggle -->
+            <button @click="theme.toggle()" class="p-2 text-surface-600 dark:text-surface-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700" :aria-label="theme.isDark ? 'Light mode' : 'Dark mode'">
+              <svg v-if="theme.isDark" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
+              <svg v-else class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+              </svg>
+            </button>
+
+            <!-- Cart (desktop only — mobile uses bottom nav) -->
+            <router-link to="/cart" class="relative p-2 text-surface-600 dark:text-surface-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors hidden sm:block">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
               </svg>
@@ -58,18 +69,8 @@
               </span>
             </router-link>
 
-            <!-- Theme Toggle -->
-            <button @click="theme.toggle()" class="p-2 text-surface-600 dark:text-surface-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
-              <svg v-if="theme.isDark" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-              </svg>
-              <svg v-else class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-              </svg>
-            </button>
-
-            <!-- User Menu -->
-            <div v-if="auth.isAuthenticated" class="relative">
+            <!-- User Menu (desktop only) -->
+            <div v-if="auth.isAuthenticated" class="relative hidden sm:block">
               <button @click="showUserMenu = !showUserMenu" class="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors">
                 <div class="w-8 h-8 rounded-full overflow-hidden ring-2 ring-primary-100 dark:ring-primary-900/50 flex-shrink-0">
                   <img v-if="auth.user?.avatar" :src="auth.user.avatar" :alt="auth.user?.name" class="w-full h-full object-cover" @error="avatarError = true" />
@@ -79,7 +80,7 @@
                 </div>
                 <span class="hidden sm:block text-sm font-medium text-surface-700 dark:text-surface-200">{{ auth.user?.name }}</span>
               </button>
-              
+
               <!-- Dropdown -->
               <div v-if="showUserMenu" @click.away="showUserMenu = false" class="absolute right-0 mt-2 w-48 bg-white dark:bg-surface-800 rounded-xl shadow-lg border border-surface-200 dark:border-surface-700 py-2 animate-scale-in">
                 <router-link to="/profile" class="block px-4 py-2 text-sm text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-700">{{ $t('nav.profile') }}</router-link>
@@ -138,18 +139,16 @@
           </div>
           <span class="text-[10px] font-medium">{{ $t('nav.cart') }}</span>
         </router-link>
-        <router-link v-if="auth.isAuthenticated" to="/orders" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
-          :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'orders' }">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-          </svg>
-          <span class="text-[10px] font-medium">{{ $t('nav.orders') }}</span>
-        </router-link>
-        <router-link v-else to="/auth/login" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-          </svg>
-          <span class="text-[10px] font-medium">{{ $t('nav.account') }}</span>
+        <router-link :to="auth.isAuthenticated ? '/profile' : '/auth/login'" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+          :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'profile' || $route.name === 'orders' || $route.name === 'order-detail' }">
+          <div class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-surface-100 dark:bg-surface-700"
+            :class="{ 'ring-2 ring-primary-400': $route.name === 'profile' }">
+            <img v-if="auth.isAuthenticated && auth.user?.avatar && !bottomAvatarError" :src="auth.user.avatar" :alt="auth.user?.name" class="w-full h-full object-cover" @error="bottomAvatarError = true" />
+            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] font-medium">{{ auth.isAuthenticated ? $t('nav.profile') : $t('nav.account') }}</span>
         </router-link>
       </div>
     </nav>
@@ -194,6 +193,7 @@ const router = useRouter()
 
 const showUserMenu = ref(false)
 const avatarError = ref(false)
+const bottomAvatarError = ref(false)
 
 // Header glassmorphism on scroll
 const scrolled = ref(false)
