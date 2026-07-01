@@ -94,7 +94,8 @@
     "password": "Password",
     "emailPlaceholder": "admin{'@'}example.com",
     "passwordPlaceholder": "••••••••",
-    "invalidCredentials": "Invalid credentials"
+    "invalidCredentials": "Invalid credentials",
+    "logoutConfirm": "Are you sure you want to sign out of the admin panel?"
   },
   "dashboard": {
     "title": "Dashboard",

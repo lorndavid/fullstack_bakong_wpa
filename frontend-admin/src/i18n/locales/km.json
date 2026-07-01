@@ -94,7 +94,8 @@
     "password": "ពាក្យសម្ងាត់",
     "emailPlaceholder": "admin{'@'}example.com",
     "passwordPlaceholder": "••••••••",
-    "invalidCredentials": "ព័ត៌មានចូលមិនត្រឹមត្រូវ"
+    "invalidCredentials": "ព័ត៌មានចូលមិនត្រឹមត្រូវ",
+    "logoutConfirm": "តើអ្នកប្រាកដថាចង់ចាកចេញពីផ្ទាំងគ្រប់គ្រងមែនទេ?"
   },
   "dashboard": {
     "title": "ផ្ទាំងគ្រប់គ្រង",

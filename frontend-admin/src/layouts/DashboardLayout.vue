@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-surface-50 dark:bg-surface-900 flex">
+  <div class="h-screen overflow-hidden bg-surface-50 dark:bg-surface-900 flex">
     <!-- Sidebar (Desktop) -->
-    <aside class="w-64 bg-white dark:bg-surface-800 border-r border-surface-200 dark:border-surface-700 hidden lg:flex flex-col">
+    <aside class="w-64 bg-white dark:bg-surface-800 border-r border-surface-200 dark:border-surface-700 hidden lg:flex flex-col h-screen">
       <div class="p-6">
         <router-link to="/" class="flex items-center space-x-2.5">
           <div v-if="siteLogo" class="w-9 h-9 flex items-center justify-center">
@@ -66,7 +66,7 @@
       </nav>
 
       <div class="p-3 border-t border-surface-200 dark:border-surface-700 mt-2">
-        <button @click="handleLogout" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 w-full transition-all duration-150">
+        <button @click="showLogoutModal = true" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 w-full transition-all duration-150">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
           </svg>
@@ -76,7 +76,7 @@
     </aside>
 
     <!-- Main -->
-    <div class="flex-1 flex flex-col min-w-0">
+    <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
       <!-- Top Bar -->
       <header class="h-16 bg-white dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30">
         <div class="flex items-center space-x-3">
@@ -269,7 +269,7 @@
           </template>
         </nav>
         <div class="p-3 border-t border-surface-200 dark:border-surface-700">
-          <button @click="handleLogout" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 w-full transition-colors">
+          <button @click="showMobileMenu = false; showLogoutModal = true" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 w-full transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
           <span>{{ $t('nav.signOut') }}</span>
         </button>
@@ -277,10 +277,41 @@
     </aside>
 
       <!-- Content -->
-      <main class="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+      <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <router-view />
       </main>
     </div>
+
+    <!-- Logout Confirmation Modal -->
+    <Transition name="modal">
+      <div v-if="showLogoutModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showLogoutModal = false"></div>
+
+        <!-- Dialog -->
+        <div class="relative w-full max-w-sm bg-white dark:bg-surface-800 rounded-2xl shadow-2xl overflow-hidden animate-modal-pop">
+          <div class="p-6 text-center">
+            <div class="w-14 h-14 mx-auto mb-4 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+              <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-surface-800 dark:text-white mb-1.5">{{ $t('nav.signOut') }}?</h3>
+            <p class="text-sm text-surface-500 dark:text-surface-400">{{ $t('auth.logoutConfirm') }}</p>
+          </div>
+          <div class="flex gap-3 p-4 pt-0">
+            <button @click="showLogoutModal = false"
+              class="flex-1 h-11 rounded-xl border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 font-semibold text-sm hover:bg-surface-50 dark:hover:bg-surface-700 active:scale-[0.98] transition-all">
+              {{ $t('common.cancel') }}
+            </button>
+            <button @click="handleLogout"
+              class="flex-1 h-11 rounded-xl bg-red-500 text-white font-semibold text-sm hover:bg-red-600 active:scale-[0.98] transition-all shadow-[0_4px_14px_rgba(239,68,68,0.3)]">
+              {{ $t('nav.signOut') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -300,6 +331,7 @@ const router = useRouter()
 const auth = useAuthStore()
 
 const showMobileMenu = ref(false)
+const showLogoutModal = ref(false)
 const isDark = ref(localStorage.getItem('theme') === 'dark')
 const avatarError = ref(false)
 const avatarErrorMob = ref(false)
@@ -425,6 +457,7 @@ const currentDate = computed(() => {
 })
 
 function handleLogout() {
+  showLogoutModal.value = false
   auth.logout()
   router.push('/login')
 }
@@ -460,5 +493,19 @@ function toggleTheme() {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-4px) scale(0.98);
+}
+
+/* Logout modal transitions */
+.modal-enter-active { transition: opacity 0.25s ease; }
+.modal-leave-active { transition: opacity 0.2s ease; }
+.modal-enter-from,
+.modal-leave-to { opacity: 0; }
+
+.animate-modal-pop {
+  animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modalPop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 </style>

@@ -55,16 +55,19 @@
 
               <!-- ✅ QR & Pending State -->
               <template v-else-if="store.abaIsPending">
-                <div class="w-full sm:max-w-[360px] mx-auto space-y-5">
+                <div class="w-full sm:max-w-[360px] mx-auto space-y-4">
                   <!-- Header -->
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 bg-[#003288] rounded-xl flex items-center justify-center shadow-sm">
-                        <span class="text-white font-bold text-sm">ABA</span>
+                      <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-surface-100">
+                        <svg viewBox="0 0 40 40" class="w-7 h-7">
+                          <path d="M20 4 C 28 4, 36 10, 36 20 C 36 30, 28 36, 20 36 C 14 36, 8 32, 6 24 C 12 28, 22 28, 26 22 C 30 16, 28 8, 20 4 Z" fill="#E2001A"/>
+                          <path d="M22 9 C 28 11, 32 16, 30 22 C 28 27, 22 28, 18 26 C 22 24, 26 20, 26 16 C 26 13, 24 10, 22 9 Z" fill="#003288"/>
+                        </svg>
                       </div>
                       <div>
                         <p class="text-sm font-semibold text-surface-800 dark:text-white">ABA PayWay</p>
-                        <p class="text-[11px] text-surface-400">Secure Payment</p>
+                        <p class="text-[11px] text-surface-400">Secure KHQR Payment</p>
                       </div>
                     </div>
                     <button @click="store.abaCloseSheet()" class="w-8 h-8 flex items-center justify-center rounded-full bg-surface-100 dark:bg-surface-700 hover:bg-surface-200 dark:hover:bg-surface-600 transition-colors">
@@ -72,27 +75,40 @@
                     </button>
                   </div>
 
-                  <!-- Drag Handle -->
-                  <div class="flex justify-center -mt-2">
-                    <div class="w-12 h-[5px] rounded-full bg-surface-300 dark:bg-surface-600" />
-                  </div>
+                  <!-- The Real KHQR Ticket -->
+                  <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden relative">
+                    <!-- Red header with handle + KHQR wordmark + corner fold -->
+                    <div class="relative bg-[#E2001A]">
+                      <div class="flex justify-center pt-2.5">
+                        <div class="w-9 h-[3px] rounded-full bg-white/80"></div>
+                      </div>
+                      <div class="flex items-center justify-center pt-1.5 pb-3">
+                        <span class="text-white font-extrabold text-[26px] tracking-[0.12em] leading-none select-none">KHQR</span>
+                      </div>
+                      <div class="absolute bottom-0 right-0 w-0 h-0" style="border-left: 16px solid transparent; border-bottom: 16px solid white;"></div>
+                    </div>
 
-                  <!-- Amount Card -->
-                  <div class="bg-gradient-to-br from-[#003288] to-[#002266] rounded-2xl p-5 text-white shadow-lg">
-                    <p class="text-xs font-medium opacity-80 uppercase tracking-wider">Amount</p>
-                    <p class="text-3xl sm:text-4xl font-bold mt-1">${{ store.abaAmount.toFixed(2) }} <span class="text-lg font-medium opacity-80">USD</span></p>
-                  </div>
+                    <!-- Ticket body -->
+                    <div class="px-6 pt-4 pb-6">
+                      <p class="text-[11px] font-medium text-[#8B8B8B] truncate">{{ merchantName }}</p>
+                      <div class="mt-1 flex items-baseline gap-1.5">
+                        <p class="text-[22px] font-bold text-[#081b37] leading-none">{{ store.abaAmount.toFixed(2) }}</p>
+                        <span class="text-[11px] font-medium text-[#081b37]">USD</span>
+                      </div>
 
-                  <!-- QR Code -->
-                  <div class="flex justify-center">
-                    <div class="relative w-[260px] h-[260px] bg-white dark:bg-surface-700 rounded-2xl shadow-lg p-3 border border-surface-100 dark:border-surface-600">
-                      <img
-                        v-if="store.abaQrImage"
-                        :src="store.abaQrImage"
-                        alt="ABA PayWay QR"
-                        class="w-full h-full object-contain rounded-xl animate-pulse-qr"
-                      />
-                      <div v-else class="w-full h-full bg-surface-100 dark:bg-surface-600 rounded-xl animate-pulse" />
+                      <div class="my-4 border-t-2 border-dashed border-surface-200"></div>
+
+                      <div class="flex justify-center">
+                        <div class="relative w-[228px] h-[228px] flex items-center justify-center">
+                          <img v-if="store.abaQrImage" :src="store.abaQrImage" alt="ABA PayWay KHQR" class="w-full h-full object-contain" />
+                          <div v-else class="w-full h-full bg-surface-50 rounded animate-pulse"></div>
+                          <div v-if="store.abaQrImage" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[46px] h-[46px] rounded-full bg-white shadow flex items-center justify-center border border-surface-100">
+                            <div class="w-[38px] h-[38px] rounded-full bg-[#003288] flex items-center justify-center">
+                              <span class="text-white text-[9px] font-bold leading-none">ABA</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -103,7 +119,6 @@
                     </svg>
                     <span class="text-sm text-surface-500 dark:text-surface-400">Expires in</span>
                     <span class="text-sm font-bold w-12 text-center" :class="countdownTextClass">{{ store.abaFormattedTime }}</span>
-                    <!-- Circular countdown -->
                     <svg class="w-10 h-10 transform -rotate-90" viewBox="0 0 36 36">
                       <circle cx="18" cy="18" r="15" fill="none" :stroke="countdownRingBg" stroke-width="3" />
                       <circle cx="18" cy="18" r="15" fill="none" :stroke="countdownRingColor" stroke-width="3" :stroke-dasharray="94.25" :stroke-dashoffset="countdownRingOffset" stroke-linecap="round" class="transition-all duration-1000 ease-linear" />
@@ -132,7 +147,18 @@
                     </div>
                   </div>
 
-                  <p class="text-center text-xs text-surface-400">Scan with any banking app that supports KHQR</p>
+                  <!-- Save QR + Supported apps -->
+                  <div class="flex flex-col items-center gap-3">
+                    <button
+                      @click="downloadAbaQR"
+                      class="inline-flex items-center gap-2 text-[#06b6d4] font-medium text-sm hover:text-[#0891b2] transition-colors">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                      </svg>
+                      Download QR
+                    </button>
+                    <p class="text-center text-xs text-surface-400">Scan with any banking app that supports KHQR</p>
+                  </div>
                 </div>
               </template>
 
@@ -197,14 +223,37 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePaymentStore } from '@/stores/payment.store'
 import { useCartStore } from '@/stores/cart'
+import api from '@/services/api'
 
 const router = useRouter()
 const store = usePaymentStore()
 const cartStore = useCartStore()
+
+const merchantName = ref('MY STORE')
+
+onMounted(async () => {
+  try {
+    const data: any = await api.get('/settings')
+    const s = data.settings || {}
+    merchantName.value = s.payment?.merchantName || s.siteName || 'MY STORE'
+  } catch {
+    // keep default
+  }
+})
+
+function downloadAbaQR() {
+  if (!store.abaQrImage) return
+  const link = document.createElement('a')
+  link.href = store.abaQrImage
+  link.download = `ABA-KHQR-${Date.now()}.png`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
 
 const sheetClasses = computed(() => [
   'h-[90vh] sm:h-auto sm:max-w-[420px] sm:my-8 sm:rounded-[28px] sm:mx-auto sm:relative sm:bottom-auto',

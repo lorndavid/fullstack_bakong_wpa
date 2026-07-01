@@ -158,28 +158,11 @@
             <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <p class="text-xs text-amber-700 dark:text-amber-300">Online payment is temporarily unavailable. Only Cash on Delivery is supported right now.</p>
+            <p class="text-xs text-amber-700 dark:text-amber-300">Online payment is temporarily unavailable. Please check back later.</p>
           </div>
-
-          <!-- COD -->
-          <label class="flex items-center p-3 xs:p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
-            :class="paymentMethod === 'cod' 
-              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
-              : 'border-surface-200 dark:border-surface-600 hover:border-primary-300'">
-            <input type="radio" v-model="paymentMethod" value="cod" class="w-4 h-4 text-primary-500 focus:ring-primary-500" />
-            <div class="ml-3 flex items-center gap-3">
-              <div class="w-10 h-10 xs:w-12 xs:h-12 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 xs:w-6 xs:h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-              </div>
-              <div class="min-w-0">
-                <p class="font-semibold text-surface-800 dark:text-white text-sm xs:text-base">{{ $t('checkout.cod') }}</p>
-                <p class="text-xs text-surface-500">{{ $t('checkout.codDesc') }}</p>
-              </div>
-            </div>
-          </label>
         </div>
 
-        <button @click="placeOrder" :disabled="loading" class="mt-6 w-full py-3 bg-accent-500 text-white font-semibold rounded-lg hover:bg-accent-600 transition-all focus:ring-4 focus:ring-accent-500/30 disabled:opacity-50">
+        <button @click="placeOrder" :disabled="loading || (!gateways.aba && !gateways.bakong)" class="mt-6 w-full py-3 bg-accent-500 text-white font-semibold rounded-lg hover:bg-accent-600 transition-all focus:ring-4 focus:ring-accent-500/30 disabled:opacity-50 disabled:cursor-not-allowed">
           <span v-if="loading">{{ $t('checkout.processing') }}</span>
           <span v-else>{{ $t('checkout.placeOrder') }} - ${{ cart.total.toFixed(2) }}</span>
         </button>
@@ -227,10 +210,10 @@ onMounted(async () => {
   }
 
   // Pick a sensible default payment method based on what's enabled.
-  if (!gateways.bakong && gateways.aba) {
+  if (gateways.bakong) {
+    paymentMethod.value = 'khqr'
+  } else if (gateways.aba) {
     paymentMethod.value = 'aba_payway'
-  } else if (!gateways.bakong && !gateways.aba) {
-    paymentMethod.value = 'cod'
   }
 })
 
@@ -281,16 +264,12 @@ async function placeOrder() {
         orderId: order._id,
         amount: order.total,
       })
-    } else if (paymentMethod.value === 'khqr') {
-      // Open the KHQR checkout bottom sheet
+    } else {
+      // Open the KHQR checkout bottom sheet (default)
       paymentStore.openSheet({
         orderId: order._id,
         amount: order.total,
       })
-    } else {
-      toast.success('Order placed successfully! You will pay upon delivery.')
-      cart.clearCart()
-      router.push(`/order/${order._id}`)
     }
   } catch (err: any) {
     toast.error(err.message || err.error || 'Failed to place order')
