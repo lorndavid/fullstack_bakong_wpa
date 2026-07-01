@@ -1,10 +1,38 @@
 import QRCode from 'qrcode';
 import { BakongKHQR, IndividualInfo, khqrData } from 'bakong-khqr';
+import Settings from '../models/Settings';
 
-const MERCHANT_BAKONG_ID = process.env.MERCHANT_BAKONG_ID || '';
-const MERCHANT_NAME = process.env.MERCHANT_NAME || 'MY SHOP';
-const MERCHANT_CITY = process.env.MERCHANT_CITY || 'Phnom Penh';
+const ENV_MERCHANT_BAKONG_ID = process.env.MERCHANT_BAKONG_ID || '';
+const ENV_MERCHANT_NAME = process.env.MERCHANT_NAME || 'MY SHOP';
+const ENV_MERCHANT_CITY = process.env.MERCHANT_CITY || 'Phnom Penh';
 const DEFAULT_CURRENCY = process.env.DEFAULT_CURRENCY === 'USD' ? khqrData.currency.usd : khqrData.currency.khr;
+
+/**
+ * Resolve merchant config dynamically. The admin can override the
+ * Bakong account ID, name and city from the dashboard. Falls back to
+ * environment variables if the database is unreachable.
+ */
+async function resolveBakongMerchant(): Promise<{
+  bakongId: string;
+  merchantName: string;
+  merchantCity: string;
+}> {
+  try {
+    const settings = await Settings.getSingleton();
+    const p = settings.payment || ({} as any);
+    return {
+      bakongId: p.bakongAccountId || ENV_MERCHANT_BAKONG_ID,
+      merchantName: p.merchantName || settings.siteName || ENV_MERCHANT_NAME,
+      merchantCity: p.merchantCity || ENV_MERCHANT_CITY,
+    };
+  } catch {
+    return {
+      bakongId: ENV_MERCHANT_BAKONG_ID,
+      merchantName: ENV_MERCHANT_NAME,
+      merchantCity: ENV_MERCHANT_CITY,
+    };
+  }
+}
 
 // Official Bakong API configuration
 const BAKONG_API_URL = process.env.BAKONG_API_URL || 'https://api-bakong.nbc.gov.kh';
@@ -43,15 +71,23 @@ async function qrToDataUrl(khqrString: string): Promise<string> {
  * it as a PNG image. No external API call needed for QR generation.
  */
 const createKHQR = async (amount: number, orderId?: string): Promise<CreateQRResult> => {
+  const { bakongId, merchantName, merchantCity } = await resolveBakongMerchant();
+
+  if (!bakongId) {
+    throw new Error(
+      'Bakong account ID is not configured. Set it in Admin → Payway Gateway.'
+    );
+  }
+
   const info = new IndividualInfo(
-    MERCHANT_BAKONG_ID,
-    MERCHANT_NAME,
-    MERCHANT_CITY,
+    bakongId,
+    merchantName,
+    merchantCity,
     {
       amount,
       currency: DEFAULT_CURRENCY,
       billNumber: orderId?.slice(-25),
-      storeLabel: MERCHANT_NAME,
+      storeLabel: merchantName,
       expirationTimestamp: Date.now() + QR_EXPIRY_SECONDS * 1000,
     }
   );

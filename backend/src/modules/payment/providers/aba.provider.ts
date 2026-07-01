@@ -1,10 +1,24 @@
 import axios from 'axios';
 import Transaction, { ITransactionDocument } from '../../../models/Transaction';
 import Order from '../../../models/Order';
+import Settings from '../../../models/Settings';
 
 const ABA_API_BASE = process.env.ABA_API_BASE || 'https://api.anajak.site';
-const ABA_MERCHANT_LINK = process.env.ABA_MERCHANT_LINK || 'https://link.payway.com.kh/ABAPAY0j459666x';
+const ENV_ABA_MERCHANT_LINK = process.env.ABA_MERCHANT_LINK || 'https://link.payway.com.kh/ABAPAY0j459666x';
 const ABA_PROVIDER = 'ABA_PAYWAY';
+
+/**
+ * Read the ABA merchant link from the database (admin-configurable),
+ * falling back to env defaults if the DB is unavailable.
+ */
+async function resolveAbaMerchantLink(): Promise<string> {
+  try {
+    const settings = await Settings.getSingleton();
+    return settings.payment?.abaMerchantLink || ENV_ABA_MERCHANT_LINK;
+  } catch {
+    return ENV_ABA_MERCHANT_LINK;
+  }
+}
 
 export interface AbaCreateQrResult {
   qr_string: string;
@@ -38,10 +52,18 @@ async function createPayment(amount: number): Promise<{
   clientId?: string;
 }> {
   try {
+    const merchantLink = await resolveAbaMerchantLink();
+
+    if (!merchantLink) {
+      throw new Error(
+        'ABA merchant link is not configured. Set it in Admin → Payway Gateway.'
+      );
+    }
+
     const response = await axios.post<AbaCreateQrResult>(
       `${ABA_API_BASE}/api/create-qr`,
       {
-        url: ABA_MERCHANT_LINK,
+        url: merchantLink,
         amount: Math.round(amount * 100) / 100, // ensure 2 decimal places
       },
       {

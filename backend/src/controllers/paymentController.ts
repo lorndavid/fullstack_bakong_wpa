@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import Transaction from '../models/Transaction';
 import Order from '../models/Order';
+import Settings from '../models/Settings';
 import QRCode from 'qrcode';
 import { createKHQR, checkTransactionStatus } from '../services/bakong';
 import { confirmPayment, paymentEvents } from '../services/paymentWatcher';
@@ -29,6 +30,22 @@ const createPayment = async (
     }
 
     const paymentProvider = provider === 'ABA_PAYWAY' ? 'ABA_PAYWAY' as const : 'BAKONG' as const;
+
+    // ─── Gate by admin settings ──────────────────────────────────
+    try {
+      const settings = await Settings.getSingleton();
+      const p = settings.payment;
+      if (paymentProvider === 'ABA_PAYWAY' && p?.abaEnabled === false) {
+        res.status(400).json({ success: false, message: 'ABA PayWay is currently disabled by the merchant.' });
+        return;
+      }
+      if (paymentProvider === 'BAKONG' && p?.bakongEnabled === false) {
+        res.status(400).json({ success: false, message: 'Bakong KHQR is currently disabled by the merchant.' });
+        return;
+      }
+    } catch {
+      // If settings can't be read we don't hard-block — fall through.
+    }
 
     if (paymentProvider === 'ABA_PAYWAY') {
       const result = await serviceCreatePayment('ABA_PAYWAY', amount, orderId);

@@ -57,6 +57,46 @@ const updateSettings = async (
       settings.lowStockThreshold = parseInt(req.body.lowStockThreshold, 10) || 5;
     }
 
+    // ─── Payment Gateway Settings ────────────────────────────────
+    if (!settings.payment) {
+      settings.payment = {
+        abaEnabled: true,
+        bakongEnabled: true,
+        abaMerchantLink: '',
+        bakongAccountId: '',
+        merchantName: 'MY SHOP',
+        merchantCity: 'Phnom Penh',
+      };
+    }
+
+    // Support either a `payment` JSON blob or flat fields for convenience.
+    const paymentPayload =
+      typeof req.body.payment === 'string'
+        ? JSON.parse(req.body.payment)
+        : req.body.payment;
+
+    const toBool = (v: unknown): boolean => {
+      if (typeof v === 'boolean') return v;
+      if (typeof v === 'string') return v.toLowerCase() === 'true';
+      return Boolean(v);
+    };
+
+    if (paymentPayload && typeof paymentPayload === 'object') {
+      if (paymentPayload.abaEnabled !== undefined) settings.payment.abaEnabled = toBool(paymentPayload.abaEnabled);
+      if (paymentPayload.bakongEnabled !== undefined) settings.payment.bakongEnabled = toBool(paymentPayload.bakongEnabled);
+      if (paymentPayload.abaMerchantLink !== undefined) settings.payment.abaMerchantLink = String(paymentPayload.abaMerchantLink);
+      if (paymentPayload.bakongAccountId !== undefined) settings.payment.bakongAccountId = String(paymentPayload.bakongAccountId);
+      if (paymentPayload.merchantName !== undefined) settings.payment.merchantName = String(paymentPayload.merchantName);
+      if (paymentPayload.merchantCity !== undefined) settings.payment.merchantCity = String(paymentPayload.merchantCity);
+    }
+
+    if (req.body.abaEnabled !== undefined) settings.payment.abaEnabled = toBool(req.body.abaEnabled);
+    if (req.body.bakongEnabled !== undefined) settings.payment.bakongEnabled = toBool(req.body.bakongEnabled);
+    if (req.body.abaMerchantLink !== undefined) settings.payment.abaMerchantLink = String(req.body.abaMerchantLink);
+    if (req.body.bakongAccountId !== undefined) settings.payment.bakongAccountId = String(req.body.bakongAccountId);
+    if (req.body.merchantName !== undefined) settings.payment.merchantName = String(req.body.merchantName);
+    if (req.body.merchantCity !== undefined) settings.payment.merchantCity = String(req.body.merchantCity);
+
     // Handle logo upload
     if (req.file) {
       try {

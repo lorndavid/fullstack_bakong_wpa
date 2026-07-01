@@ -1,5 +1,14 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
+export interface IPaymentGatewaySettings {
+  abaEnabled: boolean;
+  bakongEnabled: boolean;
+  abaMerchantLink: string;
+  bakongAccountId: string;
+  merchantName: string;
+  merchantCity: string;
+}
+
 export interface ISettingsDocument extends Document {
   // Theme Colors
   colors: {
@@ -24,6 +33,13 @@ export interface ISettingsDocument extends Document {
   };
   // Low stock alert threshold
   lowStockThreshold: number;
+  // Payment Gateway Configuration
+  payment: IPaymentGatewaySettings;
+  // Flat fields exposed for convenience (read from `payment` sub-doc)
+  abaEnabled?: boolean;
+  bakongEnabled?: boolean;
+  abaMerchantLink?: string;
+  bakongAccountId?: string;
   updatedAt: Date;
 }
 
@@ -59,9 +75,44 @@ const settingsSchema = new Schema<ISettingsDocument>(
       type: Number,
       default: 5,
     },
+    payment: {
+      abaEnabled: { type: Boolean, default: true },
+      bakongEnabled: { type: Boolean, default: true },
+      abaMerchantLink: {
+        type: String,
+        default: process.env.ABA_MERCHANT_LINK || 'https://link.payway.com.kh/ABAPAY0j459666x',
+      },
+      bakongAccountId: {
+        type: String,
+        default: process.env.MERCHANT_BAKONG_ID || '',
+      },
+      merchantName: {
+        type: String,
+        default: process.env.MERCHANT_NAME || 'MY SHOP',
+      },
+      merchantCity: {
+        type: String,
+        default: process.env.MERCHANT_CITY || 'Phnom Penh',
+      },
+    },
   },
   {
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform(_doc, ret: any) {
+        // Surface payment fields at top-level so the frontend can read
+        // `settings.abaEnabled` etc. while the schema keeps them grouped.
+        if (ret.payment) {
+          ret.abaEnabled = ret.payment.abaEnabled;
+          ret.bakongEnabled = ret.payment.bakongEnabled;
+          ret.abaMerchantLink = ret.payment.abaMerchantLink;
+          ret.bakongAccountId = ret.payment.bakongAccountId;
+        }
+        return ret;
+      },
+    },
+    toObject: { virtuals: true },
   }
 );
 

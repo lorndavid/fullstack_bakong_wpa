@@ -109,31 +109,42 @@
         <h2 class="text-lg font-bold text-surface-800 dark:text-white mb-4">{{ $t('checkout.choosePayment') }}</h2>
         <div class="space-y-3">
           <!-- ABA PayWay -->
-          <label class="flex items-center p-3 xs:p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
+          <label v-if="gateways.aba" class="flex items-center p-3 xs:p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
             :class="paymentMethod === 'aba_payway' 
-              ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20' 
+              ? 'border-[#003288] bg-blue-50 dark:bg-blue-900/20' 
               : 'border-surface-200 dark:border-surface-600 hover:border-blue-300'">
-            <input type="radio" v-model="paymentMethod" value="aba_payway" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-            <div class="ml-3 flex items-center gap-3">
-              <div class="w-10 h-10 xs:w-12 xs:h-12 bg-[#003288] rounded-full flex items-center justify-center flex-shrink-0">
-                <span class="text-white font-bold text-sm">ABA</span>
+            <input type="radio" v-model="paymentMethod" value="aba_payway" class="w-4 h-4 text-[#003288] focus:ring-[#003288]" />
+            <div class="ml-3 flex items-center gap-3 flex-1 min-w-0">
+              <div class="w-10 h-10 xs:w-12 xs:h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0 border border-surface-100 shadow-sm">
+                <svg viewBox="0 0 40 40" class="w-7 h-7">
+                  <path d="M20 4 C 28 4, 36 10, 36 20 C 36 30, 28 36, 20 36 C 14 36, 8 32, 6 24 C 12 28, 22 28, 26 22 C 30 16, 28 8, 20 4 Z" fill="#E2001A"/>
+                  <path d="M22 9 C 28 11, 32 16, 30 22 C 28 27, 22 28, 18 26 C 22 24, 26 20, 26 16 C 26 13, 24 10, 22 9 Z" fill="#003288"/>
+                </svg>
               </div>
               <div class="min-w-0">
                 <p class="font-semibold text-surface-800 dark:text-white text-sm xs:text-base">ABA PayWay</p>
-                <p class="text-xs text-surface-500">Pay with ABA KHQR, Stripe-like checkout</p>
+                <p class="text-xs text-surface-500">Scan KHQR with the ABA Mobile app</p>
               </div>
             </div>
           </label>
 
           <!-- Bakong KHQR -->
-          <label class="flex items-center p-3 xs:p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
+          <label v-if="gateways.bakong" class="flex items-center p-3 xs:p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
             :class="paymentMethod === 'khqr' 
-              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
-              : 'border-surface-200 dark:border-surface-600 hover:border-primary-300'">
-            <input type="radio" v-model="paymentMethod" value="khqr" class="w-4 h-4 text-primary-500 focus:ring-primary-500" />
-            <div class="ml-3 flex items-center gap-3">
-              <div class="w-10 h-10 xs:w-12 xs:h-12 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 xs:w-6 xs:h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+              ? 'border-[#E2001A] bg-red-50 dark:bg-red-900/20' 
+              : 'border-surface-200 dark:border-surface-600 hover:border-red-300'">
+            <input type="radio" v-model="paymentMethod" value="khqr" class="w-4 h-4 text-[#E2001A] focus:ring-[#E2001A]" />
+            <div class="ml-3 flex items-center gap-3 flex-1 min-w-0">
+              <div class="w-10 h-10 xs:w-12 xs:h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0 border border-surface-100 shadow-sm">
+                <svg viewBox="0 0 40 40" class="w-8 h-8">
+                  <rect width="40" height="40" rx="8" fill="#E2001A"/>
+                  <g fill="white">
+                    <rect x="6" y="6" width="4" height="4" rx="1"/>
+                    <rect x="30" y="6" width="4" height="4" rx="1"/>
+                    <rect x="6" y="30" width="4" height="4" rx="1"/>
+                  </g>
+                  <text x="20" y="24" text-anchor="middle" fill="white" font-family="Arial Black, Arial, sans-serif" font-size="9" font-weight="900" letter-spacing="0.5">KHQR</text>
+                </svg>
               </div>
               <div class="min-w-0">
                 <p class="font-semibold text-surface-800 dark:text-white text-sm xs:text-base">{{ $t('checkout.khqr') }}</p>
@@ -141,6 +152,14 @@
               </div>
             </div>
           </label>
+
+          <!-- No digital gateways notice -->
+          <div v-if="!gateways.aba && !gateways.bakong" class="p-3 xs:p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-start gap-3">
+            <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-xs text-amber-700 dark:text-amber-300">Online payment is temporarily unavailable. Only Cash on Delivery is supported right now.</p>
+          </div>
 
           <!-- COD -->
           <label class="flex items-center p-3 xs:p-4 border-2 rounded-xl cursor-pointer transition-all duration-150"
@@ -188,8 +207,31 @@ const cart = useCartStore()
 const auth = useAuthStore()
 const toast = useToast()
 
-onMounted(() => {
+const gateways = reactive({
+  aba: true,
+  bakong: true,
+})
+
+onMounted(async () => {
   cart.fetchPromotions()
+
+  // Read which gateways are enabled by the admin
+  try {
+    const data: any = await api.get('/settings')
+    const s = data.settings || {}
+    const p = s.payment || {}
+    gateways.aba = (p.abaEnabled ?? s.abaEnabled) !== false
+    gateways.bakong = (p.bakongEnabled ?? s.bakongEnabled) !== false
+  } catch {
+    // If settings can't be read, assume both are enabled.
+  }
+
+  // Pick a sensible default payment method based on what's enabled.
+  if (!gateways.bakong && gateways.aba) {
+    paymentMethod.value = 'aba_payway'
+  } else if (!gateways.bakong && !gateways.aba) {
+    paymentMethod.value = 'cod'
+  }
 })
 
 const steps = computed(() => [t('checkout.contact'), t('checkout.review'), t('checkout.payment')])
