@@ -97,6 +97,28 @@ const updateSettings = async (
     if (req.body.merchantName !== undefined) settings.payment.merchantName = String(req.body.merchantName);
     if (req.body.merchantCity !== undefined) settings.payment.merchantCity = String(req.body.merchantCity);
 
+    // ─── Social / Footer Links ───────────────────────────────────
+    const socialPayload =
+      typeof req.body.social === 'string' ? JSON.parse(req.body.social) : req.body.social;
+
+    if (socialPayload && typeof socialPayload === 'object') {
+      if (!settings.social) {
+        settings.social = {
+          facebook: '', instagram: '', tiktok: '', telegram: '',
+          youtube: '', twitter: '', phone: '', email: '', address: '',
+        };
+      }
+      const socialKeys: (keyof typeof settings.social)[] = [
+        'facebook', 'instagram', 'tiktok', 'telegram',
+        'youtube', 'twitter', 'phone', 'email', 'address',
+      ];
+      for (const key of socialKeys) {
+        if (socialPayload[key] !== undefined) {
+          settings.social[key] = String(socialPayload[key]);
+        }
+      }
+    }
+
     // Handle logo upload
     if (req.file) {
       try {

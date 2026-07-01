@@ -107,55 +107,24 @@
       </div>
 
       <!-- Skeleton -->
-      <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-        <div v-for="i in 4" :key="i" class="bg-white dark:bg-surface-800 rounded-card shadow-card overflow-hidden animate-pulse">
-          <div class="aspect-square bg-surface-200 dark:bg-surface-700"></div>
+      <div v-if="loading" class="product-grid">
+        <div v-for="i in 5" :key="i" class="bg-white dark:bg-surface-800 rounded-2xl shadow-card overflow-hidden">
+          <div class="aspect-square shimmer"></div>
           <div class="p-3 space-y-2">
-            <div class="h-4 bg-surface-200 dark:bg-surface-700 rounded w-3/4"></div>
-            <div class="h-4 bg-surface-200 dark:bg-surface-700 rounded w-1/2"></div>
+            <div class="h-3 shimmer rounded w-1/2"></div>
+            <div class="h-4 shimmer rounded w-3/4"></div>
+            <div class="h-4 shimmer rounded w-1/3"></div>
           </div>
         </div>
       </div>
 
       <!-- Flash Sale Grid -->
-      <div v-else-if="flashSaleProducts.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-        <div
+      <div v-else-if="flashSaleProducts.length > 0" class="product-grid">
+        <ProductCard
           v-for="product in flashSaleProducts"
           :key="product._id"
-          @click="goToProduct(product._id)"
-          class="group bg-white dark:bg-surface-800 rounded-card shadow-card hover:shadow-card-hover transition-all duration-250 overflow-hidden cursor-pointer hover:-translate-y-1"
-        >
-          <div class="relative overflow-hidden">
-            <img
-              v-if="product.images && product.images.length > 0"
-              :src="product.images[0].secure_url"
-              :alt="product.name"
-              class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-300"
-              loading="lazy"
-            />
-            <div v-else class="aspect-square bg-surface-100 dark:bg-surface-700 flex items-center justify-center">
-              <svg class="w-12 h-12 text-surface-300 dark:text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-            </div>
-            <span class="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded">-{{ product.discount }}%</span>
-          </div>
-          <div class="p-3">
-            <h3 class="text-sm font-semibold text-surface-800 dark:text-white truncate">{{ product.name }}</h3>
-            <div class="flex items-center space-x-2 mt-1">
-              <span class="text-base font-bold text-accent-500">${{ discountPrice(product).toFixed(2) }}</span>
-              <span class="text-xs text-surface-400 line-through">${{ product.price.toFixed(2) }}</span>
-            </div>
-            <div class="flex items-center justify-between mt-1">
-              <div class="flex items-center">
-                <svg v-for="s in 5" :key="s" class="w-3 h-3" :class="s <= Math.round(product.rating) ? 'text-yellow-400' : 'text-surface-300'" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                </svg>
-              </div>
-              <span class="text-xs text-surface-400">{{ product.sold }} {{ $t('home.sold') }}</span>
-            </div>
-          </div>
-        </div>
+          :product="product"
+        />
       </div>
 
       <!-- Error -->
@@ -240,55 +209,25 @@
       </div>
 
       <!-- Skeleton -->
-      <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-        <div v-for="i in 5" :key="i" class="bg-white dark:bg-surface-800 rounded-card shadow-card overflow-hidden animate-pulse">
-          <div class="aspect-square bg-surface-200 dark:bg-surface-700"></div>
+      <div v-if="loading" class="product-grid">
+        <div v-for="i in 5" :key="i" class="bg-white dark:bg-surface-800 rounded-2xl shadow-card overflow-hidden">
+          <div class="aspect-square shimmer"></div>
           <div class="p-3 space-y-2">
-            <div class="h-4 bg-surface-200 dark:bg-surface-700 rounded w-3/4"></div>
-            <div class="h-4 bg-surface-200 dark:bg-surface-700 rounded w-1/2"></div>
+            <div class="h-3 shimmer rounded w-1/2"></div>
+            <div class="h-4 shimmer rounded w-3/4"></div>
+            <div class="h-4 shimmer rounded w-1/3"></div>
           </div>
         </div>
       </div>
 
       <!-- New Arrivals Grid -->
-      <div v-else-if="newArrivals.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-        <div
+      <div v-else-if="newArrivals.length > 0" class="product-grid">
+        <ProductCard
           v-for="product in newArrivals"
           :key="product._id"
-          @click="goToProduct(product._id)"
-          class="group bg-white dark:bg-surface-800 rounded-card shadow-card hover:shadow-card-hover transition-all duration-250 overflow-hidden cursor-pointer hover:-translate-y-1"
-        >
-          <div class="relative overflow-hidden">
-            <img
-              v-if="product.images && product.images.length > 0"
-              :src="product.images[0].secure_url"
-              :alt="product.name"
-              class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-300"
-              loading="lazy"
-            />
-            <div v-else class="aspect-square bg-surface-100 dark:bg-surface-700 flex items-center justify-center">
-              <svg class="w-12 h-12 text-surface-300 dark:text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-            </div>                            <span v-if="product.discount > 0" class="absolute top-2 left-2 px-2 py-0.5 bg-accent-500 text-white text-xs font-bold rounded">{{ $t('home.newArrivals') }}</span>
-          </div>
-          <div class="p-3">
-            <h3 class="text-sm font-semibold text-surface-800 dark:text-white truncate">{{ product.name }}</h3>
-            <div class="flex items-center space-x-1 mt-1">
-              <span class="text-base font-bold text-primary-500">
-                {{ product.discount > 0 ? '$' + discountPrice(product).toFixed(2) : '$' + product.price.toFixed(2) }}
-              </span>
-            </div>
-            <div class="flex items-center space-x-1 mt-1">
-              <div class="flex">
-                <svg v-for="s in 5" :key="s" class="w-3 h-3" :class="s <= Math.round(product.rating) ? 'text-yellow-400' : 'text-surface-300'" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                </svg>
-              </div>
-              <span class="text-xs text-surface-400">({{ product.numReviews }})</span>
-            </div>
-          </div>
-        </div>
+          :product="product"
+          :badge="$t('home.newArrivals')"
+        />
       </div>
 
       <!-- Error -->
@@ -311,6 +250,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
+import ProductCard from '@/components/ProductCard.vue'
 
 interface Category {
   _id: string

@@ -8,7 +8,12 @@
     </div>
 
     <!-- Top Navbar -->
-    <header class="sticky top-0 z-50 bg-white dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 shadow-sm">
+    <header
+      class="sticky top-0 z-50 border-b transition-all duration-300"
+      :class="scrolled
+        ? 'bg-white/80 dark:bg-surface-900/80 backdrop-blur-xl border-surface-200/70 dark:border-surface-700/70 shadow-soft'
+        : 'bg-white dark:bg-surface-800 border-surface-200 dark:border-surface-700'"
+    >
       <div class="max-w-7xl mx-auto px-4 sm:px-6">
         <div class="flex items-center justify-between h-14 sm:h-16">
           <!-- Logo -->
@@ -101,8 +106,11 @@
       </router-view>
     </main>
 
+    <!-- Footer (hidden on very small since bottom nav covers) -->
+    <AppFooter class="hidden sm:block" />
+
     <!-- Mobile Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 sm:hidden">
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-surface-800/90 backdrop-blur-xl border-t border-surface-200 dark:border-surface-700 sm:hidden safe-bottom">
       <div class="flex items-center justify-around h-16 px-2">
         <router-link to="/" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
           :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'home' }">
@@ -169,13 +177,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, inject, type Ref } from 'vue'
+import { ref, provide, inject, onMounted, onUnmounted, type Ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
 import { useThemeStore } from '@/stores/theme'
 import { useToast, Toast } from '@/composables/useToast'
 import { useRouter } from 'vue-router'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
+import AppFooter from '@/components/AppFooter.vue'
 
 const auth = useAuthStore()
 const siteLogo = inject('siteLogo', ref('')) as Ref<string>
@@ -185,6 +194,14 @@ const router = useRouter()
 
 const showUserMenu = ref(false)
 const avatarError = ref(false)
+
+// Header glassmorphism on scroll
+const scrolled = ref(false)
+function handleScroll() {
+  scrolled.value = window.scrollY > 8
+}
+onMounted(() => window.addEventListener('scroll', handleScroll, { passive: true }))
+onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 
 // Toast system
 const { toasts: toastList, remove: removeToast } = useToast()

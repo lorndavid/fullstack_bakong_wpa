@@ -9,6 +9,18 @@ export interface IPaymentGatewaySettings {
   merchantCity: string;
 }
 
+export interface ISocialLinks {
+  facebook: string;
+  instagram: string;
+  tiktok: string;
+  telegram: string;
+  youtube: string;
+  twitter: string;
+  phone: string;
+  email: string;
+  address: string;
+}
+
 export interface ISettingsDocument extends Document {
   // Theme Colors
   colors: {
@@ -35,6 +47,8 @@ export interface ISettingsDocument extends Document {
   lowStockThreshold: number;
   // Payment Gateway Configuration
   payment: IPaymentGatewaySettings;
+  // Social / footer links
+  social: ISocialLinks;
   // Flat fields exposed for convenience (read from `payment` sub-doc)
   abaEnabled?: boolean;
   bakongEnabled?: boolean;
@@ -94,6 +108,17 @@ const settingsSchema = new Schema<ISettingsDocument>(
         type: String,
         default: process.env.MERCHANT_CITY || 'Phnom Penh',
       },
+    },
+    social: {
+      facebook: { type: String, default: '' },
+      instagram: { type: String, default: '' },
+      tiktok: { type: String, default: '' },
+      telegram: { type: String, default: '' },
+      youtube: { type: String, default: '' },
+      twitter: { type: String, default: '' },
+      phone: { type: String, default: '' },
+      email: { type: String, default: '' },
+      address: { type: String, default: '' },
     },
   },
   {

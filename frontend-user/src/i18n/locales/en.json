@@ -213,6 +213,17 @@
     "sortBestSelling": "Best Selling"
   },
   "footer": {
-    "allRightsReserved": "All rights reserved."
+    "allRightsReserved": "All rights reserved.",
+    "shop": "Shop",
+    "account": "Account",
+    "contact": "Contact",
+    "freeShipping": "Free Shipping",
+    "freeShippingSub": "On all orders",
+    "securePayment": "Secure Payment",
+    "securePaymentSub": "KHQR & PayWay",
+    "qualityGuarantee": "Quality Assured",
+    "qualityGuaranteeSub": "Authentic products",
+    "support": "24/7 Support",
+    "supportSub": "Always here to help"
   }
 }
