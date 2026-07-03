@@ -285,6 +285,42 @@
     "saveFailed": "Failed to save promotion",
     "deleteFailed": "Failed to delete promotion"
   },
+  "chat": {
+    "stats": {
+      "active": "Active",
+      "waiting": "Waiting",
+      "closed": "Closed",
+      "messagesToday": "messages today",
+      "connected": "Connected",
+      "disconnected": "Disconnected"
+    },
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "waiting": "Waiting",
+      "closed": "Closed",
+      "searchPlaceholder": "Search customers..."
+    },
+    "empty": {
+      "noConversations": "No conversations found",
+      "noMessagesYet": "No messages yet",
+      "selectConversation": "Select a conversation",
+      "selectConversationDesc": "Choose a conversation from the list to start chatting"
+    },
+    "actions": {
+      "assignToMe": "Assign to me",
+      "close": "Close",
+      "closed": "Closed"
+    },
+    "inputPlaceholder": "Type your reply...",
+    "downloadFile": "Download file",
+    "closeModal": {
+      "title": "Close conversation?",
+      "description": "The customer will be notified and cannot send further messages.",
+      "cancel": "Cancel",
+      "confirm": "Close Conversation"
+    }
+  },
   "language": {
     "en": "English",
     "km": "Khmer"

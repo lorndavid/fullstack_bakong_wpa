@@ -212,6 +212,21 @@
     "sortHighLow": "Price: High to Low",
     "sortBestSelling": "Best Selling"
   },
+  "chat": {
+    "liveChat": "Live Chat",
+    "status": {
+      "online": "Online",
+      "connecting": "Connecting...",
+      "closed": "Conversation closed"
+    },
+    "waitingBanner": "Looking for an available staff member...",
+    "closedBanner": "This conversation has been closed. Start a new chat if you need help.",
+    "welcome": "Welcome! 👋",
+    "welcomeSubtitle": "How can we help you today?",
+    "inputPlaceholder": "Type your message...",
+    "downloadFile": "Download file",
+    "emoji": "Emoji"
+  },
   "footer": {
     "allRightsReserved": "All rights reserved.",
     "shop": "Shop",

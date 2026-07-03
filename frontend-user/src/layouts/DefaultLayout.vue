@@ -153,6 +153,9 @@
       </div>
     </nav>
 
+    <!-- Chat Widget (only when logged in) -->
+    <ChatWidget v-if="auth.isAuthenticated" />
+
     <!-- Toast Container -->
     <div class="fixed top-4 right-4 z-[100] space-y-2 max-w-sm w-full pointer-events-none">
       <transition-group name="toast">
@@ -184,6 +187,7 @@ import { useToast, Toast } from '@/composables/useToast'
 import { useRouter } from 'vue-router'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import AppFooter from '@/components/AppFooter.vue'
+import ChatWidget from '@/components/chat/ChatWidget.vue'
 
 const auth = useAuthStore()
 const siteLogo = inject('siteLogo', ref('')) as Ref<string>

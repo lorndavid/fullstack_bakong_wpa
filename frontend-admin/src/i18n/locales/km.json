@@ -285,6 +285,42 @@
     "saveFailed": "រក្សាទុកការផ្សព្វផ្សាយបរាជ័យ",
     "deleteFailed": "លុបការផ្សព្វផ្សាយបរាជ័យ"
   },
+  "chat": {
+    "stats": {
+      "active": "សកម្ម",
+      "waiting": "រង់ចាំ",
+      "closed": "បិទ",
+      "messagesToday": "សារថ្ងៃនេះ",
+      "connected": "បានភ្ជាប់",
+      "disconnected": "ផ្តាច់"
+    },
+    "filters": {
+      "all": "ទាំងអស់",
+      "active": "សកម្ម",
+      "waiting": "រង់ចាំ",
+      "closed": "បិទ",
+      "searchPlaceholder": "ស្វែងរកអតិថិជន..."
+    },
+    "empty": {
+      "noConversations": "រកមិនឃើញការសន្ទនា",
+      "noMessagesYet": "មិនទាន់មានសារ",
+      "selectConversation": "ជ្រើសរើសការសន្ទនា",
+      "selectConversationDesc": "ជ្រើសរើសការសន្ទនាពីបញ្ជីដើម្បីចាប់ផ្តើម"
+    },
+    "actions": {
+      "assignToMe": "ប្រគល់ឱ្យខ្ញុំ",
+      "close": "បិទ",
+      "closed": "បានបិទ"
+    },
+    "inputPlaceholder": "វាយចម្លើយរបស់អ្នក...",
+    "downloadFile": "ទាញយកឯកសារ",
+    "closeModal": {
+      "title": "បិទការសន្ទនា?",
+      "description": "អតិថិជននឹងត្រូវបានជូនដំណឹង ហើយមិនអាចផ្ញើសារបន្ថែមទៀតបានទេ។",
+      "cancel": "បោះបង់",
+      "confirm": "បិទការសន្ទនា"
+    }
+  },
   "language": {
     "en": "អង់គ្លេស",
     "km": "ខ្មែរ"
