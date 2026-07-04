@@ -17,7 +17,8 @@
     "heroSlides": "Hero Slides",
     "paywayGateway": "Payway Gateway",
     "signOut": "Sign Out",
-    "settings": "Settings"
+    "settings": "Settings",
+    "notifications": "Notifications"
   },
   "roles": {
     "title": "Roles & Permissions",
@@ -284,6 +285,33 @@
     "active": "Active",
     "saveFailed": "Failed to save promotion",
     "deleteFailed": "Failed to delete promotion"
+  },    "notifications": {
+    "title": "Notifications",
+    "manageDesc": "Create and manage push notifications",
+    "createNotification": "Create Notification",
+    "createDesc": "Send a notification to your users",
+    "totalSent": "Total Sent",
+    "sentToday": "Sent Today",
+    "scheduled": "Scheduled",
+    "unread": "Unread",
+    "type": "Type",
+    "title": "Title",
+    "audience": "Audience",
+    "channels": "Channels",
+    "date": "Date",
+    "message": "Message",
+    "allTypes": "All Types",
+    "allUsers": "All Users",
+    "allAdmins": "All Admins",
+    "singleUser": "Single User",
+    "scheduleFor": "Schedule For (optional)",
+    "scheduleHint": "Leave empty to send immediately",
+    "scheduleNotification": "Schedule",
+    "sendNotification": "Send Now",
+    "link": "Deep Link (optional)",
+    "linkHint": "Relative path like /order/123 or /product/abc",
+    "noNotifications": "No notifications yet",
+    "noNotificationsDesc": "Notifications will appear here once sent."
   },
   "chat": {
     "stats": {

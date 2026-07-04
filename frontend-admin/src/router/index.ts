@@ -24,6 +24,7 @@ const routes = [
       { path: 'hero-slides', name: 'hero-slides', component: () => import('@/pages/HeroSlidesPage.vue') },
       { path: 'payway-gateway', name: 'payway-gateway', component: () => import('@/pages/PaywayGatewayPage.vue') },
       { path: 'chat', name: 'chat', component: () => import('@/pages/ChatDashboardPage.vue') },
+      { path: 'notifications', name: 'notifications', component: () => import('@/pages/NotificationsPage.vue') },
       { path: 'settings', name: 'settings', component: () => import('@/pages/SettingsPage.vue') },
     ],
   },

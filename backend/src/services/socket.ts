@@ -363,6 +363,31 @@ export function initSocket(httpServer: HTTPServer) {
       }
     });
 
+    // ── Notification: Mark as read via socket ───────────────────
+    socket.on('notification:mark-read', async (notificationId: string) => {
+      try {
+        const { markAsRead } = await import('./notificationService');
+        await markAsRead(notificationId, userId);
+        io.to(`user:${userId}`).emit('notification:updated', {
+          notificationId,
+          read: true,
+        });
+      } catch {
+        // silent
+      }
+    });
+
+    // ── Notification: Mark all as read via socket ───────────────
+    socket.on('notification:mark-all-read', async () => {
+      try {
+        const { markAllAsRead } = await import('./notificationService');
+        await markAllAsRead(userId);
+        io.to(`user:${userId}`).emit('notification:all-read');
+      } catch {
+        // silent
+      }
+    });
+
     // ── Disconnect ──────────────────────────────────────────────
     socket.on('disconnect', () => {
       // Cleanup is handled automatically by Socket.IO

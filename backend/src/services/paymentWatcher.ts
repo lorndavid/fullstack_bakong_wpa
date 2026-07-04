@@ -3,6 +3,7 @@ import Transaction from '../models/Transaction';
 import Order from '../models/Order';
 import { checkTransactionStatus } from './bakong';
 import { checkPaymentByProvider } from '../modules/payment/payment.factory';
+import { createAndSendNotification } from './notificationService';
 
 // Event emitter for real-time payment notifications
 export const paymentEvents = new EventEmitter();
@@ -52,6 +53,18 @@ export async function confirmPayment(transaction: any): Promise<boolean> {
     }
     // Emit global event for admin dashboard
     paymentEvents.emit('payment:all', eventData);
+
+    // Send payment successful notification
+    if (order) {
+      createAndSendNotification({
+        recipient: { userId: order.userId.toString() },
+        type: 'payment_successful',
+        title: 'Payment Successful',
+        message: `Payment of $${transaction.amount.toFixed(2)} for order #${order._id.toString().slice(-8)} was successful!`,
+        data: { orderId: order._id.toString(), amount: transaction.amount, transactionId: transaction._id.toString() },
+        link: `/order/${order._id}`,
+      }).catch(() => {});
+    }
 
     console.log(`[PaymentWatcher] ✅ Transaction ${transaction._id} confirmed (provider: ${transaction.provider})`);
     return true;

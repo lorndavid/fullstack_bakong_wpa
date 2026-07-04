@@ -17,7 +17,8 @@
     "heroSlides": "ស្លាយពាណិជ្ជកម្ម",
     "paywayGateway": "ច្រកទូទាត់ Payway",
     "signOut": "ចាកចេញ",
-    "settings": "ការកំណត់"
+    "settings": "ការកំណត់",
+    "notifications": "ការជូនដំណឹង"
   },
   "roles": {
     "title": "តួនាទី និងសិទ្ធិ",
@@ -284,6 +285,33 @@
     "active": "សកម្ម",
     "saveFailed": "រក្សាទុកការផ្សព្វផ្សាយបរាជ័យ",
     "deleteFailed": "លុបការផ្សព្វផ្សាយបរាជ័យ"
+  },    "notifications": {
+    "title": "ការជូនដំណឹង",
+    "manageDesc": "បង្កើត និងគ្រប់គ្រងការជូនដំណឹង",
+    "createNotification": "បង្កើតការជូនដំណឹង",
+    "createDesc": "ផ្ញើការជូនដំណឹងទៅកាន់អ្នកប្រើប្រាស់",
+    "totalSent": "បានផ្ញើសរុប",
+    "sentToday": "ផ្ញើថ្ងៃនេះ",
+    "scheduled": "បានកំណត់ពេល",
+    "unread": "មិនទាន់អាន",
+    "type": "ប្រភេទ",
+    "title": "ចំណងជើង",
+    "audience": "អ្នកទទួល",
+    "channels": "ប៉ុស្តិ៍",
+    "date": "កាលបរិច្ឆេទ",
+    "message": "សារ",
+    "allTypes": "គ្រប់ប្រភេទ",
+    "allUsers": "អ្នកប្រើប្រាស់ទាំងអស់",
+    "allAdmins": "អ្នកគ្រប់គ្រងទាំងអស់",
+    "singleUser": "អ្នកប្រើប្រាស់តែមួយ",
+    "scheduleFor": "កំណត់ពេល (ស្រេចចិត្ត)",
+    "scheduleHint": "ទុកឲ្យនៅទទេ ដើម្បីផ្ញើភ្លាមៗ",
+    "scheduleNotification": "កំណត់ពេល",
+    "sendNotification": "ផ្ញើឥឡូវនេះ",
+    "link": "តំណភ្ជាប់ (ស្រេចចិត្ត)",
+    "linkHint": "ផ្លូវដូចជា /order/123 ឬ /product/abc",
+    "noNotifications": "មិនទាន់មានការជូនដំណឹង",
+    "noNotificationsDesc": "ការជូនដំណឹងនឹងបង្ហាញនៅទីនេះ"
   },
   "chat": {
     "stats": {

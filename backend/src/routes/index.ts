@@ -9,6 +9,7 @@ import heroSlideRoutes from './heroSlideRoutes';
 import settingsRoutes from './settingsRoutes';
 import promotionRoutes from './promotionRoutes';
 import chatRoutes from './chatRoutes';
+import notificationRoutes from './notificationRoutes';
 
 const router = Router();
 
@@ -22,6 +23,7 @@ router.use('/hero-slides', heroSlideRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/promotions', promotionRoutes);
 router.use('/chat', chatRoutes);
+router.use('/notifications', notificationRoutes);
 
 // Health check
 router.get('/health', (_req, res) => {
