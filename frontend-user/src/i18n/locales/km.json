@@ -212,6 +212,17 @@
     "sortHighLow": "តម្លៃ: ខ្ពស់ទៅទាប",
     "sortBestSelling": "លក់ដាច់"
   },
+  "notifications": {
+    "title": "ការជូនដំណឹង",
+    "unread": "មិនទាន់អាន",
+    "markRead": "សម្គាល់ថាបានអាន",
+    "markAllRead": "សម្គាល់ទាំងអស់ថាបានអាន",
+    "noNotifications": "មិនទាន់មានការជូនដំណឹង",
+    "noNotificationsDesc": "អ្នកនឹងឃើញការជូនដំណឹងនៅទីនេះ",
+    "viewAll": "មើលទាំងអស់",
+    "loadMore": "ទាញយកបន្ថែម",
+    "viewDetails": "មើលព័ត៌មានលម្អិត"
+  },
   "chat": {
     "liveChat": "ការជជែកផ្ទាល់",
     "status": {

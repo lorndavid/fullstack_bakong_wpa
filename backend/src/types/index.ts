@@ -107,3 +107,21 @@ export interface BakongCheckResponse {
   status: string;
   [key: string]: any;
 }
+
+export interface INotification {
+  _id: string;
+  user?: string;
+  type: 'order_confirmed' | 'payment_successful' | 'shipping_update' | 'flash_sale' | 'new_coupon' | 'wishlist_price_drop' | 'admin_broadcast';
+  title: string;
+  message: string;
+  data?: Record<string, any>;
+  link?: string;
+  read: boolean;
+  readAt?: Date;
+  channels: ('in_app' | 'email' | 'push')[];
+  scheduledFor?: Date;
+  sentAt?: Date;
+  expiresAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}

@@ -212,6 +212,17 @@
     "sortHighLow": "Price: High to Low",
     "sortBestSelling": "Best Selling"
   },
+  "notifications": {
+    "title": "Notifications",
+    "unread": "unread",
+    "markRead": "Mark as read",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No notifications yet",
+    "noNotificationsDesc": "You'll see notifications here when something happens",
+    "viewAll": "View All",
+    "loadMore": "Load More",
+    "viewDetails": "View Details"
+  },
   "chat": {
     "liveChat": "Live Chat",
     "status": {

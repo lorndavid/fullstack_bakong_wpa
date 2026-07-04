@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import Order from '../models/Order';
 import Product from '../models/Product';
 import { AuthRequest } from '../types';
+import { createAndSendNotification } from '../services/notificationService';
 
 const createOrder = async (
   req: AuthRequest,
@@ -80,6 +81,29 @@ const createOrder = async (
       await Product.findByIdAndUpdate(item.productId, {
         $inc: { stock: -item.quantity, sold: item.quantity },
       });
+    }
+
+    // Notify: Order confirmed (for COD) / Order pending (for payment)
+    if (order.status === 'confirmed') {
+      // COD orders auto-confirm
+      createAndSendNotification({
+        recipient: { userId: req.user!.id },
+        type: 'order_confirmed',
+        title: 'Order Confirmed',
+        message: `Your order #${order._id.toString().slice(-8)} has been confirmed. Total: $${order.total.toFixed(2)}`,
+        data: { orderId: order._id.toString(), total: order.total, status: 'confirmed' },
+        link: `/order/${order._id}`,
+      }).catch(() => {});
+    } else {
+      // Payment required — notify about pending order
+      createAndSendNotification({
+        recipient: { userId: req.user!.id },
+        type: 'order_confirmed',
+        title: 'Order Placed',
+        message: `Your order #${order._id.toString().slice(-8)} has been placed. Please complete payment.`,
+        data: { orderId: order._id.toString(), total: order.total, status: 'pending' },
+        link: `/payment/${order._id}`,
+      }).catch(() => {});
     }
 
     res.status(201).json({ success: true, order });
@@ -212,6 +236,42 @@ const updateOrderStatus = async (
           $inc: { stock: item.quantity, sold: -item.quantity },
         });
       }
+    }
+
+    // Notify: Shipping update
+    if (status === 'shipping') {
+      createAndSendNotification({
+        recipient: { userId: order.userId.toString() },
+        type: 'shipping_update',
+        title: 'Order Shipped',
+        message: `Your order #${order._id.toString().slice(-8)} is on its way! Estimated delivery soon.`,
+        data: { orderId: order._id.toString(), status: 'shipping' },
+        link: `/order/${order._id}`,
+      }).catch(() => {});
+    }
+
+    // Notify: Order delivered
+    if (status === 'delivered') {
+      createAndSendNotification({
+        recipient: { userId: order.userId.toString() },
+        type: 'shipping_update',
+        title: 'Order Delivered',
+        message: `Your order #${order._id.toString().slice(-8)} has been delivered. Enjoy!`,
+        data: { orderId: order._id.toString(), status: 'delivered' },
+        link: `/order/${order._id}`,
+      }).catch(() => {});
+    }
+
+    // Notify: Order cancelled
+    if (status === 'cancelled') {
+      createAndSendNotification({
+        recipient: { userId: order.userId.toString() },
+        type: 'order_confirmed',
+        title: 'Order Cancelled',
+        message: `Your order #${order._id.toString().slice(-8)} has been cancelled.`,
+        data: { orderId: order._id.toString(), status: 'cancelled' },
+        link: `/order/${order._id}`,
+      }).catch(() => {});
     }
 
     res.json({ success: true, order });

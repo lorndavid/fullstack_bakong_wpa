@@ -49,6 +49,9 @@
             <!-- Language Switcher -->
             <LanguageSwitcher />
 
+            <!-- Notifications -->
+            <NotificationBell v-if="auth.isAuthenticated" />
+
             <!-- Theme Toggle -->
             <button @click="theme.toggle()" class="p-2 text-surface-600 dark:text-surface-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700" :aria-label="theme.isDark ? 'Light mode' : 'Dark mode'">
               <svg v-if="theme.isDark" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,20 +182,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, inject, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, provide, inject, watch, onMounted, onUnmounted, type Ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
 import { useThemeStore } from '@/stores/theme'
+import { useNotificationStore } from '@/stores/notification'
 import { useToast, Toast } from '@/composables/useToast'
 import { useRouter } from 'vue-router'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import ChatWidget from '@/components/chat/ChatWidget.vue'
+import NotificationBell from '@/components/NotificationBell.vue'
 
 const auth = useAuthStore()
 const siteLogo = inject('siteLogo', ref('')) as Ref<string>
 const cart = useCartStore()
 const theme = useThemeStore()
+const notifications = useNotificationStore()
 const router = useRouter()
 
 const showUserMenu = ref(false)
@@ -219,6 +225,25 @@ function toastClasses(type: Toast['type']) {
     info: 'bg-primary-500',
   }[type]
 }
+
+// Connect notification socket when authenticated
+onMounted(() => {
+  if (auth.isAuthenticated) {
+    notifications.connect()
+    notifications.fetchUnreadCount()
+    notifications.initBrowserNotifications()
+  }
+})
+
+watch(() => auth.isAuthenticated, (val) => {
+  if (val) {
+    notifications.connect()
+    notifications.fetchUnreadCount()
+    notifications.initBrowserNotifications()
+  } else {
+    notifications.disconnect()
+  }
+})
 
 function handleLogout() {
   auth.logout()

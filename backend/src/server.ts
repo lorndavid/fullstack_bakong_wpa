@@ -10,6 +10,7 @@ import path from 'path';
 import errorHandler from './middlewares/errorHandler';
 import { startPaymentWatcher } from './services/paymentWatcher';
 import { initSocket } from './services/socket';
+import { processScheduledNotifications } from './services/notificationService';
 import http from 'http';
 
 const app = express();
@@ -61,6 +62,18 @@ httpServer.listen(PORT, () => {
 connectDB().then(() => {
   // Start the payment watcher once DB is connected
   startPaymentWatcher();
+  // Start processing scheduled notifications
+  processScheduledNotifications();
+  // Check every 60 seconds for due notifications
+  const scheduledNotifInterval = setInterval(processScheduledNotifications, 60000);
+  
+  // Clean up intervals on graceful shutdown
+  process.on('SIGTERM', () => {
+    clearInterval(scheduledNotifInterval);
+  });
+  process.on('SIGINT', () => {
+    clearInterval(scheduledNotifInterval);
+  });
 }).catch((err) => {
   console.error('Failed to connect to MongoDB after all retries:', err.message);
   console.log('Server is still running. API endpoints requiring DB will return errors until MongoDB is available.');
