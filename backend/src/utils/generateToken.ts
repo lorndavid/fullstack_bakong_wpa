@@ -3,24 +3,25 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 export interface TokenPayload {
   id: string;
   role?: string;
+  name?: string;
 }
 
 /**
  * Generate a single JWT with role (used by admin email/password login).
  * Expires in 7 days.
  */
-const generateToken = (id: string, role: string): string => {
+const generateToken = (id: string, role: string, name?: string): string => {
   const options: SignOptions = {
     expiresIn: '7d',
   };
-  return jwt.sign({ id, role }, process.env.JWT_SECRET!, options);
+  return jwt.sign({ id, role, name }, process.env.JWT_SECRET!, options);
 };
 
-const generateAccessToken = (id: string): string => {
+const generateAccessToken = (id: string, name?: string): string => {
   const options: SignOptions = {
     expiresIn: '15m',
   };
-  return jwt.sign({ id }, process.env.JWT_SECRET!, options);
+  return jwt.sign({ id, name }, process.env.JWT_SECRET!, options);
 };
 
 const generateRefreshToken = (id: string): string => {

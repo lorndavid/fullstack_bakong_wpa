@@ -9,8 +9,11 @@ import routes from './routes';
 import path from 'path';
 import errorHandler from './middlewares/errorHandler';
 import { startPaymentWatcher } from './services/paymentWatcher';
+import { initSocket } from './services/socket';
+import http from 'http';
 
 const app = express();
+const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
 // Configure Cloudinary
@@ -44,8 +47,11 @@ app.use((_req, res) => {
   });
 });
 
+// Initialize Socket.IO
+initSocket(httpServer);
+
 // Start server (don't block on DB connection)
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`API: http://localhost:${PORT}/api`);
   console.log(`Health: http://localhost:${PORT}/api/health`);

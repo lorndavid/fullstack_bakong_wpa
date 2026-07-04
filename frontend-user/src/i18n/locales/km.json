@@ -212,7 +212,42 @@
     "sortHighLow": "តម្លៃ: ខ្ពស់ទៅទាប",
     "sortBestSelling": "លក់ដាច់"
   },
+  "chat": {
+    "liveChat": "ការជជែកផ្ទាល់",
+    "status": {
+      "online": "បានភ្ជាប់",
+      "connecting": "កំពុងភ្ជាប់...",
+      "closed": "ការសន្ទនាត្រូវបានបិទ"
+    },
+    "waitingBanner": "កំពុងស្វែងរកបុគ្គលិក...",
+    "closedBanner": "ការសន្ទនានេះត្រូវបានបិទ។ សូមចាប់ផ្តើមការសន្ទនាថ្មី ប្រសិនបើអ្នកត្រូវការជំនួយ។",
+    "welcome": "សូមស្វាគមន៍! 👋",
+    "welcomeSubtitle": "តើយើងអាចជួយអ្នកដោយរបៀបណាខ្លះ?",
+    "inputPlaceholder": "វាយសាររបស់អ្នក...",
+    "downloadFile": "ទាញយកឯកសារ",
+    "emoji": "សញ្ញាអារម្មណ៍",
+    "quickReplies": {
+      "greeting": "👋 សួស្តី! ត្រូវការជំនួយ?",
+      "shipping": "🚚 ព័ត៌មានដឹកជញ្ជូន",
+      "payment": "💳 វិធីទូទាត់",
+      "returns": "🔄 គោលការណ៍ត្រឡប់",
+      "promotions": "🏷️ ការផ្សព្វផ្សាយបច្ចុប្បន្ន",
+      "staff": "💬 និយាយជាមួយបុគ្គលិក"
+    },
+    "clickToDownload": "ចុចដើម្បីទាញយក"
+  },
   "footer": {
-    "allRightsReserved": "រក្សាសិទ្ធិគ្រប់យ៉ាង។"
+    "allRightsReserved": "រក្សាសិទ្ធិគ្រប់យ៉ាង។",
+    "shop": "ទិញទំនិញ",
+    "account": "គណនី",
+    "contact": "ទំនាក់ទំនង",
+    "freeShipping": "ដឹកជញ្ជូនឥតគិតថ្លៃ",
+    "freeShippingSub": "គ្រប់ការបញ្ជាទិញ",
+    "securePayment": "ទូទាត់សុវត្ថិភាព",
+    "securePaymentSub": "KHQR និង PayWay",
+    "qualityGuarantee": "ធានាគុណភាព",
+    "qualityGuaranteeSub": "ផលិតផលពិត",
+    "support": "គាំទ្រ ២៤/៧",
+    "supportSub": "ជួយអ្នកគ្រប់ពេល"
   }
 }

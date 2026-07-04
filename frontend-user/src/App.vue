@@ -11,6 +11,7 @@ import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import api from '@/services/api'
 import { mergeTextOverrides } from '@/i18n'
+import { useThemeStore } from '@/stores/theme'
 
 const route = useRoute()
 const siteLogo = ref('')
@@ -63,9 +64,7 @@ async function loadSettings() {
 
 onMounted(() => {
   // Initialize theme on load
-  import('@/stores/theme').then(({ useThemeStore }) => {
-    useThemeStore().init()
-  })
+  useThemeStore().init()
 
   // Load custom settings from admin
   loadSettings()

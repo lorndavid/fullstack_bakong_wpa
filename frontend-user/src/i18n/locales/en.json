@@ -212,7 +212,42 @@
     "sortHighLow": "Price: High to Low",
     "sortBestSelling": "Best Selling"
   },
+  "chat": {
+    "liveChat": "Live Chat",
+    "status": {
+      "online": "Online",
+      "connecting": "Connecting...",
+      "closed": "Conversation closed"
+    },
+    "waitingBanner": "Looking for an available staff member...",
+    "closedBanner": "This conversation has been closed. Start a new chat if you need help.",
+    "welcome": "Welcome! 👋",
+    "welcomeSubtitle": "How can we help you today?",
+    "inputPlaceholder": "Type your message...",
+    "downloadFile": "Download file",
+    "emoji": "Emoji",
+    "quickReplies": {
+      "greeting": "👋 Hi! Need help?",
+      "shipping": "🚚 Shipping info",
+      "payment": "💳 Payment options",
+      "returns": "🔄 Returns policy",
+      "promotions": "🏷️ Current promotions",
+      "staff": "💬 Talk to staff"
+    },
+    "clickToDownload": "Click to download"
+  },
   "footer": {
-    "allRightsReserved": "All rights reserved."
+    "allRightsReserved": "All rights reserved.",
+    "shop": "Shop",
+    "account": "Account",
+    "contact": "Contact",
+    "freeShipping": "Free Shipping",
+    "freeShippingSub": "On all orders",
+    "securePayment": "Secure Payment",
+    "securePaymentSub": "KHQR & PayWay",
+    "qualityGuarantee": "Quality Assured",
+    "qualityGuaranteeSub": "Authentic products",
+    "support": "24/7 Support",
+    "supportSub": "Always here to help"
   }
 }

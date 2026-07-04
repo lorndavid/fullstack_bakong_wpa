@@ -63,7 +63,7 @@ const login = async (
       return;
     }
 
-    const token = generateToken(user._id.toString(), user.role);
+    const token = generateToken(user._id.toString(), user.role, user.name);
 
     // Record login event (fire-and-forget)
     recordLoginEvent(user._id.toString(), 'login', req);
@@ -149,7 +149,7 @@ const googleLogin = async (
     }
 
     // Generate tokens
-    const accessToken = generateAccessToken(user._id.toString());
+    const accessToken = generateAccessToken(user._id.toString(), user.name);
     const refreshToken = generateRefreshToken(user._id.toString());
 
     // Record Google login event (fire-and-forget)
@@ -250,7 +250,7 @@ const refreshToken = async (
     }
 
     // Issue new tokens
-    const accessToken = generateAccessToken(user._id.toString());
+    const accessToken = generateAccessToken(user._id.toString(), user.name);
     const newRefreshToken = generateRefreshToken(user._id.toString());
 
     res.json({

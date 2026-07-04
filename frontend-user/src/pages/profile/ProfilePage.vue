@@ -172,7 +172,7 @@
           </div>
           <div class="mt-2 pt-2 border-t border-surface-100 dark:border-surface-700">
             <p class="text-xs text-surface-500">
-              {{ order.products.length }} {{ $t('order.items') }} · {{ order.paymentMethod === 'khqr' ? 'KHQR' : 'COD' }}
+              {{ order.products.length }} {{ $t('order.items') }} · {{ paymentLabel(order.paymentMethod) }}
             </p>
           </div>
         </div>
@@ -276,7 +276,7 @@ interface Order {
   shipping: number
   total: number
   status: 'pending' | 'confirmed' | 'shipping' | 'delivered' | 'cancelled'
-  paymentMethod: 'khqr' | 'cod'
+  paymentMethod: 'khqr' | 'cod' | 'aba_payway'
   createdAt: string
 }
 
@@ -338,6 +338,15 @@ function setLocale(localeCode: string) {
   locale.value = localeCode
   localStorage.setItem('locale', localeCode)
   document.documentElement.lang = localeCode
+}
+
+function paymentLabel(method: string): string {
+  const map: Record<string, string> = {
+    khqr: 'Bakong KHQR',
+    aba_payway: 'ABA PayWay',
+    cod: 'COD',
+  }
+  return map[method] || method.toUpperCase()
 }
 
 function formatDate(dateStr: string): string {

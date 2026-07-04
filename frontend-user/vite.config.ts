@@ -10,12 +10,12 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.{png,svg,ico}'],
       manifest: {
-        name: 'MY SHOP - Cambodian E-commerce',
+        name: 'MY SHOP - Premium Skincare',
         short_name: 'MY SHOP',
-        description: 'Premium Cambodian Shopping Experience',
-        theme_color: '#0055A4',
-        background_color: '#0055A4',
-        display: 'fullscreen',
+        description: 'Premium skincare shopping experience',
+        theme_color: '#10B981',
+        background_color: '#FFFFFF',
+        display: 'standalone',
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
@@ -79,6 +79,10 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,
+      },
+      '/socket.io': {
+        target: 'http://localhost:5000',
+        ws: true,
       },
     },
   },
