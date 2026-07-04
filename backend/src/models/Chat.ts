@@ -38,6 +38,7 @@ export interface IConversation {
     adminName: string;
   };
   status: 'active' | 'waiting' | 'closed';
+  greeted: boolean;
   lastMessage?: string;
   lastMessageAt?: Date;
   unreadCount: number;
@@ -55,6 +56,7 @@ export interface IConversationDocument extends Document {
     adminName: string;
   };
   status: 'active' | 'waiting' | 'closed';
+  greeted: boolean;
   lastMessage?: string;
   lastMessageAt?: Date;
   unreadCount: number;
@@ -138,6 +140,10 @@ const conversationSchema = new Schema<IConversationDocument>(
       type: String,
       enum: ['active', 'waiting', 'closed'],
       default: 'waiting',
+    },
+    greeted: {
+      type: Boolean,
+      default: false,
     },
     lastMessage: {
       type: String,

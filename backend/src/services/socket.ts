@@ -2,7 +2,7 @@ import { Server as HTTPServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { verifyAccessToken } from '../utils/generateToken';
 import { Conversation, Message } from '../models/Chat';
-import { getAutoReply } from './autoResponder';
+import { getAutoReply, getWelcomeMessage } from './autoResponder';
 
 let io: Server;
 
@@ -138,6 +138,32 @@ export function initSocket(httpServer: HTTPServer) {
           });
         }
 
+        // Auto-assign admin when they send their first message in a conversation
+        if (isAdmin && !conversation.assignedTo) {
+          conversation.assignedTo = { adminId: userId, adminName: userName };
+          if (conversation.status === 'waiting') {
+            conversation.status = 'active';
+          }
+          await conversation.save();
+          io.to(`conversation:${data.conversationId}`).emit('chat:assigned', {
+            conversationId: data.conversationId,
+            assignedTo: { adminId: userId, adminName: userName },
+          });
+          io.to('admin:notifications').emit('admin:conversation-updated', conversation.toObject());
+
+          // System message about assignment
+          const assignMsg = await Message.create({
+            conversationId: data.conversationId,
+            sender: 'system',
+            senderId: 'system',
+            senderName: 'System',
+            content: `${userName} is now assisting`,
+            messageType: 'system',
+            read: false,
+          });
+          io.to(`conversation:${data.conversationId}`).emit('chat:message', assignMsg.toObject());
+        }
+
         const message = await Message.create({
           conversationId: data.conversationId,
           sender: senderRole,
@@ -171,9 +197,40 @@ export function initSocket(httpServer: HTTPServer) {
           });
 
           // ── Auto-responder ──────────────────────────────────
-          const reply = getAutoReply(data.content);
+          // Determine the reply — use welcome message if first greeting, otherwise use auto-reply
+          const reply = !conversation.greeted
+            ? getWelcomeMessage()
+            : getAutoReply(data.content);
+
           if (reply) {
+            // Mark as greeted
+            if (!conversation.greeted) {
+              conversation.greeted = true;
+              await conversation.save();
+            }
+
+            // Send typing indicator before replying (natural feel)
+            io.to(`conversation:${data.conversationId}`).emit('chat:typing', {
+              conversationId: data.conversationId,
+              userId: 'system',
+              userName: '🤖 Assistant',
+              isTyping: true,
+            });
+
+            // Small delay to simulate typing (500ms-800ms)
+            const typingDelay = 600 + Math.random() * 400;
             setTimeout(async () => {
+              // Stop typing
+              io.to(`conversation:${data.conversationId}`).emit('chat:typing', {
+                conversationId: data.conversationId,
+                userId: 'system',
+                userName: '🤖 Assistant',
+                isTyping: false,
+              });
+
+              // Small extra pause before message appears
+              await new Promise(r => setTimeout(r, 200));
+
               const autoMsg = await Message.create({
                 conversationId: data.conversationId,
                 sender: 'system',
@@ -183,12 +240,15 @@ export function initSocket(httpServer: HTTPServer) {
                 messageType: 'text',
                 read: false,
               });
+
               // Update conversation metadata
               conversation.lastMessage = reply.substring(0, 200);
               conversation.lastMessageAt = new Date();
               conversation.unreadCount += 1;
               await conversation.save();
+
               io.to(`conversation:${data.conversationId}`).emit('chat:message', autoMsg.toObject());
+
               // Notify admin
               io.to('admin:notifications').emit('admin:new-message', {
                 conversationId: data.conversationId,
@@ -196,7 +256,7 @@ export function initSocket(httpServer: HTTPServer) {
                 lastMessageAt: autoMsg.createdAt,
                 unreadCount: conversation.unreadCount,
               });
-            }, 1500);
+            }, typingDelay);
           }
         }
       } catch (err) {

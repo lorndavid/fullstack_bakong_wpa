@@ -157,19 +157,8 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <!-- Assign button -->
-            <button
-              v-if="!chat.selectedConversation.assignedTo && chat.selectedConversation.status !== 'closed'"
-              @click="chat.assignStaff(chat.selectedConversation._id)"
-              class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-primary-50 dark:bg-primary-900/30 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-              </svg>
-              {{ $t('chat.actions.assignToMe') }}
-            </button>
-            <!-- Assigned badge -->
-            <span v-else-if="chat.selectedConversation.assignedTo" class="px-2.5 py-1 text-xs font-medium bg-primary-50 dark:bg-primary-900/30 text-primary-500 rounded-lg">
+            <!-- Assigned badge (shows who's assisting) -->
+            <span v-if="chat.selectedConversation.assignedTo" class="px-2.5 py-1 text-xs font-medium bg-primary-50 dark:bg-primary-900/30 text-primary-500 rounded-lg">
               {{ chat.selectedConversation.assignedTo.adminName }}
             </span>
             <!-- Close button -->

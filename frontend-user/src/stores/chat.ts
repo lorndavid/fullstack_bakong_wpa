@@ -54,6 +54,16 @@ export const useChatStore = defineStore('chat', () => {
     return `${typingUsers.value.length} people are typing...`
   })
 
+  // ─── Suggested replies (quick action chips) ────────────────
+  const suggestedReplies = [
+    '👋 Hi! Need help?',
+    '🚚 Shipping info',
+    '💳 Payment options',
+    '🔄 Returns policy',
+    '🏷️ Current promotions',
+    '💬 Talk to staff',
+  ]
+
   // ─── Socket Connection ────────────────────────────────────────
   function connect() {
     const token = localStorage.getItem('accessToken')
@@ -250,5 +260,6 @@ export const useChatStore = defineStore('chat', () => {
     sendTyping,
     toggleOpen,
     toggleMinimize,
+    suggestedReplies,
   }
 })

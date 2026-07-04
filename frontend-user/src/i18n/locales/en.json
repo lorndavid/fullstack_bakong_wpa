@@ -225,7 +225,16 @@
     "welcomeSubtitle": "How can we help you today?",
     "inputPlaceholder": "Type your message...",
     "downloadFile": "Download file",
-    "emoji": "Emoji"
+    "emoji": "Emoji",
+    "quickReplies": {
+      "greeting": "👋 Hi! Need help?",
+      "shipping": "🚚 Shipping info",
+      "payment": "💳 Payment options",
+      "returns": "🔄 Returns policy",
+      "promotions": "🏷️ Current promotions",
+      "staff": "💬 Talk to staff"
+    },
+    "clickToDownload": "Click to download"
   },
   "footer": {
     "allRightsReserved": "All rights reserved.",
