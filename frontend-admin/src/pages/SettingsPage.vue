@@ -1,248 +1,430 @@
 <template>
-  <div class="space-y-6">      <h2 class="text-xl font-bold text-surface-800 dark:text-white">{{ $t('settings.title') }}</h2>
+  <div class="space-y-6">
+    <!-- ─── Page Header ─────────────────────────────────────── -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-surface-800 dark:text-white tracking-tight">{{ $t('settings.title') }}</h1>
+            <p class="text-sm text-surface-400 dark:text-surface-500">Configure your store's identity, appearance, and preferences</p>
+          </div>
+        </div>
+      </div>
+      <!-- Quick Save Indicator -->
+      <div class="flex items-center gap-2 text-xs text-surface-400 dark:text-surface-500 bg-white dark:bg-surface-800 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-accent-500 animate-pulse"></span>
+        All changes auto-saved
+      </div>
+    </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="bg-white dark:bg-surface-800 rounded-2xl shadow-card p-12 text-center">
-      <div class="inline-block w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-      <p class="mt-3 text-sm text-surface-500">{{ $t('common.loadingSettings') }}</p>
+    <div v-if="loading" class="col-span-full bg-white dark:bg-surface-800 rounded-2xl shadow-card p-16 text-center">
+      <div class="relative inline-flex">
+        <div class="w-10 h-10 border-4 border-primary-100 dark:border-primary-900/30 rounded-full"></div>
+        <div class="absolute top-0 left-0 w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+      <p class="mt-4 text-sm text-surface-500">{{ $t('common.loadingSettings') }}</p>
     </div>
 
     <!-- Error -->
-    <div v-else-if="error" class="bg-white dark:bg-surface-800 rounded-2xl shadow-card p-8 text-center">
-      <p class="text-red-500 text-sm mb-3">{{ error }}</p>
-      <button @click="fetchSettings" class="px-4 py-2 bg-primary-500 text-white text-sm rounded-lg">Retry</button>
+    <div v-else-if="error" class="bg-white dark:bg-surface-800 rounded-2xl shadow-card p-12 text-center border border-red-200 dark:border-red-900/30">
+      <div class="w-14 h-14 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+        <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <p class="text-red-500 text-sm mb-4 font-medium">{{ error }}</p>
+      <button @click="fetchSettings" class="px-5 py-2.5 bg-primary-500 text-white text-sm font-semibold rounded-xl hover:bg-primary-600 transition-all shadow-lg shadow-primary-500/20 active:scale-[0.98]">
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Retry
+        </span>
+      </button>
     </div>
 
     <template v-else>
-      <!-- Site Identity -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-4">
-        <h3 class="text-lg font-bold text-surface-800 dark:text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          {{ $t('settings.siteIdentity') }}
-        </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('settings.siteName') }}</label>
-            <input v-model="form.siteName" class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">{{ $t('settings.siteDescription') }}</label>
-            <input v-model="form.siteDescription" class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" />
+      <!-- ─── 3-Column Grid ──────────────────────────────────── -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- ════════ Column 1: Site Identity ════════ -->
+        <div class="lg:col-span-1 space-y-6">
+          <div class="group bg-white dark:bg-surface-800 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 border border-surface-100 dark:border-surface-700/50 overflow-hidden">
+            <!-- Card header with accent bar -->
+            <div class="h-1.5 bg-gradient-to-r from-primary-500 to-primary-400"></div>
+            <div class="p-5 sm:p-6 space-y-5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-primary-50 dark:bg-primary-900/30 rounded-xl flex items-center justify-center">
+                  <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <h3 class="text-base font-bold text-surface-800 dark:text-white">{{ $t('settings.siteIdentity') }}</h3>
+              </div>
+              
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-xs font-semibold text-surface-600 dark:text-surface-300 uppercase tracking-wide mb-1.5">{{ $t('settings.siteName') }}</label>
+                  <input v-model="form.siteName" 
+                    class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 dark:focus:border-primary-500 transition-all placeholder:text-surface-400" 
+                    placeholder="My Store" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-surface-600 dark:text-surface-300 uppercase tracking-wide mb-1.5">{{ $t('settings.siteDescription') }}</label>
+                  <input v-model="form.siteDescription" 
+                    class="w-full px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 dark:focus:border-primary-500 transition-all placeholder:text-surface-400" 
+                    placeholder="Your store description" />
+                </div>
+              </div>
+
+              <!-- Logo Upload -->
+              <div class="border-t border-surface-100 dark:border-surface-700 pt-4 space-y-3">
+                <div>
+                  <label class="block text-xs font-semibold text-surface-600 dark:text-surface-300 uppercase tracking-wide mb-1.5">{{ $t('settings.siteLogo') }}</label>
+                  <p class="text-xs text-surface-400 mb-3 leading-relaxed">{{ $t('settings.siteLogoDesc') }}</p>
+                </div>
+                <div class="flex items-start gap-4">
+                  <!-- Logo Preview -->
+                  <div class="relative w-20 h-20 bg-surface-50 dark:bg-surface-700 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 border-2 border-dashed border-surface-300 dark:border-surface-600 group-hover:border-primary-300 dark:group-hover:border-primary-600 transition-colors">
+                    <img v-if="logoPreview || form.logoUrl" :src="logoPreview || form.logoUrl" alt="Logo preview" class="w-full h-full object-contain p-1" />
+                    <svg v-else class="w-8 h-8 text-surface-300 dark:text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <!-- Hover overlay on preview -->
+                    <div v-if="logoPreview || form.logoUrl" class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" @click="removeLogo" aria-label="Remove logo">
+                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="flex-1 space-y-2.5">
+                    <input
+                      ref="logoInput"
+                      type="file"
+                      accept="image/*"
+                      @change="handleLogoChange"
+                      class="w-full text-sm text-surface-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-primary-50 dark:file:bg-primary-900/30 file:text-primary-600 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/50 file:cursor-pointer cursor-pointer transition-all file:transition-all"
+                    />
+                    <div v-if="logoPreview || form.logoUrl" class="flex gap-3">
+                      <button @click="removeLogo" type="button" class="text-xs font-semibold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1.5 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        {{ $t('settings.removeLogo') }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Logo Upload -->
-        <div class="border-t border-surface-200 dark:border-surface-700 pt-4">
-          <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-2">{{ $t('settings.siteLogo') }}</label>
-          <p class="text-xs text-surface-400 mb-3">{{ $t('settings.siteLogoDesc') }}</p>
-          <div class="flex items-start gap-4">
-            <!-- Logo Preview -->
-            <div class="w-20 h-20 bg-surface-100 dark:bg-surface-700 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 border-2 border-dashed border-surface-300 dark:border-surface-600">
-              <img v-if="logoPreview || form.logoUrl" :src="logoPreview || form.logoUrl" alt="Logo preview" class="w-full h-full object-contain" />
-              <svg v-else class="w-8 h-8 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        <!-- ════════ Column 2: Theme Colors + Low Stock ════════ -->
+        <div class="lg:col-span-1 space-y-6">
+          <!-- Theme Colors Card -->
+          <div class="group bg-white dark:bg-surface-800 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 border border-surface-100 dark:border-surface-700/50 overflow-hidden">
+            <div class="h-1.5 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+            <div class="p-5 sm:p-6 space-y-5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-purple-50 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                  <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-base font-bold text-surface-800 dark:text-white">{{ $t('settings.themeColors') }}</h3>
+                  <p class="text-xs text-surface-400 mt-0.5">{{ $t('settings.themeColorsDesc') }}</p>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div v-for="color in colorKeys" :key="color.key" class="p-3.5 bg-surface-50 dark:bg-surface-700/30 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-colors">
+                  <div class="flex items-center justify-between mb-2.5">
+                    <label class="text-xs font-semibold text-surface-700 dark:text-surface-200 capitalize">{{ $t(color.labelKey) }}</label>
+                    <span class="text-[11px] font-mono text-surface-400 dark:text-surface-500 px-2 py-0.5 bg-white dark:bg-surface-800 rounded-md border border-surface-200 dark:border-surface-600">{{ form.colors[color.key] }}</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="relative">
+                      <input
+                        type="color"
+                        v-model="form.colors[color.key]"
+                        class="w-11 h-11 rounded-xl cursor-pointer border-2 border-surface-200 dark:border-surface-600 bg-transparent p-1"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      v-model="form.colors[color.key]"
+                      class="flex-1 px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-xs font-mono focus:ring-2 focus:ring-purple-500/30 focus:border-purple-400 transition-all"
+                    />
+                  </div>
+                  <!-- Live preview bar -->
+                  <div class="mt-2.5 h-2 rounded-full transition-all duration-300" :style="{ background: form.colors[color.key] }"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Low Stock Alert Card -->
+          <div class="group bg-white dark:bg-surface-800 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 border border-surface-100 dark:border-surface-700/50 overflow-hidden">
+            <div class="h-1.5 bg-gradient-to-r from-amber-500 to-orange-500"></div>
+            <div class="p-5 sm:p-6 space-y-4">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-amber-50 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
+                  <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-base font-bold text-surface-800 dark:text-white">Low Stock Alert</h3>
+                  <p class="text-xs text-surface-400 mt-0.5 leading-relaxed">Set the threshold for low stock warnings in the dashboard.</p>
+                </div>
+              </div>
+              <div class="flex items-center justify-between p-4 bg-surface-50 dark:bg-surface-700/30 rounded-xl border border-surface-100 dark:border-surface-700/50">
+                <div class="flex items-center gap-4">
+                  <input v-model.number="form.lowStockThreshold" type="number" min="1" max="100"
+                    class="w-20 h-12 px-3 py-2.5 border-2 border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-xl text-lg font-bold text-center focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400 transition-all" />
+                  <div>
+                    <p class="text-sm font-semibold text-surface-800 dark:text-white">units</p>
+                    <p class="text-xs text-surface-400">or fewer in stock</p>
+                  </div>
+                </div>
+                <div class="hidden sm:flex items-center gap-1.5 text-xs text-surface-400 bg-white dark:bg-surface-800 px-3 py-1.5 rounded-lg border border-surface-200 dark:border-surface-600">
+                  <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Alert trigger
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════ Column 3: Flash Sale ════════ -->
+        <div class="lg:col-span-1 space-y-6">
+          <div class="group bg-white dark:bg-surface-800 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 border border-surface-100 dark:border-surface-700/50 overflow-hidden">
+            <div class="h-1.5 bg-gradient-to-r from-accent-500 to-emerald-500"></div>
+            <div class="p-5 sm:p-6 space-y-5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-accent-50 dark:bg-accent-900/30 rounded-xl flex items-center justify-center">
+                  <svg class="w-5 h-5 text-accent-600 dark:text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-base font-bold text-surface-800 dark:text-white">Flash Sale</h3>
+                  <p class="text-xs text-surface-400 mt-0.5">Configure global flash sale end time & featured products.</p>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-surface-600 dark:text-surface-300 uppercase tracking-wide mb-1.5">End Time</label>
+                <div class="relative">
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  <input type="datetime-local" v-model="form.flashSale.endTime" 
+                    class="w-full pl-10 pr-3 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-xl text-sm focus:ring-2 focus:ring-accent-500/30 focus:border-accent-400 transition-all" />
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <label class="text-xs font-semibold text-surface-600 dark:text-surface-300 uppercase tracking-wide">Select Products</label>
+                  <span class="text-[11px] text-surface-400 bg-surface-50 dark:bg-surface-700 px-2 py-0.5 rounded-md border border-surface-200 dark:border-surface-600">
+                    {{ form.flashSale.products.length }} selected
+                  </span>
+                </div>
+                <div v-if="allProducts.length === 0" class="text-sm text-surface-500 py-6 text-center bg-surface-50 dark:bg-surface-700/30 rounded-xl border border-dashed border-surface-300 dark:border-surface-600">
+                  <svg class="w-6 h-6 mx-auto mb-2 text-surface-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                  </svg>
+                  Loading products...
+                </div>
+                <div v-else class="max-h-56 overflow-y-auto border border-surface-200 dark:border-surface-600 rounded-xl p-1.5 bg-surface-50 dark:bg-surface-700/30 space-y-0.5 scrollbar-thin">
+                  <label v-for="product in allProducts" :key="product._id" 
+                    :class="[
+                      'flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all border',
+                      form.flashSale.products.includes(product._id)
+                        ? 'bg-white dark:bg-surface-700 border-primary-200 dark:border-primary-700 shadow-sm'
+                        : 'border-transparent hover:bg-white dark:hover:bg-surface-700 hover:border-surface-200 dark:hover:border-surface-600'
+                    ]">
+                    <input type="checkbox" :value="product._id" v-model="form.flashSale.products" 
+                      class="w-4 h-4 text-primary-500 rounded border-surface-300 dark:border-surface-600 focus:ring-primary-500 bg-white dark:bg-surface-800" />
+                    <img v-if="product.images?.length" :src="product.images[0].secure_url" class="w-9 h-9 rounded-lg object-cover border border-surface-200 dark:border-surface-700 flex-shrink-0" />
+                    <div v-else class="w-9 h-9 rounded-lg bg-surface-200 dark:bg-surface-600 flex-shrink-0 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                      </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs font-semibold text-surface-800 dark:text-white truncate leading-tight">{{ product.name }}</p>
+                      <p class="text-[11px] text-surface-400 truncate mt-0.5">${{ product.price.toFixed(2) }} <span v-if="product.discount" class="text-accent-500">({{ product.discount }}% off)</span></p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════ Full Width: Footer & Social Links ════════ -->
+      <div class="group bg-white dark:bg-surface-800 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 border border-surface-100 dark:border-surface-700/50 overflow-hidden">
+        <div class="h-1.5 bg-gradient-to-r from-sky-500 to-cyan-500"></div>
+        <div class="p-5 sm:p-6 space-y-5">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-sky-50 dark:bg-sky-900/30 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
               </svg>
             </div>
-            <div class="flex-1 space-y-2">
-              <input
-                ref="logoInput"
-                type="file"
-                accept="image/*"
-                @change="handleLogoChange"
-                class="w-full text-sm text-surface-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-primary-50 dark:file:bg-primary-900/30 file:text-primary-600 dark:file:text-primary-400 hover:file:bg-primary-100"
-              />
-              <div v-if="logoPreview || form.logoUrl" class="flex gap-2">
-                <button @click="removeLogo" type="button" class="text-xs text-red-500 hover:text-red-600 font-medium">{{ $t('settings.removeLogo') }}</button>
-              </div>
+            <div>
+              <h3 class="text-base font-bold text-surface-800 dark:text-white">Footer & Social Links</h3>
+              <p class="text-xs text-surface-400 mt-0.5">These links appear in the storefront footer. Leave blank to hide an icon.</p>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Low Stock Alert -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-4">
-        <h3 class="text-lg font-bold text-surface-800 dark:text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          Low Stock Alert
-        </h3>
-        <p class="text-sm text-surface-500">Set the stock threshold for low stock alerts. Products with stock at or below this number will trigger a notification in the top bar.</p>
-        <div class="max-w-xs">
-          <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1.5">Threshold (units)</label>
-          <div class="flex items-center gap-3">
-            <input v-model.number="form.lowStockThreshold" type="number" min="1" max="100"
-              class="w-24 px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm font-semibold text-center focus:ring-2 focus:ring-primary-500/50 transition-all" />
-            <span class="text-sm text-surface-400">or fewer units</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="field in socialFields" :key="field.key" class="p-3 bg-surface-50 dark:bg-surface-700/30 rounded-xl border border-surface-100 dark:border-surface-700/50 hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-colors">
+              <label class="block text-xs font-semibold text-surface-600 dark:text-surface-300 mb-1.5 flex items-center gap-1.5">
+                <span class="w-4 h-4 inline-flex items-center justify-center" v-html="field.icon"></span>
+                {{ field.label }}
+              </label>
+              <input
+                v-model="form.social[field.key]"
+                :type="field.type || 'text'"
+                :placeholder="field.placeholder"
+                class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 transition-all placeholder:text-surface-400"
+              />
+            </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Flash Sale -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-4">
-        <h3 class="text-lg font-bold text-surface-800 dark:text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-          Flash Sale Settings
-        </h3>
-        <p class="text-sm text-surface-500">Configure the global flash sale end time and select which products are featured.</p>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">End Time</label>
-            <input type="datetime-local" v-model="form.flashSale.endTime" class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50" />
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">Select Products</label>
-          <div v-if="allProducts.length === 0" class="text-sm text-surface-500 py-2">Loading products...</div>
-          <div v-else class="max-h-60 overflow-y-auto border border-surface-200 dark:border-surface-600 rounded-lg p-2 bg-surface-50 dark:bg-surface-700/50 space-y-1">
-            <label v-for="product in allProducts" :key="product._id" class="flex items-center gap-3 p-2 hover:bg-white dark:hover:bg-surface-800 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-surface-200 dark:hover:border-surface-600">
-              <input type="checkbox" :value="product._id" v-model="form.flashSale.products" class="w-4 h-4 text-primary-500 rounded border-surface-300 dark:border-surface-600 focus:ring-primary-500 bg-white dark:bg-surface-800" />
-              <img v-if="product.images?.length" :src="product.images[0].secure_url" class="w-10 h-10 rounded object-cover border border-surface-200 dark:border-surface-700" />
-              <div v-else class="w-10 h-10 rounded bg-surface-200 dark:bg-surface-600"></div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-surface-800 dark:text-white truncate">{{ product.name }}</p>
-                <p class="text-xs text-surface-500 truncate">${{ product.price.toFixed(2) }} (Discount: {{ product.discount }}%)</p>
-              </div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer & Social Links -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-4">
-        <h3 class="text-lg font-bold text-surface-800 dark:text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-          </svg>
-          Footer & Social Links
-        </h3>
-        <p class="text-sm text-surface-500">These links appear in the storefront footer. Leave blank to hide an icon.</p>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div v-for="field in socialFields" :key="field.key">
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1 flex items-center gap-1.5">
-              <span class="w-4 h-4 inline-flex items-center justify-center" v-html="field.icon"></span>
-              {{ field.label }}
+          <div class="p-3.5 bg-surface-50 dark:bg-surface-700/30 rounded-xl border border-surface-100 dark:border-surface-700/50">
+            <label class="block text-xs font-semibold text-surface-600 dark:text-surface-300 mb-1.5 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              Store Address
             </label>
             <input
-              v-model="form.social[field.key]"
-              :type="field.type || 'text'"
-              :placeholder="field.placeholder"
-              class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50"
+              v-model="form.social.address"
+              type="text"
+              placeholder="e.g. Phnom Penh, Cambodia"
+              class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400 transition-all placeholder:text-surface-400"
             />
           </div>
         </div>
-
-        <div>
-          <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 mb-1">Store Address</label>
-          <input
-            v-model="form.social.address"
-            type="text"
-            placeholder="e.g. Phnom Penh, Cambodia"
-            class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50"
-          />
-        </div>
       </div>
 
-      <!-- Theme Colors -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-4">
-        <h3 class="text-lg font-bold text-surface-800 dark:text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
-          </svg>
-          {{ $t('settings.themeColors') }}
-        </h3>
-        <p class="text-sm text-surface-500">{{ $t('settings.themeColorsDesc') }}</p>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div v-for="color in colorKeys" :key="color.key" class="space-y-2">
-            <label class="block text-sm font-medium text-surface-700 dark:text-surface-200 capitalize">{{ $t(color.labelKey) }}</label>
-            <div class="flex items-center gap-3">
-              <div class="relative">
-                <input
-                  type="color"
-                  v-model="form.colors[color.key]"
-                  class="w-12 h-12 rounded-xl cursor-pointer border border-surface-200 dark:border-surface-600 bg-transparent"
-                />
-              </div>
+      <!-- ════════ Full Width: Text Content Editor ════════ -->
+      <div class="group bg-white dark:bg-surface-800 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 border border-surface-100 dark:border-surface-700/50 overflow-hidden">
+        <div class="h-1.5 bg-gradient-to-r from-violet-500 to-indigo-500"></div>
+        <div class="p-5 sm:p-6 space-y-5">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-violet-50 dark:bg-violet-900/30 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-surface-800 dark:text-white">{{ $t('settings.textContent') }}</h3>
+              <p class="text-xs text-surface-400 mt-0.5">{{ $t('settings.textContentDesc') }}</p>
+            </div>
+          </div>
+
+          <!-- Language Tabs -->
+          <div class="flex gap-1.5 p-1 bg-surface-50 dark:bg-surface-700/50 rounded-xl w-fit">
+            <button
+              v-for="tab in textTabs"
+              :key="tab.key"
+              @click="activeTextTab = tab.key"
+              class="px-4 py-2 text-xs font-semibold rounded-lg transition-all"
+              :class="activeTextTab === tab.key
+                ? 'bg-white dark:bg-surface-600 text-surface-800 dark:text-white shadow-sm border border-surface-200 dark:border-surface-500'
+                : 'text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 hover:bg-white/50 dark:hover:bg-surface-600/50 border border-transparent'"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+
+          <!-- Text fields -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin">
+            <div
+              v-for="field in filteredTextFields"
+              :key="field.key"
+              class="p-3.5 bg-surface-50 dark:bg-surface-700/30 rounded-xl border border-surface-100 dark:border-surface-700/50 hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-colors"
+            >
+              <label class="block text-[11px] font-semibold text-surface-500 uppercase tracking-wide mb-1.5">{{ field.label }}</label>
               <input
-                type="text"
-                v-model="form.colors[color.key]"
-                class="flex-1 px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm font-mono focus:ring-2 focus:ring-primary-500/50"
+                :value="field.value"
+                @input="updateTextField(field.key, ($event.target as HTMLInputElement).value)"
+                class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 transition-all"
+                :placeholder="field.defaultValue"
               />
             </div>
-            <!-- Preview swatch -->
-            <div class="h-3 rounded-full transition-all" :style="{ background: form.colors[color.key] }"></div>
           </div>
         </div>
       </div>
 
-      <!-- Text Content Editor -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card space-y-4">
-        <h3 class="text-lg font-bold text-surface-800 dark:text-white flex items-center gap-2">
-          <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-          </svg>
-          {{ $t('settings.textContent') }}
-        </h3>
-        <p class="text-sm text-surface-500">{{ $t('settings.textContentDesc') }}</p>
+      <!-- ════════ Sticky Action Bar ════════ -->
+      <div class="sticky bottom-6 z-40">
+        <div class="bg-white dark:bg-surface-800 rounded-2xl shadow-[0_-4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.3)] border border-surface-200 dark:border-surface-700 p-4 flex items-center justify-between gap-4 backdrop-blur-xl bg-white/90 dark:bg-surface-800/90">
+          <div class="flex items-center gap-3">
+            <div class="hidden sm:flex items-center gap-1.5 text-xs text-surface-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Changes are saved locally
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <button @click="resetForm" 
+              class="px-5 py-2.5 border-2 border-surface-200 dark:border-surface-600 text-surface-600 dark:text-surface-300 rounded-xl text-sm font-semibold hover:bg-surface-50 dark:hover:bg-surface-700 active:scale-[0.98] transition-all flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              {{ $t('settings.reset') }}
+            </button>
+            <button @click="saveSettings" :disabled="saving"
+              class="px-6 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl text-sm font-bold hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] transition-all shadow-lg shadow-primary-500/25 flex items-center gap-2.5">
+              <svg v-if="saving" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              {{ saving ? $t('settings.saving') : $t('settings.saveSettings') }}
+            </button>
+          </div>
+        </div>
+      </div>
 
-        <!-- Language Tabs -->
-        <div class="flex gap-2 border-b border-surface-200 dark:border-surface-700 pb-3">
-          <button
-            v-for="tab in textTabs"
-            :key="tab.key"
-            @click="activeTextTab = tab.key"
-            class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
-            :class="activeTextTab === tab.key
-              ? 'bg-primary-500 text-white'
-              : 'text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-700'"
-          >
-            {{ tab.label }}
+      <!-- Success Toast -->
+      <Transition name="toast">
+        <div v-if="successMessage" 
+          class="fixed bottom-24 right-6 z-50 bg-accent-500 text-white px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-semibold flex items-center gap-3 shadow-accent-500/25 animate-toast-slide">
+          <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <span>{{ successMessage }}</span>
+          <button @click="successMessage = null" aria-label="Dismiss" class="ml-2 p-1 hover:bg-white/10 rounded-lg transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
           </button>
         </div>
-
-        <!-- Text fields -->
-        <div class="space-y-3 max-h-[500px] overflow-y-auto pr-2">
-          <div
-            v-for="field in filteredTextFields"
-            :key="field.key"
-            class="p-3 bg-surface-50 dark:bg-surface-700/30 rounded-xl"
-          >
-            <label class="block text-xs font-medium text-surface-500 mb-1">{{ field.label }}</label>
-            <input
-              v-model="field.value"
-              class="w-full px-3 py-2 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50"
-              :placeholder="field.defaultValue"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Save Button -->
-      <div class="flex justify-end gap-3">
-        <button @click="resetForm" class="px-6 py-2.5 border border-surface-200 dark:border-surface-600 text-surface-700 dark:text-surface-200 rounded-lg text-sm font-medium hover:bg-surface-50 dark:hover:bg-surface-700">
-          {{ $t('settings.reset') }}
-        </button>
-        <button @click="saveSettings" :disabled="saving"
-          class="px-6 py-2.5 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 disabled:opacity-50 flex items-center gap-2">
-          <svg v-if="saving" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-          </svg>
-          {{ saving ? $t('settings.saving') : $t('settings.saveSettings') }}
-        </button>
-      </div>
-
-      <!-- Success Message -->
-      <div v-if="successMessage" class="fixed bottom-6 right-6 z-50 bg-accent-500 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium animate-slide-up">
-        ✅ {{ $t('settings.savedSuccessfully') }}
-      </div>
+      </Transition>
     </template>
   </div>
 </template>
@@ -361,6 +543,10 @@ const filteredTextFields = computed(() => {
       value: form.textOverrides[f.key] !== undefined ? form.textOverrides[f.key] : f.defaultValue,
     }))
 })
+
+function updateTextField(key: string, value: string) {
+  form.textOverrides[key] = value
+}
 
 let originalSettings: Settings | null = null
 
@@ -549,3 +735,91 @@ async function saveSettings() {
   }
 }
 </script>
+
+<style scoped>
+/* Card hover lift effect */
+.group {
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+.group:hover {
+  transform: translateY(-2px);
+}
+
+/* Custom scrollbar for product list & text editor */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #D5DBE5 transparent;
+}
+.dark .scrollbar-thin {
+  scrollbar-color: #2E3950 transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #D5DBE5;
+  border-radius: 99px;
+}
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #2E3950;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #A9B4C8;
+}
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #43506C;
+}
+
+/* Toast transition */
+.toast-enter-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.toast-leave-active {
+  transition: all 0.25s ease-in;
+}
+.toast-enter-from {
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+}
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+}
+
+.animate-toast-slide {
+  animation: toastSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes toastSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Color input style */
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 8px;
+}
+
+/* Number input arrows hidden */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+/* Focus ring offset fix */
+*:focus-visible {
+  outline: none;
+}
+</style>
