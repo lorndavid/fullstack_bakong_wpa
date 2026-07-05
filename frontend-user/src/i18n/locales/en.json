@@ -212,6 +212,24 @@
     "sortHighLow": "Price: High to Low",
     "sortBestSelling": "Best Selling"
   },
+  "coupons": {
+    "title": "My Coupons",
+    "available": "Available",
+    "used": "Used",
+    "expired": "Expired",
+    "upcoming": "Upcoming",
+    "noCoupons": "No coupons available",
+    "noCouponsDesc": "Check back later for new deals and promotions",
+    "browseProducts": "Browse Products",
+    "limitedOffer": "Limited Time Offer",
+    "copyCode": "Copy Code",
+    "applyNow": "Apply Now",
+    "viewDetails": "View Details",
+    "remainingDays": "{days} days left",
+    "endsToday": "Ends today",
+    "expired": "Expired",
+    "minPurchase": "Min. purchase: $"
+  },
   "notifications": {
     "title": "Notifications",
     "unread": "unread",

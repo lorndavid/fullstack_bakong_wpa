@@ -212,6 +212,24 @@
     "sortHighLow": "តម្លៃ: ខ្ពស់ទៅទាប",
     "sortBestSelling": "លក់ដាច់"
   },
+  "coupons": {
+    "title": "ប័ណ្ណបញ្ចុះតម្លៃរបស់ខ្ញុំ",
+    "available": "មានសុពលភាព",
+    "used": "បានប្រើ",
+    "expired": "ផុតកំណត់",
+    "upcoming": "នឹងមកដល់",
+    "noCoupons": "មិនទាន់មានប័ណ្ណបញ្ចុះតម្លៃ",
+    "noCouponsDesc": "សូមត្រឡប់មកពិនិត្យមើលនៅពេលក្រោយ",
+    "browseProducts": "រកមើលផលិតផល",
+    "limitedOffer": "ការផ្តល់ជូនមានកំណត់",
+    "copyCode": "ចម្លងកូដ",
+    "applyNow": "អនុវត្តឥឡូវ",
+    "viewDetails": "មើលព័ត៌មានលម្អិត",
+    "remainingDays": "នៅសល់ {days} ថ្ងៃ",
+    "endsToday": "បញ្ចប់ថ្ងៃនេះ",
+    "expired": "ផុតកំណត់",
+    "minPurchase": "ការទិញអប្បបរមា: $"
+  },
   "notifications": {
     "title": "ការជូនដំណឹង",
     "unread": "មិនទាន់អាន",

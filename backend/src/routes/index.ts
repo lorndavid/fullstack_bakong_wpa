@@ -10,6 +10,7 @@ import settingsRoutes from './settingsRoutes';
 import promotionRoutes from './promotionRoutes';
 import chatRoutes from './chatRoutes';
 import notificationRoutes from './notificationRoutes';
+import couponRoutes from './couponRoutes';
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.use('/settings', settingsRoutes);
 router.use('/promotions', promotionRoutes);
 router.use('/chat', chatRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/coupons', couponRoutes);
 
 // Health check
 router.get('/health', (_req, res) => {

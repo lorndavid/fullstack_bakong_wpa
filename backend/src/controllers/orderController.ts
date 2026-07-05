@@ -3,6 +3,7 @@ import Order from '../models/Order';
 import Product from '../models/Product';
 import { AuthRequest } from '../types';
 import { createAndSendNotification } from '../services/notificationService';
+import Coupon from '../models/Coupon';
 
 const createOrder = async (
   req: AuthRequest,
@@ -10,7 +11,7 @@ const createOrder = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { products, shippingAddress, paymentMethod, promotionDiscount, appliedPromotions } = req.body;
+    const { products, shippingAddress, paymentMethod, promotionDiscount, appliedPromotions, coupon, discountAmount } = req.body;
 
     if (!products || products.length === 0) {
       res.status(400).json({
@@ -61,7 +62,9 @@ const createOrder = async (
     const shipping = 0;
     const rawPromoDiscount = Math.max(0, Number(promotionDiscount) || 0);
     const promoDiscount = Math.min(rawPromoDiscount, subtotal);
-    const total = subtotal + shipping - promoDiscount;
+    const rawCouponDiscount = Math.max(0, Number(discountAmount) || 0);
+    const couponDiscount = Math.min(rawCouponDiscount, subtotal - promoDiscount);
+    const total = subtotal + shipping - promoDiscount - couponDiscount;
 
     const order = await Order.create({
       userId: req.user!.id,
@@ -69,6 +72,8 @@ const createOrder = async (
       subtotal,
       shipping,
       promotionDiscount: promoDiscount,
+      coupon: coupon || '',
+      discountAmount: couponDiscount,
       total,
       appliedPromotions: appliedPromotions || [],
       shippingAddress,
@@ -81,6 +86,18 @@ const createOrder = async (
       await Product.findByIdAndUpdate(item.productId, {
         $inc: { stock: -item.quantity, sold: item.quantity },
       });
+    }
+
+    // Increment coupon usage count if a coupon was applied
+    if (coupon) {
+      try {
+        await Coupon.findOneAndUpdate(
+          { code: coupon.toUpperCase() },
+          { $inc: { usedCount: 1 } }
+        );
+      } catch (err) {
+        console.warn('[Order] Failed to increment coupon usage:', err);
+      }
     }
 
     // Notify: Order confirmed (for COD) / Order pending (for payment)

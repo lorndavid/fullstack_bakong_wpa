@@ -70,6 +70,32 @@
         </p>
       </div>
 
+      <!-- Coupon Section -->
+      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 shadow-card">
+        <h3 class="font-semibold text-surface-800 dark:text-white mb-3">Coupon</h3>
+        <div v-if="!userCouponStore.appliedCoupon" class="space-y-3">
+          <div class="flex gap-2">
+            <input v-model="couponInput" @keyup.enter="handleApplyCoupon" type="text" :placeholder="$t('cart.couponPlaceholder')"
+              class="flex-1 px-3.5 py-2.5 border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-primary-500/50 transition-all uppercase" />
+            <button @click="handleApplyCoupon" :disabled="couponApplying"
+              class="px-4 py-2.5 bg-primary-500 text-white text-sm font-semibold rounded-lg hover:bg-primary-600 disabled:opacity-50 transition-all">
+              {{ couponApplying ? '...' : $t('cart.apply') }}
+            </button>
+          </div>
+          <p v-if="couponError" class="text-xs text-red-500">{{ couponError }}</p>
+        </div>
+        <div v-else class="flex items-center justify-between p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" :style="{ background: userCouponStore.appliedCoupon.themeColor }">%</div>
+            <div>
+              <p class="text-sm font-semibold text-primary-600 dark:text-primary-400">{{ userCouponStore.appliedCoupon.name }}</p>
+              <code class="text-xs text-primary-400 font-mono">{{ userCouponStore.appliedCoupon.code }}</code>
+            </div>
+          </div>
+          <button @click="handleRemoveCoupon" class="text-xs text-red-500 hover:text-red-600 font-medium">{{ $t('cart.remove') }}</button>
+        </div>
+      </div>
+
       <!-- Order Items -->
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 shadow-card">
         <h3 class="font-semibold text-surface-800 dark:text-white mb-3">{{ $t('checkout.orderItems') }}</h3>
@@ -93,8 +119,12 @@
             <span class="text-accent-500 font-medium">{{ $t('cart.promotionDiscount') }}</span>
             <span class="text-accent-500 font-medium">- ${{ cart.promotionSavings.toFixed(2) }}</span>
           </div>
+          <div v-if="userCouponStore.appliedCoupon" class="flex justify-between">
+            <span class="text-primary-500 font-medium">Coupon ({{ userCouponStore.appliedCoupon.code }})</span>
+            <span class="text-primary-500 font-medium">- ${{ couponDiscount.toFixed(2) }}</span>
+          </div>
           <hr class="border-surface-200 dark:border-surface-700" />
-          <div class="flex justify-between font-bold text-base"><span>{{ $t('cart.total') }}</span><span class="text-primary-500">${{ cart.total.toFixed(2) }}</span></div>
+          <div class="flex justify-between font-bold text-base"><span>{{ $t('cart.total') }}</span><span class="text-primary-500">${{ (userCouponStore.appliedCoupon ? cartTotalWithCoupon : cart.total).toFixed(2) }}</span></div>
         </div>
       </div>
 
@@ -172,12 +202,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, type ComputedRef } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import { usePaymentStore } from '@/stores/payment.store'
+import { useCouponStore } from '@/stores/coupon'
 import { useI18n } from 'vue-i18n'
 import KhqrCheckoutSheet from '@/components/khqr/KhqrCheckoutSheet.vue'
 import AbaKhqrCheckout from '@/components/khqr/AbaKhqrCheckout.vue'
@@ -189,6 +220,11 @@ const paymentStore = usePaymentStore()
 const cart = useCartStore()
 const auth = useAuthStore()
 const toast = useToast()
+const userCouponStore = useCouponStore()
+
+const couponInput = ref('')
+const couponApplying = ref(false)
+const couponError = ref<string | null>(null)
 
 const gateways = reactive({
   aba: true,
@@ -227,6 +263,43 @@ const address = reactive({
   phone: '',
 })
 
+const couponDiscount = computed(() => {
+  return userCouponStore.appliedCoupon?.discountAmount || 0
+})
+
+const cartTotalWithCoupon = computed(() => {
+  return Math.max(0, cart.total - couponDiscount.value)
+})
+
+async function handleApplyCoupon() {
+  if (!couponInput.value.trim()) return
+  couponApplying.value = true
+  couponError.value = null
+  try {
+    const products = cart.items.map(item => ({
+      productId: item.productId,
+      category: item.category,
+      price: item.price,
+    }))
+    const result = await userCouponStore.applyCoupon(couponInput.value.trim(), products, cart.subtotal)
+    if (!result.success) {
+      couponError.value = result.message || 'Invalid coupon'
+    } else {
+      couponInput.value = ''
+      toast.success('Coupon applied!')
+    }
+  } catch {
+    couponError.value = 'Failed to apply coupon'
+  } finally {
+    couponApplying.value = false
+  }
+}
+
+async function handleRemoveCoupon() {
+  userCouponStore.removeCoupon()
+  toast.info('Coupon removed')
+}
+
 function saveAddress() {
   currentStep.value = 1
 }
@@ -254,6 +327,8 @@ async function placeOrder() {
       paymentMethod: paymentMethod.value,
       promotionDiscount: cart.promotionSavings,
       appliedPromotions: cart.appliedPromotions,
+      coupon: userCouponStore.appliedCoupon?.code || '',
+      discountAmount: userCouponStore.appliedCoupon?.discountAmount || 0,
     })
 
     const order = res.order

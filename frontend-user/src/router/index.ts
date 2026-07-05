@@ -75,6 +75,18 @@ const routes = [
     meta: { layout: 'default' },
   },
   {
+    path: '/coupons',
+    name: 'coupons',
+    component: () => import('@/pages/coupons/CouponCenterPage.vue'),
+    meta: { layout: 'default', requiresAuth: true },
+  },
+  {
+    path: '/coupons/:id',
+    name: 'coupon-detail',
+    component: () => import('@/pages/coupons/CouponDetailPage.vue'),
+    meta: { layout: 'default' },
+  },
+  {
     path: '/notifications',
     name: 'notifications',
     component: () => import('@/pages/NotificationsPage.vue'),
