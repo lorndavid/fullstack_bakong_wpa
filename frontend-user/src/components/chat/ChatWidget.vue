@@ -1,10 +1,14 @@
 <template>
   <div>
-    <!-- Floating Chat Button -->
+    <!-- Floating Chat Button (draggable) -->
     <button
       v-if="!chat.isOpen"
-      @click="chat.toggleOpen()"
-      class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-primary-500 to-accent-500 text-white rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200 flex items-center justify-center group hover:scale-110"
+      ref="chatButtonRef"
+      @mousedown="startDrag"
+      @touchstart.prevent="startDrag"
+      @click="handleButtonClick"
+      class="fixed z-50 w-14 h-14 bg-gradient-to-br from-primary-500 to-accent-500 text-white rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200 flex items-center justify-center group hover:scale-110 touch-none select-none"
+      :style="buttonStyle"
     >
       <!-- Icon: chat bubble when closed -->
       <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,7 +31,8 @@
     <Transition name="chat-slide">
       <div
         v-if="chat.isOpen"
-        class="fixed bottom-6 right-6 z-50 w-[400px] max-w-[calc(100vw-2rem)] h-[640px] max-h-[calc(100vh-6rem)] bg-white dark:bg-surface-800 rounded-2xl shadow-2xl border border-surface-200/70 dark:border-surface-700/70 flex flex-col overflow-hidden"
+        class="fixed z-50 w-[400px] max-w-[calc(100vw-2rem)] h-[640px] max-h-[calc(100vh-6rem)] bg-white dark:bg-surface-800 rounded-2xl shadow-2xl border border-surface-200/70 dark:border-surface-700/70 flex flex-col overflow-hidden"
+        :style="windowStyle"
         :class="{ 'h-[64px]': chat.isMinimized }"
       >
         <!-- ── Header ─────────────────────────────────────────── -->
@@ -301,7 +306,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, watch, onMounted, onUnmounted } from 'vue'
+import { ref, nextTick, watch, computed, onMounted, onUnmounted } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import EmojiPicker from './EmojiPicker.vue'
 
@@ -311,6 +316,112 @@ const scrollAnchor = ref<HTMLElement | null>(null)
 const textInput = ref<HTMLTextAreaElement | null>(null)
 const messageText = ref('')
 const filePreview = ref<{ file: File; name: string } | null>(null)
+
+// ─── Draggable Chat Button ───────────────────────────────────────
+const chatButtonRef = ref<HTMLElement | null>(null)
+const isDragging = ref(false)
+const didDrag = ref(false)
+const posX = ref(24)  // default right offset in px
+const posY = ref(24)  // default bottom offset in px
+const dragOffsetX = ref(0)
+const dragOffsetY = ref(0)
+
+// On mobile, start higher to avoid bottom nav
+const isMobile = ref(false)
+function checkMobile() {
+  isMobile.value = window.innerWidth < 640
+  if (isMobile.value && posY.value < 80) {
+    posY.value = 80
+  }
+}
+
+const buttonStyle = computed(() => ({
+  bottom: `${posY.value}px`,
+  right: `${posX.value}px`,
+  transform: isDragging.value ? 'scale(1.05)' : '',
+  transition: isDragging.value ? 'none' : 'all 0.2s ease',
+}))
+
+// Window position follows button but with a minimum bottom offset
+const windowStyle = computed(() => ({
+  bottom: `${Math.max(posY.value, isMobile.value ? 80 : 24)}px`,
+  right: `${Math.max(posX.value, 0)}px`,
+}))
+
+function startDrag(e: MouseEvent | TouchEvent) {
+  // Only start drag if it's a real move, not just a click
+  const target = e.currentTarget as HTMLElement
+  const rect = target.getBoundingClientRect()
+  
+  let clientX: number, clientY: number
+  if ('touches' in e) {
+    clientX = e.touches[0].clientX
+    clientY = e.touches[0].clientY
+  } else {
+    clientX = e.clientX
+    clientY = e.clientY
+  }
+  
+  dragOffsetX.value = rect.right - clientX
+  dragOffsetY.value = rect.bottom - clientY
+  isDragging.value = true
+  didDrag.value = false
+  
+  document.addEventListener('mousemove', onDrag)
+  document.addEventListener('mouseup', endDrag)
+  document.addEventListener('touchmove', onDrag, { passive: true })
+  document.addEventListener('touchend', endDrag)
+}
+
+function onDrag(e: MouseEvent | TouchEvent) {
+  if (!isDragging.value) return
+  
+  let clientX: number, clientY: number
+  if ('touches' in e) {
+    clientX = e.touches[0].clientX
+    clientY = e.touches[0].clientY
+  } else {
+    clientX = e.clientX
+    clientY = e.clientY
+  }
+  
+  // Track that drag movement occurred (to suppress click)
+  didDrag.value = true
+  
+  // Convert to right/bottom coordinates
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  const btnSize = 56 // 14 (w-14 * 4)
+  
+  // Calculate new position (right offset from right edge)
+  let newX = vw - clientX - dragOffsetX.value
+  let newY = vh - clientY - dragOffsetY.value
+  
+  // Clamp to viewport bounds
+  newX = Math.max(8, Math.min(newX, vw - btnSize - 8))
+  newY = Math.max(8, Math.min(newY, vh - btnSize - 8))
+  
+  posX.value = newX
+  posY.value = newY
+}
+
+function endDrag(e?: MouseEvent | TouchEvent) {
+  isDragging.value = false
+  document.removeEventListener('mousemove', onDrag)
+  document.removeEventListener('mouseup', endDrag)
+  document.removeEventListener('touchmove', onDrag)
+  document.removeEventListener('touchend', endDrag)
+}
+
+function handleButtonClick() {
+  if (didDrag.value) {
+    didDrag.value = false
+    return
+  }
+  chat.toggleOpen()
+}
+
+// ─── Ends Draggable ───────────────────────────────────────────────
 
 // ─── Auto-scroll to bottom ─────────────────────────────────────
 function scrollToBottom(smooth = true) {
@@ -405,13 +516,16 @@ onMounted(() => {
   if (token) {
     chat.connect()
   }
+  checkMobile()
   window.addEventListener('storage', handleStorageChange)
+  window.addEventListener('resize', checkMobile)
 })
 
 onUnmounted(() => {
   chat.disconnect()
   chat.toggleOpen()
   window.removeEventListener('storage', handleStorageChange)
+  window.removeEventListener('resize', checkMobile)
   if (typingTimeout) clearTimeout(typingTimeout)
 })
 
