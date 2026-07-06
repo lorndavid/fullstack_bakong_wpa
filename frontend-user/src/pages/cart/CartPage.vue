@@ -25,7 +25,7 @@
         <!-- Free shipping banner -->
         <div class="flex items-center gap-2.5 p-3 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/50">
           <svg class="w-5 h-5 text-primary-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-          <p class="text-sm font-medium text-primary-700 dark:text-primary-300">🎉 You've unlocked <strong>free shipping</strong> on this order!</p>
+          <p class="text-sm font-medium text-primary-700 dark:text-primary-300">🎉 {{ $t('cart.freeShippingUnlocked') }}</p>
         </div>
 
         <div v-for="item in cart.items" :key="item.productId"
@@ -67,38 +67,114 @@
         </div>
       </div>
 
-      <!-- Order Summary -->
-      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card border border-surface-100 dark:border-surface-700/60 lg:sticky lg:top-24">
-        <h2 class="text-lg font-bold text-surface-900 dark:text-white mb-4">{{ $t('checkout.summary') }}</h2>
-        <div class="space-y-3 text-sm">
-          <div class="flex justify-between">
-            <span class="text-surface-500">{{ $t('cart.subtotal') }}</span>
-            <span class="font-medium text-surface-900 dark:text-white">${{ cart.subtotal.toFixed(2) }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-surface-500">{{ $t('cart.shipping') }}</span>
-            <span class="font-medium" :class="cart.shipping === 0 ? 'text-primary-600' : 'text-surface-900 dark:text-white'">
-              {{ cart.shipping === 0 ? $t('cart.free') : '$' + cart.shipping.toFixed(2) }}
-            </span>
-          </div>
+      <!-- Right Column: Summary + Coupons -->
+      <div class="space-y-4">
+        <!-- Order Summary -->
+        <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card border border-surface-100 dark:border-surface-700/60 lg:sticky lg:top-24">
+          <h2 class="text-lg font-bold text-surface-900 dark:text-white mb-4">{{ $t('checkout.summary') }}</h2>
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between">
+              <span class="text-surface-500">{{ $t('cart.subtotal') }}</span>
+              <span class="font-medium text-surface-900 dark:text-white">${{ cart.subtotal.toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-surface-500">{{ $t('cart.shipping') }}</span>
+              <span class="font-medium" :class="cart.shipping === 0 ? 'text-primary-600' : 'text-surface-900 dark:text-white'">
+                {{ cart.shipping === 0 ? $t('cart.free') : '$' + cart.shipping.toFixed(2) }}
+              </span>
+            </div>
 
-          <!-- Promotion Savings -->
-          <div v-if="cart.promotionSavings > 0" class="flex justify-between">
-            <span class="text-primary-600 font-medium">{{ $t('cart.promotionDiscount') }}</span>
-            <span class="text-primary-600 font-medium">- ${{ cart.promotionSavings.toFixed(2) }}</span>
-          </div>
+            <!-- Promotion Savings -->
+            <div v-if="cart.promotionSavings > 0" class="flex justify-between">
+              <span class="text-primary-600 font-medium">{{ $t('cart.promotionDiscount') }}</span>
+              <span class="text-primary-600 font-medium">- ${{ cart.promotionSavings.toFixed(2) }}</span>
+            </div>
 
-          <hr class="border-surface-200 dark:border-surface-700" />
-          <div class="flex justify-between text-base font-bold">
-            <span class="text-surface-900 dark:text-white">{{ $t('cart.total') }}</span>
-            <span class="text-primary-600">${{ cart.total.toFixed(2) }}</span>
+            <hr class="border-surface-200 dark:border-surface-700" />
+            <div class="flex justify-between text-base font-bold">
+              <span class="text-surface-900 dark:text-white">{{ $t('cart.total') }}</span>
+              <span class="text-primary-600">${{ cart.total.toFixed(2) }}</span>
+            </div>
           </div>
+          <router-link to="/checkout" class="mt-5 btn-primary btn-lg w-full">
+            {{ $t('cart.proceedToCheckout') }}
+          </router-link>
+          <router-link to="/" class="mt-2 btn-ghost btn-md w-full">
+            {{ $t('cart.continueShopping') }}
+          </router-link>
         </div>
-        <router-link to="/checkout" class="mt-5 btn-primary btn-lg w-full">
-          {{ $t('cart.proceedToCheckout') }}
-        </router-link>
-        <router-link to="/" class="mt-2 btn-ghost btn-md w-full">
-          {{ $t('cart.continueShopping') }}
+
+        <!-- 🎯 Available Coupons Section -->
+        <div v-if="availableCoupons.length > 0" class="bg-white dark:bg-surface-800 rounded-2xl p-4 shadow-card border border-surface-100 dark:border-surface-700/60">
+          <div class="flex items-center gap-2 mb-3">
+            <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            <h3 class="text-sm font-semibold text-surface-800 dark:text-white">{{ $t('coupons.availableCoupons') }}</h3>
+            <span class="ml-auto text-xs text-surface-400">{{ availableCoupons.length }} {{ $t('coupons.available') }}</span>
+          </div>
+          
+          <div class="space-y-2">
+            <div v-for="coupon in availableCoupons.slice(0, showAllCoupons ? availableCoupons.length : 3)" :key="coupon._id"
+              class="p-2.5 rounded-xl border border-surface-100 dark:border-surface-700 bg-surface-50 dark:bg-surface-700/30 hover:bg-surface-100 dark:hover:bg-surface-700/50 transition-all cursor-pointer"
+              @click="goToCheckoutWithCoupon(coupon.code)">
+              <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                  :style="{ background: coupon.themeColor || '#6366F1' }">
+                  {{ coupon.discountType === 'percentage' ? coupon.discountValue + '%' : coupon.discountType === 'fixed' ? '$' + coupon.discountValue : '🚚' }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-semibold text-surface-800 dark:text-white truncate">{{ coupon.name }}</p>
+                  <div class="flex items-center gap-2 text-[10px] text-surface-400">
+                    <code class="font-mono">{{ coupon.code }}</code>
+                    <span>{{ $t('coupons.minPurchase') }}{{ coupon.minimumPurchase > 0 ? '$' + coupon.minimumPurchase.toFixed(2) : ' $0' }}</span>
+                  </div>
+                </div>
+                <svg class="w-4 h-4 text-surface-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+              <!-- Progress toward min purchase -->
+              <div v-if="coupon.minimumPurchase > 0" class="mt-1.5">
+                <div class="flex justify-between text-[10px] text-surface-400 mb-0.5">
+                  <span>{{ $t('coupons.progress') }}</span>
+                  <span>{{ Math.min(100, Math.round((cart.subtotal / coupon.minimumPurchase) * 100)) }}%</span>
+                </div>
+                <div class="w-full bg-surface-200 dark:bg-surface-600 rounded-full h-1.5">
+                  <div class="h-1.5 rounded-full transition-all duration-500" 
+                    :style="{ 
+                      width: Math.min(100, (cart.subtotal / coupon.minimumPurchase) * 100) + '%',
+                      background: cart.subtotal >= coupon.minimumPurchase ? '#22c55e' : (coupon.themeColor || '#6366F1')
+                    }">
+                  </div>
+                </div>
+                <p v-if="cart.subtotal < coupon.minimumPurchase" class="text-[10px] text-amber-500 mt-0.5">
+                  {{ $t('coupons.spendMore', { amount: '$' + (coupon.minimumPurchase - cart.subtotal).toFixed(2) }) }}
+                </p>
+                <p v-else class="text-[10px] text-green-500 mt-0.5 flex items-center gap-0.5">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  {{ $t('coupons.minMet') }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Show more/less toggle -->
+          <button v-if="availableCoupons.length > 3" @click="showAllCoupons = !showAllCoupons"
+            class="mt-2 w-full py-1.5 text-xs text-purple-500 hover:text-purple-600 font-medium transition-colors">
+            {{ showAllCoupons ? $t('common.showLess') : $t('common.showMore', { count: availableCoupons.length - 3 }) }}
+          </button>
+        </div>
+
+        <!-- 🔗 Coupon Center Link -->
+        <router-link to="/coupons" 
+          class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-dashed border-surface-300 dark:border-surface-600 text-surface-500 hover:text-purple-500 hover:border-purple-300 dark:hover:border-purple-700 text-sm transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          {{ $t('coupons.viewAllCoupons') }}
         </router-link>
       </div>
     </div>
@@ -106,12 +182,26 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
+import { useCouponStore } from '@/stores/coupon'
 
+const router = useRouter()
 const cart = useCartStore()
+const couponStore = useCouponStore()
+const showAllCoupons = ref(false)
+
+const availableCoupons = computed(() => {
+  return couponStore.available.filter(c => c.userStatus === 'available' || c.userStatus === undefined)
+})
 
 onMounted(() => {
   cart.fetchPromotions()
+  couponStore.fetchCoupons()
 })
+
+function goToCheckoutWithCoupon(code: string) {
+  router.push({ path: '/checkout', query: { coupon: code } })
+}
 </script>

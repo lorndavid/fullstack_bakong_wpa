@@ -181,6 +181,51 @@
       </div>
     </section>
 
+    <!-- 🔥 Featured / Highlighted Coupons -->
+    <section v-if="highlightedCoupons.length > 0" class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          <h2 class="text-lg sm:text-xl font-bold text-surface-800 dark:text-white">{{ $t('coupons.featuredCoupons') }}</h2>
+        </div>
+        <router-link to="/coupons" class="text-sm text-purple-500 hover:text-purple-600 font-medium">{{ $t('nav.viewAll') }}</router-link>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div
+          v-for="coupon in highlightedCoupons"
+          :key="coupon._id"
+          @click="goToCoupon(coupon._id)"
+          class="group relative bg-white dark:bg-surface-800 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-250 overflow-hidden cursor-pointer hover:-translate-y-1 border border-surface-100 dark:border-surface-700"
+        >
+          <div v-if="coupon.bannerImage" class="relative aspect-video bg-surface-100 dark:bg-surface-700 overflow-hidden">
+            <img :src="coupon.bannerImage.secure_url" :alt="coupon.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+            <div class="absolute bottom-3 left-3 right-3 z-10">
+              <span class="px-2.5 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-bold rounded-lg shadow-sm">
+                {{ coupon.discountType === 'percentage' ? coupon.discountValue + '% OFF' : coupon.discountType === 'fixed' ? '$' + coupon.discountValue + ' OFF' : '🚚 FREE SHIPPING' }}
+              </span>
+            </div>
+          </div>
+          <div v-else class="relative aspect-video flex items-center justify-center" :style="{ background: coupon.themeColor || '#6366F1' }">
+            <div class="text-center text-white">
+              <p class="text-3xl font-black">{{ coupon.discountType === 'percentage' ? coupon.discountValue + '%' : coupon.discountType === 'fixed' ? '$' + coupon.discountValue : '🚚' }}</p>
+              <p class="text-sm font-bold mt-1">{{ coupon.discountType === 'free_shipping' ? 'FREE SHIPPING' : 'OFF' }}</p>
+            </div>
+          </div>
+          <div class="p-4 space-y-2">
+            <h3 class="font-semibold text-surface-800 dark:text-white truncate group-hover:text-purple-500 transition-colors">{{ coupon.name }}</h3>
+            <p v-if="coupon.description" class="text-xs text-surface-500 line-clamp-2">{{ coupon.description }}</p>
+            <div class="flex items-center justify-between text-xs">
+              <code class="text-surface-400 font-mono bg-surface-100 dark:bg-surface-700 px-2 py-0.5 rounded">{{ coupon.code }}</code>
+              <span class="text-surface-400">{{ getCouponTimeLeft(coupon.endDate) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Static Promotion Banner (Free Shipping) -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6">
       <div class="bg-gradient-to-r from-accent-500 to-accent-600 rounded-2xl p-6 sm:p-8 text-white animate-fade-in overflow-hidden relative">
@@ -288,6 +333,18 @@ interface Promotion {
   bannerImage?: { public_id: string; secure_url: string }
 }
 
+interface HighlightedCoupon {
+  _id: string
+  name: string
+  code: string
+  description: string
+  discountType: 'percentage' | 'fixed' | 'free_shipping'
+  discountValue: number
+  endDate: string
+  themeColor: string
+  bannerImage?: { public_id: string; secure_url: string }
+}
+
 const router = useRouter()
 
 // State
@@ -296,6 +353,7 @@ const flashSaleProducts = ref<Product[]>([])
 const newArrivals = ref<Product[]>([])
 const heroSlides = ref<any[]>([])
 const activePromotions = ref<Promotion[]>([])
+const highlightedCoupons = ref<HighlightedCoupon[]>([])
 const currentHeroSlide = ref(0)
 const loading = ref(true)
 const categoriesError = ref<string | null>(null)
@@ -306,10 +364,15 @@ const promotionsError = ref<string | null>(null)
 
 // Promotion countdown timers (updated every second)
 const promoTimeLeft = ref<Record<string, string>>({})
+const couponTimeLeft = ref<Record<string, string>>({})
 let promoInterval: ReturnType<typeof setInterval> | null = null
 
 function getPromoTimeLeft(endDate: string): string {
   return promoTimeLeft.value[endDate] || '--:--:--'
+}
+
+function getCouponTimeLeft(endDate: string): string {
+  return couponTimeLeft.value[endDate] || '--:--:--'
 }
 
 function updatePromoTimers() {
@@ -325,6 +388,20 @@ function updatePromoTimers() {
       promoTimeLeft.value[key] = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
     } else {
       promoTimeLeft.value[key] = 'Expired'
+    }
+  })
+  // Also update coupon timers
+  highlightedCoupons.value.forEach(coupon => {
+    const end = new Date(coupon.endDate).getTime()
+    const diff = Math.floor((end - now) / 1000)
+    const key = coupon._id
+    if (diff > 0) {
+      const h = Math.floor(diff / 3600)
+      const m = Math.floor((diff % 3600) / 60)
+      const s = diff % 60
+      couponTimeLeft.value[key] = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+    } else {
+      couponTimeLeft.value[key] = 'Expired'
     }
   })
 }
@@ -361,6 +438,10 @@ function goToCategory(id: string) {
 
 function goToSearchPromotion() {
   router.push('/search?sort=discount')
+}
+
+function goToCoupon(id: string) {
+  router.push(`/coupons/${id}`)
 }
 
 async function fetchCategories() {
@@ -423,6 +504,15 @@ async function fetchActivePromotions() {
   }
 }
 
+async function fetchHighlightedCoupons() {
+  try {
+    const data: any = await api.get('/coupons/highlighted')
+    highlightedCoupons.value = data.coupons || []
+  } catch {
+    // silent
+  }
+}
+
 let heroSlideInterval: ReturnType<typeof setInterval> | null = null
 
 onMounted(async () => {
@@ -435,6 +525,7 @@ onMounted(async () => {
     fetchNewArrivals(),
     fetchHeroSlides(),
     fetchActivePromotions(),
+    fetchHighlightedCoupons(),
   ])
 
   loading.value = false

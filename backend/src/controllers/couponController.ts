@@ -975,6 +975,156 @@ const getCouponByCode = async (
   }
 };
 
+// ─── User: Find Best Coupon for Cart ──────────────────────────────
+
+const findBestCoupon = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { products, subtotal, categoryIds: catIds } = req.body;
+    const userId = req.user?.id;
+    const now = new Date();
+
+    const productIds = (products || []).map((p: any) => p.productId?.toString() || p);
+    const categoryIds = (catIds || []).map((c: string) => c.toString());
+
+    // Get all active, valid coupons
+    const coupons = await Coupon.find({
+      status: 'active',
+      startDate: { $lte: now },
+      endDate: { $gte: now },
+      $or: [
+        { usageLimit: 0 },
+        { $expr: { $lt: ['$usedCount', '$usageLimit'] } },
+      ],
+    }).sort({ priority: -1, discountValue: -1 });
+
+    const validCoupons: any[] = [];
+
+    for (const coupon of coupons) {
+      // Check per-user limit
+      if (userId && coupon.limitPerUser > 0) {
+        const userOrderCount = await Order.countDocuments({ userId, coupon: coupon.code });
+        if (userOrderCount >= coupon.limitPerUser) continue;
+      }
+
+      // Check new customer only
+      if (coupon.newCustomerOnly && userId) {
+        const orderCount = await Order.countDocuments({ userId });
+        if (orderCount > 0) continue;
+      }
+
+      // Check first order only
+      if (coupon.firstOrderOnly && userId) {
+        const orderCount = await Order.countDocuments({ userId });
+        if (orderCount > 0) continue;
+      }
+
+      // Check minimum purchase
+      const orderSubtotal = Number(subtotal) || 0;
+      if (coupon.minimumPurchase > 0 && orderSubtotal < coupon.minimumPurchase) continue;
+
+      // Check product eligibility
+      if (coupon.applicableProducts.length > 0) {
+        const hasEligible = productIds.some((pid: string) =>
+          coupon.applicableProducts.some((ap: any) => ap.toString() === pid)
+        );
+        if (!hasEligible) continue;
+      }
+
+      // Check excluded products
+      if (coupon.excludedProducts.length > 0) {
+        const hasExcluded = productIds.some((pid: string) =>
+          coupon.excludedProducts.some((ep: any) => ep.toString() === pid)
+        );
+        if (hasExcluded) continue;
+      }
+
+      // Check category eligibility
+      if (coupon.applicableCategories.length > 0) {
+        const hasEligibleCat = categoryIds.some((cid: string) =>
+          coupon.applicableCategories.some((ac: any) => ac.toString() === cid)
+        );
+        if (!hasEligibleCat) continue;
+      }
+
+      // Check excluded categories
+      if (coupon.excludedCategories.length > 0) {
+        const hasExcludedCat = categoryIds.some((cid: string) =>
+          coupon.excludedCategories.some((ec: any) => ec.toString() === cid)
+        );
+        if (hasExcludedCat) continue;
+      }
+
+      // Calculate discount for this coupon
+      let discountAmount = 0;
+      let label = '';
+
+      if (coupon.discountType === 'percentage') {
+        discountAmount = orderSubtotal * (coupon.discountValue / 100);
+        if (coupon.maximumDiscount > 0 && discountAmount > coupon.maximumDiscount) {
+          discountAmount = coupon.maximumDiscount;
+        }
+        label = `${coupon.discountValue}% OFF`;
+      } else if (coupon.discountType === 'fixed') {
+        discountAmount = coupon.discountValue;
+        label = `$${coupon.discountValue.toFixed(2)} OFF`;
+      } else if (coupon.discountType === 'free_shipping') {
+        discountAmount = 0;
+        label = 'Free Shipping';
+      }
+
+      if (discountAmount > orderSubtotal) {
+        discountAmount = orderSubtotal;
+      }
+
+      validCoupons.push({
+        _id: coupon._id,
+        name: coupon.name,
+        code: coupon.code,
+        description: coupon.description,
+        discountType: coupon.discountType,
+        discountValue: coupon.discountValue,
+        discountAmount,
+        maximumDiscount: coupon.maximumDiscount,
+        minimumPurchase: coupon.minimumPurchase,
+        label,
+        themeColor: coupon.themeColor,
+        stackable: coupon.stackable,
+        autoApply: coupon.autoApply,
+        priority: coupon.priority,
+        bannerImage: coupon.bannerImage,
+        endDate: coupon.endDate,
+        usedCount: coupon.usedCount,
+        usageLimit: coupon.usageLimit,
+      });
+    }
+
+    // Sort by discount amount (best first), then priority
+    validCoupons.sort((a: any, b: any) => {
+      if (b.discountAmount !== a.discountAmount) return b.discountAmount - a.discountAmount;
+      return b.priority - a.priority;
+    });
+
+    // The best non-auto-apply coupon and auto-apply coupons
+    const bestCoupon = validCoupons.length > 0 ? validCoupons[0] : null;
+    const autoApplyCoupons = validCoupons.filter((c: any) => c.autoApply);
+    const suggestions = validCoupons.slice(0, 5);
+
+    res.json({
+      success: true,
+      bestCoupon,
+      autoApplyCoupons,
+      suggestions,
+      totalValid: validCoupons.length,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ─── User: Get Highlighted/Featured Coupons (for homepage) ────────
 
 const getHighlightedCoupons = async (
@@ -1014,4 +1164,5 @@ export {
   applyCoupon,
   getCouponByCode,
   getHighlightedCoupons,
+  findBestCoupon,
 };

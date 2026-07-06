@@ -14,6 +14,7 @@ import {
   applyCoupon,
   getCouponByCode,
   getHighlightedCoupons,
+  findBestCoupon,
 } from '../controllers/couponController';
 import { protect, authorize } from '../middlewares/auth';
 import { upload } from '../middlewares/upload';
@@ -28,6 +29,7 @@ router.get('/highlighted', getHighlightedCoupons);
 router.get('/code/:code', getCouponByCode);
 router.post('/validate', validateCoupon);
 router.post('/apply', protect, applyCoupon);
+router.post('/best-coupon', findBestCoupon);
 
 // ─── Admin Routes ────────────────────────────────────────────────
 

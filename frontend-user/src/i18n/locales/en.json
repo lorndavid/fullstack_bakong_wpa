@@ -43,7 +43,15 @@
     "couponPlaceholder": "Enter coupon code",
     "apply": "Apply",
     "remove": "Remove",
-    "promotionDiscount": "Promotion Discount"
+    "promotionDiscount": "Promotion Discount",
+    "coupon": "Coupon",
+    "applied": "Applied",
+    "couponDiscount": "Coupon Discount",
+    "couponApplied": "Coupon applied!",
+    "couponRemoved": "Coupon removed",
+    "totalSavings": "Total savings",
+    "youSave": "You save",
+    "freeShippingUnlocked": "You've unlocked free shipping on this order!"
   },
   "checkout": {
     "title": "Checkout",
@@ -168,7 +176,10 @@
     "close": "Close",
     "search": "Search",
     "backToHome": "Back to Home",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "clear": "Clear",
+    "showLess": "Show less",
+    "showMore": "Show {count} more"
   },
   "notFound": {
     "title": "Page Not Found",
@@ -214,12 +225,16 @@
   },
   "coupons": {
     "title": "My Coupons",
+    "titleDesc": "View and use your available coupons",
     "available": "Available",
     "used": "Used",
     "expired": "Expired",
     "upcoming": "Upcoming",
     "noCoupons": "No coupons available",
     "noCouponsDesc": "Check back later for new deals and promotions",
+    "noUsedCoupons": "You haven't used any coupons yet.",
+    "noExpiredCoupons": "No expired coupons.",
+    "noUpcomingCoupons": "No upcoming coupons.",
     "browseProducts": "Browse Products",
     "limitedOffer": "Limited Time Offer",
     "copyCode": "Copy Code",
@@ -228,7 +243,23 @@
     "remainingDays": "{days} days left",
     "endsToday": "Ends today",
     "expired": "Expired",
-    "minPurchase": "Min. purchase: $"
+    "minPurchase": "Min. purchase: $",
+    "autoApplied": "🎉 Best coupon auto-applied!",
+    "suggestions": "Quick apply",
+    "findingBest": "Finding the best coupon for your cart...",
+    "availableCoupons": "Available Coupons",
+    "viewAllCoupons": "View All Coupons",
+    "featuredCoupons": "🔥 Featured Coupons",
+    "searchPlaceholder": "Search coupons by name or code...",
+    "sortBest": "Best",
+    "sortValue": "Highest Value",
+    "sortExpiry": "Expiring Soon",
+    "sortName": "Name",
+    "noSearchResults": "No coupons match your search",
+    "progress": "Progress",
+    "spendMore": "Spend {amount} more to unlock",
+    "minMet": "Minimum met!",
+    "couponRemoved": "Coupon removed"
   },
   "notifications": {
     "title": "Notifications",
