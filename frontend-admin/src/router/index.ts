@@ -13,6 +13,7 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       { path: '', name: 'dashboard', component: () => import('@/pages/DashboardPage.vue') },
+      { path: 'inventory', name: 'inventory-overview', component: () => import('@/pages/InventoryOverviewPage.vue') },
       { path: 'products', name: 'products', component: () => import('@/pages/ProductsPage.vue') },
       { path: 'promotions', name: 'promotions', component: () => import('@/pages/PromotionsPage.vue') },
       { path: 'categories', name: 'categories', component: () => import('@/pages/CategoriesPage.vue') },
