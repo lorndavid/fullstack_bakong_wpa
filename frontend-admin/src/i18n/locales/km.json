@@ -20,7 +20,12 @@
     "settings": "ការកំណត់",
     "notifications": "ការជូនដំណឹង",
     "marketing": "ទីផ្សារ",
-    "coupons": "ប័ណ្ណបញ្ចុះតម្លៃ"
+    "coupons": "ប័ណ្ណបញ្ចុះតម្លៃ",
+    "finance": "ហិរញ្ញវត្ថុ",
+    "communications": "ទំនាក់ទំនង",
+    "liveChat": "ជជែកផ្ទាល់",
+    "content": "មាតិកា",
+    "integrations": "ការរួមបញ្ចូល"
   },
   "roles": {
     "title": "តួនាទី និងសិទ្ធិ",

@@ -20,7 +20,12 @@
     "settings": "Settings",
     "notifications": "Notifications",
     "marketing": "Marketing",
-    "coupons": "Coupons"
+    "coupons": "Coupons",
+    "finance": "Finance",
+    "communications": "Communications",
+    "liveChat": "Live Chat",
+    "content": "Content",
+    "integrations": "Integrations"
   },
   "roles": {
     "title": "Roles & Permissions",
