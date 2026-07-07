@@ -1,4 +1,8 @@
 import { Router } from 'express';
+import path from 'path';
+import fs from 'fs';
+import swaggerUi from 'swagger-ui-express';
+import yaml from 'js-yaml';
 import authRoutes from './authRoutes';
 import categoryRoutes from './categoryRoutes';
 import productRoutes from './productRoutes';
@@ -14,6 +18,30 @@ import couponRoutes from './couponRoutes';
 import inventoryRoutes from './inventoryRoutes';
 
 const router = Router();
+
+// ── Swagger UI Docs ────────────────────────────────────────────────
+const specPath = path.resolve(__dirname, '../../../openapi.yaml');
+if (fs.existsSync(specPath)) {
+  try {
+    const spec = yaml.load(fs.readFileSync(specPath, 'utf8')) as Record<string, any>;
+    router.use(
+      '/docs',
+      swaggerUi.serve,
+      swaggerUi.setup(spec, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'MY SHOP API Docs',
+        swaggerOptions: {
+          persistAuthorization: true,
+        },
+      })
+    );
+    console.log(`📖 API Docs mounted at /api/docs`);
+  } catch (err: any) {
+    console.warn(`⚠️ Failed to load openapi.yaml for Swagger UI: ${err.message}`);
+  }
+} else {
+  console.warn(`⚠️ openapi.yaml not found at ${specPath}. Swagger UI not available.`);
+}
 
 router.use('/auth', authRoutes);
 router.use('/categories', categoryRoutes);
