@@ -28,9 +28,9 @@
             <span class="font-bold text-lg text-primary-500 dark:text-primary-300 hidden sm:block">{{ $t('app.name') }}</span>
           </router-link>
 
-          <!-- Search Bar (desktop + mobile) -->
+          <!-- Search Bar (click to open overlay on mobile, navigate on desktop) -->
           <div class="flex-1 max-w-md mx-2 sm:mx-4">
-            <router-link to="/search" class="block">
+            <button @click="openSearchOverlay" class="block w-full text-left">
               <div class="relative">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -38,11 +38,11 @@
                 <input
                   type="text"
                   :placeholder="$t('nav.search')"
-                  class="w-full pl-10 pr-4 py-2 bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 dark:text-white pointer-events-none"
+                  class="w-full pl-10 pr-4 py-2 bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-lg text-sm dark:text-white pointer-events-none cursor-pointer"
                   readonly
                 />
               </div>
-            </router-link>
+            </button>
           </div>
 
           <!-- Right Actions -->
@@ -173,6 +173,9 @@
     <!-- Chat Widget (only when logged in) -->
     <ChatWidget v-if="auth.isAuthenticated" />
 
+    <!-- Full-screen Search Overlay -->
+    <SearchOverlay :visible="showSearchOverlay" @close="closeSearchOverlay" />
+
     <!-- Toast Container removed - handled by App.vue -->
   </div>
 </template>
@@ -187,6 +190,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import ChatWidget from '@/components/chat/ChatWidget.vue'
 import NotificationBell from '@/components/NotificationBell.vue'
+import SearchOverlay from '@/components/SearchOverlay.vue'
 import { useNotificationStore } from '@/stores/notification'
 
 const auth = useAuthStore()
@@ -196,6 +200,7 @@ const theme = useThemeStore()
 const router = useRouter()
 
 const showUserMenu = ref(false)
+const showSearchOverlay = ref(false)
 const notifStore = useNotificationStore()
 const avatarError = ref(false)
 const bottomAvatarError = ref(false)
@@ -209,6 +214,14 @@ onMounted(() => window.addEventListener('scroll', handleScroll, { passive: true 
 onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 
 // Toast system is now handled in App.vue
+
+function openSearchOverlay() {
+  showSearchOverlay.value = true
+}
+
+function closeSearchOverlay() {
+  showSearchOverlay.value = false
+}
 
 function handleLogout() {
   auth.logout()
