@@ -1,0 +1,4720 @@
+{
+  "info": {
+    "_postman_id": "99a9f734-03e1-44d3-870f-168b70624c52",
+    "name": "MY SHOP - Cambodian E-commerce API",
+    "description": "A production-ready e-commerce API built for the Cambodian market.\nIntegrates **Bakong KHQR** (National Bank of Cambodia QR payment) and **ABA PayWay**.\nFeatures real-time chat and notifications via Socket.IO (documented separately).\n\n### Authentication\n- **User/Admin endpoints**: `Authorization: Bearer <accessToken>`\n- **Public endpoints**: No auth required\n- **Admin-only endpoints**: Require `admin` role\n",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "API health check",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/health",
+          "host": [
+            "http://localhost:5000/api"
+          ],
+          "path": [
+            "health"
+          ],
+          "variable": [],
+          "query": []
+        },
+        "description": "API health check"
+      }
+    },
+    {
+      "name": "Auth",
+      "description": "Authentication (Google OAuth, email login, token refresh)",
+      "item": [
+        {
+          "name": "Admin login with email and password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/auth/login",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Admin login with email and password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@myshop.com\",\n  \"password\": \"secret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login or register with Google OAuth",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/auth/google",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "auth",
+                "google"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Login or register with Google OAuth",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credential\": \"eyJhbGciOiJSUzI1NiIs...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Refresh access token using a refresh token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/auth/refresh",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Refresh access token using a refresh token",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"eyJhbGciOiJSUzI1NiIs...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Logout and record logout event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/auth/logout",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Logout and record logout event"
+          }
+        },
+        {
+          "name": "Get current authenticated user profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/auth/me",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get current authenticated user profile"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "description": "Product listing, search, detail, flash sales",
+      "item": [
+        {
+          "name": "List products with search, filter, sort, and pagination",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/products?search=&category=&minPrice=&maxPrice=&sort=&page=&limit=",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "products"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Full-text search across name and description",
+                  "disabled": false
+                },
+                {
+                  "key": "category",
+                  "value": "",
+                  "description": "Category ObjectId filter",
+                  "disabled": false
+                },
+                {
+                  "key": "minPrice",
+                  "value": "",
+                  "description": "Minimum price filter",
+                  "disabled": false
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "",
+                  "description": "Maximum price filter",
+                  "disabled": false
+                },
+                {
+                  "key": "sort",
+                  "value": "",
+                  "description": "Sort order",
+                  "disabled": false
+                },
+                {
+                  "key": "page",
+                  "value": "",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "List products with search, filter, sort, and pagination"
+          }
+        },
+        {
+          "name": "Create a new product (admin only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/products",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "products"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Create a new product (admin only)",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "description",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "price",
+                  "value": 9.99,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "stock",
+                  "value": 1,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "discount",
+                  "value": 1,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "category",
+                  "value": "string",
+                  "type": "text",
+                  "description": "Category ObjectId"
+                },
+                {
+                  "key": "featured",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "images",
+                  "value": [
+                    "string"
+                  ],
+                  "type": "text",
+                  "description": "Up to 5 product images"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get featured products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/products/featured",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "products",
+                "featured"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get featured products"
+          }
+        },
+        {
+          "name": "Get flash sale products (discounted items)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/products/flash-sale",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "products",
+                "flash-sale"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get flash sale products (discounted items)"
+          }
+        },
+        {
+          "name": "Get newest products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/products/new-arrivals",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "products",
+                "new-arrivals"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get newest products"
+          }
+        },
+        {
+          "name": "Get low stock products overview (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/products/low-stock/overview",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "products",
+                "low-stock",
+                "overview"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get low stock products overview (admin)"
+          }
+        },
+        {
+          "name": "Get single product detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/products/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "products",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get single product detail"
+          }
+        },
+        {
+          "name": "Update a product (admin only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/products/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "products",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Update a product (admin only)",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "description",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "price",
+                  "value": 9.99,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "stock",
+                  "value": 1,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "discount",
+                  "value": 1,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "category",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "featured",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "images",
+                  "value": [
+                    "string"
+                  ],
+                  "type": "text",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete a product (admin only)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/products/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "products",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Delete a product (admin only)"
+          }
+        },
+        {
+          "name": "Get related products for a given product",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/products/{{id}}/related",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "products",
+                ":id",
+                "related"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get related products for a given product"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "description": "Product category management",
+      "item": [
+        {
+          "name": "List all categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/categories",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "categories"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List all categories"
+          }
+        },
+        {
+          "name": "Create a category (admin only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/categories",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "categories"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Create a category (admin only)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"icon\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get a single category",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/categories/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "categories",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get a single category"
+          }
+        },
+        {
+          "name": "Update a category (admin only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/categories/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "categories",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Update a category (admin only)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"icon\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete a category (admin only)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/categories/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "categories",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Delete a category (admin only)"
+          }
+        },
+        {
+          "name": "Get products by category",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/categories/{{id}}/products",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "categories",
+                ":id",
+                "products"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get products by category"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "description": "Order creation, tracking, admin management",
+      "item": [
+        {
+          "name": "List current user's orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/orders",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "orders"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List current user's orders"
+          }
+        },
+        {
+          "name": "Create a new order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/orders",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "orders"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Create a new order",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get order detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/orders/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "orders",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get order detail"
+          }
+        },
+        {
+          "name": "Cancel an order (user)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/orders/{{id}}/cancel",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "orders",
+                ":id",
+                "cancel"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Cancel an order (user)"
+          }
+        },
+        {
+          "name": "List all orders (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/orders/admin/all",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "orders",
+                "admin",
+                "all"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List all orders (admin)"
+          }
+        },
+        {
+          "name": "Update order status (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/orders/admin/{{id}}/status",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "orders",
+                "admin",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Update order status (admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"pending\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete an order (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/orders/admin/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "orders",
+                "admin",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Delete an order (admin)"
+          }
+        },
+        {
+          "name": "Bulk delete orders (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/orders/admin/bulk-delete",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "orders",
+                "admin",
+                "bulk-delete"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Bulk delete orders (admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"string\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "description": "Payment processing (KHQR, ABA PayWay), SSE streaming",
+      "item": [
+        {
+          "name": "Create a payment (KHQR or ABA PayWay)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/payment/create",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "payment",
+                "create"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Create a payment (KHQR or ABA PayWay)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"string\",\n  \"amount\": 9.99,\n  \"provider\": \"BAKONG\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Check payment status by provider",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/payment/check",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "payment",
+                "check"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Check payment status by provider",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"md5\": \"string\",\n  \"provider\": \"BAKONG\",\n  \"tranId\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Check Bakong payment status by MD5 hash",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/payment/status/{{md5}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "payment",
+                "status",
+                ":md5"
+              ],
+              "variable": [
+                {
+                  "key": "md5",
+                  "value": "",
+                  "description": "Path parameter: md5"
+                }
+              ],
+              "query": []
+            },
+            "description": "Check Bakong payment status by MD5 hash"
+          }
+        },
+        {
+          "name": "SSE endpoint for payment status push",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/payment/subscribe/{{md5}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "payment",
+                "subscribe",
+                ":md5"
+              ],
+              "variable": [
+                {
+                  "key": "md5",
+                  "value": "",
+                  "description": "Path parameter: md5"
+                }
+              ],
+              "query": []
+            },
+            "description": "SSE endpoint for payment status push"
+          }
+        },
+        {
+          "name": "SSE endpoint by transaction ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/payment/subscribe/tran/{{tranId}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "payment",
+                "subscribe",
+                "tran",
+                ":tranId"
+              ],
+              "variable": [
+                {
+                  "key": "tranId",
+                  "value": "",
+                  "description": "Path parameter: tranId"
+                }
+              ],
+              "query": []
+            },
+            "description": "SSE endpoint by transaction ID"
+          }
+        },
+        {
+          "name": "Save a transaction to the database",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/payment/save",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "payment",
+                "save"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Save a transaction to the database"
+          }
+        },
+        {
+          "name": "Webhook endpoint for payment providers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/payment/webhook",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "payment",
+                "webhook"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Webhook endpoint for payment providers"
+          }
+        },
+        {
+          "name": "List all transactions (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/payment/transactions",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "payment",
+                "transactions"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List all transactions (admin)"
+          }
+        },
+        {
+          "name": "Delete a transaction (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/payment/transactions/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "payment",
+                "transactions",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Delete a transaction (admin)"
+          }
+        },
+        {
+          "name": "SSE stream for live transaction monitoring (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/payment/stream?token=",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "payment",
+                "stream"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "",
+                  "description": "JWT token for EventSource compatibility",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "SSE stream for live transaction monitoring (admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coupons",
+      "description": "Coupon system with validation, auto-apply, best-coupon",
+      "item": [
+        {
+          "name": "List coupons available to the current user",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/available",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "available"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List coupons available to the current user"
+          }
+        },
+        {
+          "name": "Get coupons eligible for auto-apply",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/auto-apply",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "auto-apply"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get coupons eligible for auto-apply"
+          }
+        },
+        {
+          "name": "Get highlighted/promoted coupons for the coupon center",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/highlighted",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "highlighted"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get highlighted/promoted coupons for the coupon center"
+          }
+        },
+        {
+          "name": "Get a coupon by its code",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/code/{{code}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "code",
+                ":code"
+              ],
+              "variable": [
+                {
+                  "key": "code",
+                  "value": "",
+                  "description": "Path parameter: code"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get a coupon by its code"
+          }
+        },
+        {
+          "name": "Validate a coupon code against a cart total",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/validate",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "validate"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Validate a coupon code against a cart total",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"WELCOME10\",\n  \"cartTotal\": 50\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Apply a coupon to the current user's cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/apply",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "apply"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Apply a coupon to the current user's cart",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Find the best coupon for a given cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/best-coupon",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "best-coupon"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Find the best coupon for a given cart",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartTotal\": 85,\n  \"products\": [\n    \"string\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List all coupons (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/admin/all",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "admin",
+                "all"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List all coupons (admin)"
+          }
+        },
+        {
+          "name": "Get coupon analytics overview (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/admin/analytics",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "admin",
+                "analytics"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get coupon analytics overview (admin)"
+          }
+        },
+        {
+          "name": "Create a coupon (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/admin",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "admin"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Create a coupon (admin)",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "code",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "name",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "description",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "discountType",
+                  "value": "percentage",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "discountValue",
+                  "value": 9.99,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "minOrderValue",
+                  "value": 9.99,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "maxDiscount",
+                  "value": 9.99,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "maxUses",
+                  "value": 1,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "startDate",
+                  "value": "2026-07-07T08:45:37.947Z",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-07-07T08:45:37.949Z",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "isActive",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "isHighlighted",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "autoApply",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "category",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "bannerImage",
+                  "type": "file",
+                  "src": "",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get a single coupon (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/admin/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "admin",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get a single coupon (admin)"
+          }
+        },
+        {
+          "name": "Update a coupon (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/admin/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "admin",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Update a coupon (admin)",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "code",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "name",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "description",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "discountType",
+                  "value": "percentage",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "discountValue",
+                  "value": 9.99,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "minOrderValue",
+                  "value": 9.99,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "maxDiscount",
+                  "value": 9.99,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "maxUses",
+                  "value": 1,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "startDate",
+                  "value": "2026-07-07T08:45:37.949Z",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-07-07T08:45:37.949Z",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "isActive",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "isHighlighted",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "autoApply",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "category",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "bannerImage",
+                  "type": "file",
+                  "src": "",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete a coupon (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/admin/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "admin",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Delete a coupon (admin)"
+          }
+        },
+        {
+          "name": "Get analytics for a specific coupon (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/admin/{{id}}/analytics",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "admin",
+                ":id",
+                "analytics"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get analytics for a specific coupon (admin)"
+          }
+        },
+        {
+          "name": "Update coupon active status (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/coupons/admin/{{id}}/status",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "coupons",
+                "admin",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Update coupon active status (admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Promotions",
+      "description": "Promotion management with product assignment",
+      "item": [
+        {
+          "name": "Get active promotions (public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/promotions/active",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "promotions",
+                "active"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get active promotions (public)"
+          }
+        },
+        {
+          "name": "Get products for promotion selection",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/promotions/products",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "promotions",
+                "products"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get products for promotion selection"
+          }
+        },
+        {
+          "name": "List all promotions (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/promotions",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "promotions"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List all promotions (admin)"
+          }
+        },
+        {
+          "name": "Create a promotion (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/promotions",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "promotions"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Create a promotion (admin)",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "description",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "discountPercent",
+                  "value": 1,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "products",
+                  "value": [
+                    "string"
+                  ],
+                  "type": "text",
+                  "description": "Array of product ObjectIds"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2026-07-07T08:45:37.949Z",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-07-07T08:45:37.949Z",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "isActive",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "bannerImage",
+                  "type": "file",
+                  "src": "",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get a single promotion (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/promotions/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "promotions",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get a single promotion (admin)"
+          }
+        },
+        {
+          "name": "Update a promotion (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/promotions/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "promotions",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Update a promotion (admin)",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "description",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "discountPercent",
+                  "value": 1,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "products",
+                  "value": [
+                    "string"
+                  ],
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "startDate",
+                  "value": "2026-07-07T08:45:37.949Z",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-07-07T08:45:37.949Z",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "isActive",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "bannerImage",
+                  "type": "file",
+                  "src": "",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete a promotion (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/promotions/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "promotions",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Delete a promotion (admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "description": "User notifications and admin broadcast",
+      "item": [
+        {
+          "name": "List current user's notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "notifications"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List current user's notifications"
+          }
+        },
+        {
+          "name": "Get unread notification count for the current user",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications/unread-count",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "notifications",
+                "unread-count"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get unread notification count for the current user"
+          }
+        },
+        {
+          "name": "Mark a single notification as read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications/{{id}}/read",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "notifications",
+                ":id",
+                "read"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Mark a single notification as read"
+          }
+        },
+        {
+          "name": "Mark all notifications as read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications/read-all",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "notifications",
+                "read-all"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Mark all notifications as read"
+          }
+        },
+        {
+          "name": "Delete a notification",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "notifications",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Delete a notification"
+          }
+        },
+        {
+          "name": "List all notifications (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications/admin/all",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "notifications",
+                "admin",
+                "all"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List all notifications (admin)"
+          }
+        },
+        {
+          "name": "Get notification statistics (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications/admin/stats",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "notifications",
+                "admin",
+                "stats"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get notification statistics (admin)"
+          }
+        },
+        {
+          "name": "Create and broadcast a notification (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications/admin/create",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "notifications",
+                "admin",
+                "create"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Create and broadcast a notification (admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"order_confirmed\",\n  \"title\": \"Flash Sale Tomorrow!\",\n  \"message\": \"Up to 50% off on all skincare products\",\n  \"recipient\": \"allUsers\",\n  \"channels\": [\n    \"in_app\"\n  ],\n  \"scheduledFor\": \"2026-07-07T08:45:37.949Z\",\n  \"link\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete a notification as admin",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications/admin/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "notifications",
+                "admin",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Delete a notification as admin"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "description": "Live support chat (via REST + Socket.IO for real-time)",
+      "item": [
+        {
+          "name": "Get or create a conversation for the current user",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/conversation",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "chat",
+                "conversation"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get or create a conversation for the current user"
+          }
+        },
+        {
+          "name": "List current user's conversations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/conversations",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "chat",
+                "conversations"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List current user's conversations"
+          }
+        },
+        {
+          "name": "Get messages in a conversation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/conversations/{{id}}/messages",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "chat",
+                "conversations",
+                ":id",
+                "messages"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get messages in a conversation"
+          }
+        },
+        {
+          "name": "Send a message in a conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/conversations/{{id}}/messages",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "chat",
+                "conversations",
+                ":id",
+                "messages"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Send a message in a conversation",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"string\",\n  \"messageType\": \"text\",\n  \"fileUrl\": \"string\",\n  \"fileName\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Upload a file for chat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/upload",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "chat",
+                "upload"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Upload a file for chat",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List all conversations (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/admin/conversations",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "chat",
+                "admin",
+                "conversations"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List all conversations (admin)"
+          }
+        },
+        {
+          "name": "Get conversation messages (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/admin/conversations/{{id}}/messages",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "chat",
+                "admin",
+                "conversations",
+                ":id",
+                "messages"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get conversation messages (admin)"
+          }
+        },
+        {
+          "name": "Assign staff to a conversation (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/admin/conversations/{{id}}/assign",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "chat",
+                "admin",
+                "conversations",
+                ":id",
+                "assign"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Assign staff to a conversation (admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"adminId\": \"string\",\n  \"adminName\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Close a conversation (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/admin/conversations/{{id}}/close",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "chat",
+                "admin",
+                "conversations",
+                ":id",
+                "close"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Close a conversation (admin)"
+          }
+        },
+        {
+          "name": "Get chat statistics (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/admin/stats",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "chat",
+                "admin",
+                "stats"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get chat statistics (admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "User management, admin dashboard stats",
+      "item": [
+        {
+          "name": "List all users (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/users",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "users"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List all users (admin)"
+          }
+        },
+        {
+          "name": "Get dashboard statistics (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/users/stats",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "users",
+                "stats"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get dashboard statistics (admin)"
+          }
+        },
+        {
+          "name": "Get user detail (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/users/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get user detail (admin)"
+          }
+        },
+        {
+          "name": "Update a user (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/users/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Update a user (admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"role\": \"user\",\n  \"avatar\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete a user (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/users/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Delete a user (admin)"
+          }
+        },
+        {
+          "name": "Get user's orders (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/users/{{id}}/orders",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "users",
+                ":id",
+                "orders"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get user's orders (admin)"
+          }
+        },
+        {
+          "name": "Get user login history (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/users/{{id}}/login-history",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "users",
+                ":id",
+                "login-history"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Get user login history (admin)"
+          }
+        },
+        {
+          "name": "Bulk delete users (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/users/bulk/delete",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "users",
+                "bulk",
+                "delete"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Bulk delete users (admin)"
+          }
+        },
+        {
+          "name": "Create a new admin user (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/users/create-admin",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "users",
+                "create-admin"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Create a new admin user (admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"email\": \"user@example.com\",\n  \"password\": \"secret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List all permissions (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/users/permissions/list",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "users",
+                "permissions",
+                "list"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List all permissions (admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "description": "Warehouses, suppliers, stock movements, purchase orders",
+      "item": [
+        {
+          "name": "Get inventory overview (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/overview",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "overview"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get inventory overview (admin)"
+          }
+        },
+        {
+          "name": "List warehouses (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/warehouses",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "warehouses"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List warehouses (admin)"
+          }
+        },
+        {
+          "name": "Create a warehouse (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/warehouses",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "warehouses"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Create a warehouse (admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"location\": \"string\",\n  \"contactPerson\": \"string\",\n  \"contactPhone\": \"string\",\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update a warehouse (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/warehouses/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "warehouses",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Update a warehouse (admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"location\": \"string\",\n  \"contactPerson\": \"string\",\n  \"contactPhone\": \"string\",\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete a warehouse (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/warehouses/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "warehouses",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Delete a warehouse (admin)"
+          }
+        },
+        {
+          "name": "List suppliers (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/suppliers",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "suppliers"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List suppliers (admin)"
+          }
+        },
+        {
+          "name": "Create a supplier (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/suppliers",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "suppliers"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Create a supplier (admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"contactPerson\": \"string\",\n  \"email\": \"user@example.com\",\n  \"phone\": \"string\",\n  \"address\": \"string\",\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update a supplier (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/suppliers/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "suppliers",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Update a supplier (admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"contactPerson\": \"string\",\n  \"email\": \"string\",\n  \"phone\": \"string\",\n  \"address\": \"string\",\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete a supplier (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/suppliers/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "suppliers",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Delete a supplier (admin)"
+          }
+        },
+        {
+          "name": "List stock movements (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/movements",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "movements"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List stock movements (admin)"
+          }
+        },
+        {
+          "name": "List purchase orders (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/purchase-orders",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "purchase-orders"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "List purchase orders (admin)"
+          }
+        },
+        {
+          "name": "Create a purchase order (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/purchase-orders",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "purchase-orders"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Create a purchase order (admin)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"supplierId\": \"string\",\n  \"warehouseId\": \"string\",\n  \"items\": [\n    {\n      \"productId\": \"string\",\n      \"productName\": \"string\",\n      \"quantity\": 1,\n      \"unitCost\": 9.99\n    }\n  ],\n  \"notes\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update a purchase order (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/purchase-orders/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "purchase-orders",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Update a purchase order (admin)"
+          }
+        },
+        {
+          "name": "Receive a purchase order, updating stock (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/inventory/purchase-orders/{{id}}/receive",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "inventory",
+                "purchase-orders",
+                ":id",
+                "receive"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Receive a purchase order, updating stock (admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hero Slides",
+      "description": "Homepage banner carousel management",
+      "item": [
+        {
+          "name": "Get active hero slides for the homepage",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/hero-slides",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "hero-slides"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get active hero slides for the homepage"
+          }
+        },
+        {
+          "name": "Create a hero slide (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/hero-slides",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "hero-slides"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Create a hero slide (admin)",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "subtitle",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": ""
+                },
+                {
+                  "key": "link",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "isActive",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "order",
+                  "value": 1,
+                  "type": "text",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get all hero slides (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/hero-slides/all",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "hero-slides",
+                "all"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get all hero slides (admin)"
+          }
+        },
+        {
+          "name": "Update a hero slide (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/hero-slides/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "hero-slides",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Update a hero slide (admin)",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "subtitle",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": ""
+                },
+                {
+                  "key": "link",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "isActive",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "order",
+                  "value": 1,
+                  "type": "text",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete a hero slide (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/hero-slides/{{id}}",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "hero-slides",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Path parameter: id"
+                }
+              ],
+              "query": []
+            },
+            "description": "Delete a hero slide (admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "description": "Site settings (singleton)",
+      "item": [
+        {
+          "name": "Get site settings (public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/settings",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "settings"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Get site settings (public)"
+          }
+        },
+        {
+          "name": "Update site settings (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text",
+                "description": "JWT access token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/settings",
+              "host": [
+                "http://localhost:5000/api"
+              ],
+              "path": [
+                "settings"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "Update site settings (admin)",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "siteName",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "description",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "contactEmail",
+                  "value": "user@example.com",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "contactPhone",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "address",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "socialLinks[facebook]",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "socialLinks[instagram]",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "socialLinks[telegram]",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "logo",
+                  "type": "file",
+                  "src": "",
+                  "description": ""
+                },
+                {
+                  "key": "favicon",
+                  "type": "file",
+                  "src": "",
+                  "description": ""
+                },
+                {
+                  "key": "payment[bakongAccountId]",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "payment[merchantName]",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "payment[merchantCity]",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "payment[abaPaywayEnabled]",
+                  "value": true,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "payment[abaPaywayMerchantId]",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "shipping[freeShippingThreshold]",
+                  "value": 9.99,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "shipping[shippingFee]",
+                  "value": 9.99,
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "seo[metaTitle]",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                },
+                {
+                  "key": "seo[metaDescription]",
+                  "value": "string",
+                  "type": "text",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string",
+      "description": "JWT access token obtained from POST /auth/login or POST /auth/google"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  }
+}
