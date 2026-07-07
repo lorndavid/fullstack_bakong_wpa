@@ -5,6 +5,35 @@
       <h1 class="text-xl sm:text-2xl font-bold text-surface-800 dark:text-white">{{ $t('profile.title') }}</h1>
     </div>
 
+    <!-- Quick Actions Grid (shown at top of profile) -->
+    <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 shadow-card">
+      <h2 class="text-sm font-bold text-surface-800 dark:text-white mb-3 flex items-center gap-2">
+        <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        {{ $t('profile.quickActions') }}
+      </h2>
+      <div class="grid grid-cols-2 gap-3">
+        <router-link
+          v-for="action in quickActions"
+          :key="action.key"
+          :to="action.route"
+          class="flex items-center gap-3 p-3 rounded-xl border border-surface-100 dark:border-surface-700 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group"
+        >
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" :class="action.bgClass">
+            <component :is="action.icon" class="w-5 h-5" :class="action.iconClass" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-surface-800 dark:text-white">{{ action.label }}</p>
+            <p class="text-[11px] text-surface-400 truncate">{{ action.desc }}</p>
+          </div>
+          <svg class="w-4 h-4 text-surface-300 group-hover:text-surface-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </router-link>
+      </div>
+    </div>
+
     <!-- Tab Navigation -->
     <div class="flex bg-white dark:bg-surface-800 rounded-xl p-1 shadow-card border border-surface-100 dark:border-surface-700">
       <button
@@ -15,7 +44,6 @@
           ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 shadow-sm'
           : 'text-surface-500 dark:text-surface-400 hover:text-surface-700 dark:hover:text-surface-200'"
       >
-        <span class="sm:hidden">{{ tab.icon }}</span>
         <span class="hidden sm:inline">{{ tab.label }}</span>
       </button>
     </div>
@@ -213,13 +241,13 @@
           <button @click="setLocale('en')"
             class="flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border-2 transition-all"
             :class="locale === 'en' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'">
-            <span class="text-lg">🇺🇸</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
             <span class="text-sm font-medium">English</span>
           </button>
           <button @click="setLocale('km')"
             class="flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border-2 transition-all"
             :class="locale === 'km' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'">
-            <span class="text-lg">🇰🇭</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
             <span class="text-sm font-medium">ភាសាខ្មែរ</span>
           </button>
         </div>
@@ -314,10 +342,24 @@ const orders = ref<Order[]>([])
 const loadingOrders = ref(false)
 const totalSpent = ref(0)
 
-const tabs = computed<{ key: TabKey; label: string; icon: string }[]>(() => [
-  { key: 'profile', label: t('profile.tabProfile'), icon: '👤' },
-  { key: 'orders', label: t('profile.tabOrders'), icon: '📋' },
-  { key: 'settings', label: t('profile.tabSettings'), icon: '⚙️' },
+import { ShoppingBag, Package, Heart, TicketPercent, History, MapPinned, Bell, Settings, CircleHelp, MessageCircle } from 'lucide-vue-next'
+
+const tabs = computed<{ key: TabKey; label: string }[]>(() => [
+  { key: 'profile', label: t('profile.tabProfile') },
+  { key: 'orders', label: t('profile.tabOrders') },
+  { key: 'settings', label: t('profile.tabSettings') },
+])
+
+const quickActions = computed(() => [
+  { key: 'continue-shopping', icon: ShoppingBag, iconClass: 'text-blue-500', bgClass: 'bg-blue-100 dark:bg-blue-900/20', label: t('profile.continueShopping'), desc: t('profile.continueShoppingDesc'), route: '/search' },
+  { key: 'orders', icon: Package, iconClass: 'text-amber-500', bgClass: 'bg-amber-100 dark:bg-amber-900/20', label: t('profile.orders'), desc: t('profile.ordersDesc'), route: '/orders' },
+  { key: 'wishlist', icon: Heart, iconClass: 'text-red-500', bgClass: 'bg-red-100 dark:bg-red-900/20', label: t('profile.wishlist'), desc: t('profile.wishlistDesc'), route: '/profile?tab=wishlist' },
+  { key: 'coupons', icon: TicketPercent, iconClass: 'text-purple-500', bgClass: 'bg-purple-100 dark:bg-purple-900/20', label: t('profile.coupons'), desc: t('profile.couponsDesc'), route: '/coupons' },
+  { key: 'recently-viewed', icon: History, iconClass: 'text-teal-500', bgClass: 'bg-teal-100 dark:bg-teal-900/20', label: t('profile.recentlyViewed'), desc: t('profile.recentlyViewedDesc'), route: '/search' },
+  { key: 'addresses', icon: MapPinned, iconClass: 'text-emerald-500', bgClass: 'bg-emerald-100 dark:bg-emerald-900/20', label: t('profile.savedAddresses'), desc: t('profile.savedAddresses'), route: '/profile' },
+  { key: 'notifications', icon: Bell, iconClass: 'text-rose-500', bgClass: 'bg-rose-100 dark:bg-rose-900/20', label: t('profile.notifications'), desc: t('profile.notificationsDesc'), route: '/notifications' },
+  { key: 'settings', icon: Settings, iconClass: 'text-slate-500', bgClass: 'bg-slate-100 dark:bg-slate-900/20', label: t('profile.settings'), desc: t('profile.settingsDesc'), route: '/profile?tab=settings' },
+  { key: 'support', icon: MessageCircle, iconClass: 'text-primary-500', bgClass: 'bg-primary-100 dark:bg-primary-900/20', label: t('profile.support'), desc: t('profile.supportDesc'), route: '#' },
 ])
 
 const reduceMotion = ref(localStorage.getItem('reduce_motion') === 'true')

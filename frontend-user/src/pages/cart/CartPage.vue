@@ -25,7 +25,7 @@
         <!-- Free shipping banner -->
         <div class="flex items-center gap-2.5 p-3 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/50">
           <svg class="w-5 h-5 text-primary-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-          <p class="text-sm font-medium text-primary-700 dark:text-primary-300">🎉 {{ $t('cart.freeShippingUnlocked') }}</p>
+          <p class="text-sm font-medium text-primary-700 dark:text-primary-300">{{ $t('cart.freeShippingUnlocked') }}</p>
         </div>
 
         <div v-for="item in cart.items" :key="item.productId"
@@ -121,7 +121,7 @@
               <div class="flex items-center gap-2.5">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                   :style="{ background: coupon.themeColor || '#6366F1' }">
-                  {{ coupon.discountType === 'percentage' ? coupon.discountValue + '%' : coupon.discountType === 'fixed' ? '$' + coupon.discountValue : '🚚' }}
+                  {{ coupon.discountType === 'percentage' ? coupon.discountValue + '%' : coupon.discountType === 'fixed' ? '$' + coupon.discountValue : (coupon.discountType === 'free_shipping' ? 'FREE' : '') }}
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="text-xs font-semibold text-surface-800 dark:text-white truncate">{{ coupon.name }}</p>

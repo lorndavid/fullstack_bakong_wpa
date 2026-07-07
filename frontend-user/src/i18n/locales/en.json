@@ -27,7 +27,7 @@
     "sold": "sold",
     "noFlashSale": "No flash sale items available",
     "noNewArrivals": "No new arrivals yet",
-    "promotions": "🔥 Promotions",
+    "promotions": "Promotions",
     "continueShopping": "Continue Shopping",
     "recentlyViewed": "Recently Viewed",
     "quickActions": "Quick Actions"
@@ -212,7 +212,23 @@
     "connectedWithGoogle": "Connected with Google",
     "orderValue": "Total spent: ${amount}",
     "appearance": "Appearance",
-    "wishlist": "Wishlist"
+    "wishlist": "Wishlist",
+    "quickActions": "Quick Actions",
+    "continueShopping": "Continue Shopping",
+    "orders": "Orders",
+    "coupons": "Coupons",
+    "recentlyViewed": "Recently Viewed",
+    "savedAddresses": "Saved Addresses",
+    "settings": "Settings",
+    "support": "Support",
+    "ordersDesc": "View your purchases",
+    "wishlistDesc": "Products you saved",
+    "couponsDesc": "Available discounts",
+    "recentlyViewedDesc": "Products you browsed",
+    "notificationsDesc": "Latest updates and offers",
+    "settingsDesc": "App preferences",
+    "supportDesc": "Get help and support",
+    "continueShoppingDesc": "Browse all products"
   },
   "banner": {
     "freeShipping": "Free Shipping on all orders — No minimum required!"
@@ -254,12 +270,12 @@
     "endsToday": "Ends today",
     "expired": "Expired",
     "minPurchase": "Min. purchase: $",
-    "autoApplied": "🎉 Best coupon auto-applied!",
+    "autoApplied": "Best coupon auto-applied!",
     "suggestions": "Quick apply",
     "findingBest": "Finding the best coupon for your cart...",
     "availableCoupons": "Available Coupons",
     "viewAllCoupons": "View All Coupons",
-    "featuredCoupons": "🔥 Featured Coupons",
+    "featuredCoupons": "Featured Coupons",
     "searchPlaceholder": "Search coupons by name or code...",
     "sortBest": "Best",
     "sortValue": "Highest Value",
@@ -270,8 +286,8 @@
     "spendMore": "Spend {amount} more to unlock",
     "minMet": "Minimum met!",
     "couponRemoved": "Coupon removed"
-  },
-  "notifications": {
+  },    "notifications": "Notifications",
+    "notifications": {
     "title": "Notifications",
     "unread": "unread",
     "markRead": "Mark as read",
@@ -297,19 +313,19 @@
       "closed": "Conversation closed"
     },
     "waitingBanner": "Looking for an available staff member...",
-    "closedBanner": "This conversation has been closed. Start a new chat if you need help.",
-    "welcome": "Welcome! 👋",
+    "closedBanner": "This conversation has been closed.",
+    "welcome": "Welcome!",
     "welcomeSubtitle": "How can we help you today?",
     "inputPlaceholder": "Type your message...",
     "downloadFile": "Download file",
     "emoji": "Emoji",
     "quickReplies": {
-      "greeting": "👋 Hi! Need help?",
-      "shipping": "🚚 Shipping info",
-      "payment": "💳 Payment options",
-      "returns": "🔄 Returns policy",
-      "promotions": "🏷️ Current promotions",
-      "staff": "💬 Talk to staff"
+      "greeting": "Hi! Need help?",
+      "shipping": "Shipping info",
+      "payment": "Payment options",
+      "returns": "Returns policy",
+      "promotions": "Current promotions",
+      "staff": "Talk to staff"
     },
     "clickToDownload": "Click to download"
   },
@@ -333,7 +349,7 @@
     "installNow": "Install Now",
     "maybeLater": "Maybe Later",
     "neverShow": "Never Show Again",
-    "installSuccess": "App Installed Successfully! 🎉",
+    "installSuccess": "App Installed Successfully!",
     "installSuccessDesc": "You can now access MY SHOP from your home screen with one tap.",
     "openApp": "Open App",
     "estimatedSize": "Estimated size:",

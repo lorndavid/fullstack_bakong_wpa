@@ -7,7 +7,7 @@
 
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-xl sm:text-2xl font-bold text-surface-800 dark:text-white">{{ $t('checkout.title') }}</h1>
-      <span class="text-sm text-surface-500">{{ $t('checkout.freeShipping') }} 🎉</span>
+      <span class="text-sm text-surface-500">{{ $t('checkout.freeShipping') }}</span>
     </div>
 
     <!-- Progress Steps -->
@@ -117,7 +117,7 @@
                     ? userCouponStore.appliedCoupon.discountValue + '%' 
                     : userCouponStore.appliedCoupon.discountType === 'fixed' 
                       ? '$' + userCouponStore.appliedCoupon.discountValue 
-                      : '🚚' }}
+                      : 'FREE' }}
                 </span>
                 <span class="text-[9px] font-medium opacity-80 mt-0.5">
                   {{ userCouponStore.appliedCoupon.discountType === 'free_shipping' ? 'SHIP' : 'OFF' }}
@@ -187,7 +187,7 @@
             >
               <div class="w-7 h-7 rounded-md flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
                 :style="{ background: suggestion.themeColor || '#6366F1' }">
-                {{ suggestion.discountType === 'percentage' ? suggestion.discountValue + '%' : suggestion.discountType === 'fixed' ? '$' + suggestion.discountValue : '🚚' }}
+                {{ suggestion.discountType === 'percentage' ? suggestion.discountValue + '%' : suggestion.discountType === 'fixed' ? '$' + suggestion.discountValue : (suggestion.discountType === 'free_shipping' ? 'FREE' : '') }}
               </div>
               <div class="text-left min-w-0">
                 <p class="text-xs font-medium text-surface-700 dark:text-surface-200 truncate max-w-[100px]">{{ suggestion.name }}</p>

@@ -12,6 +12,7 @@
     "@vueuse/core": "^11.1.0",
     "axios": "^1.7.7",
     "canvas-confetti": "^1.9.4",
+    "lucide-vue-next": "^1.0.0",
     "pinia": "^2.2.2",
     "socket.io-client": "^4.8.3",
     "vue": "^3.5.10",

@@ -27,7 +27,7 @@
     "sold": "បានលក់",
     "noFlashSale": "មិនមានទំនិញបញ្ចុះតម្លៃទេ",
     "noNewArrivals": "មិនទាន់មានផលិតផលថ្មីនៅឡើយទេ",
-    "promotions": "🔥 ការផ្សព្វផ្សាយ",
+    "promotions": "ការផ្សព្វផ្សាយ",
     "continueShopping": "បន្តទិញទំនិញ",
     "recentlyViewed": "បានមើលថ្មីៗ",
     "quickActions": "សកម្មភាពរហ័ស"
@@ -212,7 +212,22 @@
     "connectedWithGoogle": "ភ្ជាប់ជាមួយ Google",
     "orderValue": "បានចំណាយសរុប: ${amount}",
     "appearance": "រូបរាង",
-    "wishlist": "បញ្ជីរំលឹក"
+    "wishlist": "បញ្ជីរំលឹក",
+    "quickActions": "សកម្មភាពរហ័ស",
+    "continueShopping": "បន្តទិញទំនិញ",
+    "orders": "ការបញ្ជាទិញ",
+    "coupons": "ប័ណ្ណបញ្ចុះតម្លៃ",
+    "recentlyViewed": "បានមើលថ្មីៗ",
+    "savedAddresses": "អាសយដ្ឋាន",
+    "settings": "ការកំណត់",
+    "support": "ជំនួយ",
+    "ordersDesc": "មើលការបញ្ជាទិញរបស់អ្នក",
+    "wishlistDesc": "ផលិតផលដែលអ្នកបានរក្សាទុក",
+    "couponsDesc": "បញ្ចុះតម្លៃដែលមាន",
+    "recentlyViewedDesc": "ផលិតផលដែលអ្នកបានមើល",
+    "notificationsDesc": "ការជូនដំណឹងចុងក្រោយ",
+    "settingsDesc": "ចំណូលចិត្តកម្មវិធី",
+    "supportDesc": "ទទួលបានជំនួយ"
   },
   "banner": {
     "freeShipping": "ដឹកជញ្ជូនឥតគិតថ្លៃ — មិនតម្រូវឱ្យមានការបញ្ជាទិញអប្បបរមា!"
@@ -254,12 +269,12 @@
     "endsToday": "បញ្ចប់ថ្ងៃនេះ",
     "expired": "ផុតកំណត់",
     "minPurchase": "ការទិញអប្បបរមា: $",
-    "autoApplied": "🎉 ប័ណ្ណបញ្ចុះតម្លៃល្អបំផុតត្រូវបានអនុវត្តដោយស្វ័យប្រវត្តិ!",
+    "autoApplied": "ប័ណ្ណបញ្ចុះតម្លៃល្អបំផុតត្រូវបានអនុវត្ត!",
     "suggestions": "អនុវត្តរហ័ស",
     "findingBest": "កំពុងស្វែងរកប័ណ្ណបញ្ចុះតម្លៃល្អបំផុតសម្រាប់កន្ត្រករបស់អ្នក...",
     "availableCoupons": "ប័ណ្ណបញ្ចុះតម្លៃដែលមាន",
     "viewAllCoupons": "មើលប័ណ្ណបញ្ចុះតម្លៃទាំងអស់",
-    "featuredCoupons": "🔥 ប័ណ្ណបញ្ចុះតម្លៃពិសេស",
+    "featuredCoupons": "ប័ណ្ណបញ្ចុះតម្លៃពិសេស",
     "searchPlaceholder": "ស្វែងរកប័ណ្ណបញ្ចុះតម្លៃតាមឈ្មោះ ឬកូដ...",
     "sortBest": "ល្អបំផុត",
     "sortValue": "តម្លៃខ្ពស់បំផុត",
@@ -270,8 +285,8 @@
     "spendMore": "ចំណាយបន្ថែម {amount} ដើម្បីដោះសោ",
     "minMet": "ឈានដល់អប្បបរមាហើយ!",
     "couponRemoved": "ប័ណ្ណបញ្ចុះតម្លៃត្រូវបានដកចេញ"
-  },
-  "notifications": {
+  },    "notifications": "ការជូនដំណឹង",
+    "notifications": {
     "title": "ការជូនដំណឹង",
     "unread": "មិនទាន់អាន",
     "markRead": "សម្គាល់ថាបានអាន",
@@ -297,8 +312,8 @@
       "closed": "ការសន្ទនាត្រូវបានបិទ"
     },
     "waitingBanner": "កំពុងស្វែងរកបុគ្គលិក...",
-    "closedBanner": "ការសន្ទនានេះត្រូវបានបិទ។ សូមចាប់ផ្តើមការសន្ទនាថ្មី ប្រសិនបើអ្នកត្រូវការជំនួយ។",
-    "welcome": "សូមស្វាគមន៍! 👋",
+    "closedBanner": "ការសន្ទនានេះត្រូវបានបិទ។",
+    "welcome": "សូមស្វាគមន៍!",
     "welcomeSubtitle": "តើយើងអាចជួយអ្នកដោយរបៀបណាខ្លះ?",
     "inputPlaceholder": "វាយសាររបស់អ្នក...",
     "downloadFile": "ទាញយកឯកសារ",
@@ -333,7 +348,7 @@
     "installNow": "ដំឡើងឥឡូវនេះ",
     "maybeLater": "ក្រោយមក",
     "neverShow": "កុំបង្ហាញម្តងទៀត",
-    "installSuccess": "ដំឡើងកម្មវិធីដោយជោគជ័យ! 🎉",
+    "installSuccess": "ដំឡើងកម្មវិធីដោយជោគជ័យ!",
     "installSuccessDesc": "អ្នកអាចចូលប្រើ MY SHOP ពីអេក្រង់ដើមរបស់អ្នកបានដោយចុចតែម្តង។",
     "openApp": "បើកកម្មវិធី",
     "estimatedSize": "ទំហំប៉ាន់ស្មាន:",

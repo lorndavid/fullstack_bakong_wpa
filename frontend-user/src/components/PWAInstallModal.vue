@@ -47,8 +47,13 @@
               :key="benefit.key"
               class="flex items-center gap-3 p-3 rounded-xl bg-surface-50 dark:bg-surface-700/50"
             >
-              <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" :class="benefit.bgClass">
-                {{ benefit.icon }}
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center" :class="benefit.bgClass">
+                <svg class="w-5 h-5" :class="benefit.iconClass" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path v-if="benefit.key === 'speed'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  <path v-else-if="benefit.key === 'offline'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  <path v-else-if="benefit.key === 'notifications'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-semibold text-surface-800 dark:text-white">{{ benefit.title }}</p>
@@ -148,31 +153,30 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const benefits = [
-  {
+const benefits = [    {
     key: 'speed',
-    icon: '⚡',
+    iconClass: 'text-yellow-500',
     bgClass: 'bg-yellow-100 dark:bg-yellow-900/20',
     title: t('pwa.benefitSpeed'),
     description: t('pwa.benefitSpeedDesc'),
   },
   {
     key: 'offline',
-    icon: '📱',
+    iconClass: 'text-blue-500',
     bgClass: 'bg-blue-100 dark:bg-blue-900/20',
     title: t('pwa.benefitOffline'),
     description: t('pwa.benefitOfflineDesc'),
   },
   {
     key: 'notifications',
-    icon: '🔔',
+    iconClass: 'text-purple-500',
     bgClass: 'bg-purple-100 dark:bg-purple-900/20',
     title: t('pwa.benefitNotifications'),
     description: t('pwa.benefitNotificationsDesc'),
   },
   {
     key: 'experience',
-    icon: '✨',
+    iconClass: 'text-primary-500',
     bgClass: 'bg-primary-100 dark:bg-primary-900/20',
     title: t('pwa.benefitExperience'),
     description: t('pwa.benefitExperienceDesc'),

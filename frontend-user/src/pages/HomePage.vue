@@ -5,9 +5,6 @@
 
     <!-- Loaded Content -->
     <template v-else>
-      <!-- Quick Actions -->
-      <HomeQuickActions />
-
       <!-- Hero Banner Carousel -->
       <section class="relative overflow-hidden">
         <div class="relative max-w-full sm:max-w-[90%] lg:max-w-[80%] mx-auto sm:rounded-2xl overflow-hidden shadow-2xl">
@@ -50,25 +47,6 @@
         </div>
       </section>
 
-      <!-- Categories -->
-      <section class="max-w-7xl mx-auto px-4 sm:px-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg sm:text-xl font-bold text-surface-800 dark:text-white">{{ $t('home.categories') }}</h2>
-          <router-link to="/categories" class="text-sm text-primary-500 hover:text-primary-600 font-medium">{{ $t('nav.viewAll') }}</router-link>
-        </div>
-        <CategorySkeleton v-if="loading" />
-        <div v-else-if="categoriesError" class="text-center py-4">
-          <p class="text-sm text-surface-500">{{ categoriesError }}</p>
-        </div>
-        <div v-else class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
-          <div v-for="cat in categories" :key="cat._id" @click="goToCategory(cat._id)"
-            class="flex flex-col items-center space-y-2 p-3 bg-white dark:bg-surface-800 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-250 cursor-pointer hover:-translate-y-0.5">
-            <div class="w-12 h-12 sm:w-14 sm:h-14 bg-primary-50 dark:bg-primary-900/50 rounded-full flex items-center justify-center text-xl sm:text-2xl">{{ cat.icon }}</div>
-            <span class="text-xs text-surface-600 dark:text-surface-300 font-medium text-center truncate w-full">{{ cat.name }}</span>
-          </div>
-        </div>
-      </section>
-
       <!-- Flash Sale -->
       <section class="max-w-7xl mx-auto px-4 sm:px-6">
         <div class="flex items-center justify-between mb-4">
@@ -96,6 +74,25 @@
         </div>
         <div v-else class="text-center py-8 bg-white dark:bg-surface-800 rounded-2xl">
           <p class="text-sm text-surface-500">{{ $t('home.noFlashSale') }}</p>
+        </div>
+      </section>
+
+      <!-- Categories (moved up after flash sale) -->
+      <section class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg sm:text-xl font-bold text-surface-800 dark:text-white">{{ $t('home.categories') }}</h2>
+          <router-link to="/categories" class="text-sm text-primary-500 hover:text-primary-600 font-medium">{{ $t('nav.viewAll') }}</router-link>
+        </div>
+        <CategorySkeleton v-if="loading" />
+        <div v-else-if="categoriesError" class="text-center py-4">
+          <p class="text-sm text-surface-500">{{ categoriesError }}</p>
+        </div>
+        <div v-else class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+          <div v-for="cat in categories" :key="cat._id" @click="goToCategory(cat._id)"
+            class="flex flex-col items-center space-y-2 p-3 bg-white dark:bg-surface-800 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-250 cursor-pointer hover:-translate-y-0.5">
+            <div class="w-12 h-12 sm:w-14 sm:h-14 bg-primary-50 dark:bg-primary-900/50 rounded-full flex items-center justify-center text-xl sm:text-2xl">{{ cat.icon }}</div>
+            <span class="text-xs text-surface-600 dark:text-surface-300 font-medium text-center truncate w-full">{{ cat.name }}</span>
+          </div>
         </div>
       </section>
 
@@ -209,7 +206,6 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
 import ProductCard from '@/components/ProductCard.vue'
-import HomeQuickActions from '@/components/HomeQuickActions.vue'
 import HomeSkeleton from '@/components/skeleton/HomeSkeleton.vue'
 import BannerSkeleton from '@/components/skeleton/BannerSkeleton.vue'
 import CategorySkeleton from '@/components/skeleton/CategorySkeleton.vue'

@@ -13,7 +13,13 @@
         <div v-for="cache in caches" :key="cache.name" class="flex items-center justify-between p-3 bg-surface-50 dark:bg-surface-700/50 rounded-xl">
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg flex items-center justify-center text-base" :class="cache.bgClass">
-              {{ cache.icon }}
+              <!-- Icon replaced with SVG -->
+              <svg class="w-4 h-4" :class="cache.iconClass" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path v-if="cache.name === 'app-shell'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                <path v-else-if="cache.name === 'product-images'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path v-else-if="cache.name === 'categories'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
             </div>
             <div>
               <p class="text-sm font-medium text-surface-800 dark:text-white">{{ cache.label }}</p>
@@ -109,16 +115,16 @@ const totalSize = ref('Calculating...')
 interface CacheInfo {
   name: string
   label: string
-  icon: string
+  iconClass: string
   bgClass: string
   size: string
 }
 
 const caches = ref<CacheInfo[]>([
-  { name: 'app-shell', label: t('cache.appShell'), icon: '📦', bgClass: 'bg-blue-100 dark:bg-blue-900/20', size: '—' },
-  { name: 'product-images', label: t('cache.images'), icon: '🖼️', bgClass: 'bg-purple-100 dark:bg-purple-900/20', size: '—' },
-  { name: 'categories', label: t('cache.categories'), icon: '📂', bgClass: 'bg-amber-100 dark:bg-amber-900/20', size: '—' },
-  { name: 'products', label: t('cache.products'), icon: '🛍️', bgClass: 'bg-green-100 dark:bg-green-900/20', size: '—' },
+  { name: 'app-shell', label: t('cache.appShell'), iconClass: 'text-blue-500', bgClass: 'bg-blue-100 dark:bg-blue-900/20', size: '—' },
+  { name: 'product-images', label: t('cache.images'), iconClass: 'text-purple-500', bgClass: 'bg-purple-100 dark:bg-purple-900/20', size: '—' },
+  { name: 'categories', label: t('cache.categories'), iconClass: 'text-amber-500', bgClass: 'bg-amber-100 dark:bg-amber-900/20', size: '—' },
+  { name: 'products', label: t('cache.products'), iconClass: 'text-green-500', bgClass: 'bg-green-100 dark:bg-green-900/20', size: '—' },
 ])
 
 async function calculateCacheSize() {

@@ -29,7 +29,12 @@
         class="flex items-center gap-3 p-3 bg-white dark:bg-surface-800 rounded-xl border border-surface-100 dark:border-surface-700"
       >
         <div class="w-8 h-8 rounded-lg bg-surface-100 dark:bg-surface-700 flex items-center justify-center">
-          <span class="text-base">{{ cap.icon }}</span>
+          <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path v-if="cap.key === 'browse'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            <path v-else-if="cap.key === 'wishlist'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            <path v-else-if="cap.key === 'cart'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+            <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
         </div>
         <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ cap.label }}</span>
       </div>
@@ -58,9 +63,9 @@ defineEmits<{
 }>()
 
 const capabilities = [
-  { key: 'browse', icon: '🛍️', label: t('offline.browseProducts') },
-  { key: 'wishlist', icon: '❤️', label: t('offline.viewWishlist') },
-  { key: 'cart', icon: '🛒', label: t('offline.viewCart') },
-  { key: 'orders', icon: '📋', label: t('offline.viewOrders') },
+  { key: 'browse', label: t('offline.browseProducts') },
+  { key: 'wishlist', label: t('offline.viewWishlist') },
+  { key: 'cart', label: t('offline.viewCart') },
+  { key: 'orders', label: t('offline.viewOrders') },
 ]
 </script>

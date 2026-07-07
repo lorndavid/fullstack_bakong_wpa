@@ -7,12 +7,12 @@
     <div v-if="coupon.bannerImage" class="relative aspect-[3/1] overflow-hidden">
       <img :src="coupon.bannerImage.secure_url" :alt="coupon.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
       <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-      <!-- Countdown overlay on banner -->
-      <div v-if="!isUsedOrExpired && timeRemaining.endsSoon" class="absolute top-2 right-2">
-        <div class="px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded-full shadow-lg animate-pulse">
-          ⏰ {{ timeRemaining.display }}
-        </div>
-      </div>
+      <!-- Countdown overlay on banner -->          <div v-if="!isUsedOrExpired && timeRemaining.endsSoon" class="absolute top-2 right-2">
+            <div class="px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded-full shadow-lg animate-pulse flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              {{ timeRemaining.display }}
+            </div>
+          </div>
     </div>
 
     <!-- Color Stripe -->
@@ -28,7 +28,7 @@
             :style="{ background: coupon.themeColor || '#6366F1' }"
           >
             <span class="text-lg leading-none">
-              {{ coupon.discountType === 'percentage' ? coupon.discountValue + '%' : coupon.discountType === 'fixed' ? '$' + coupon.discountValue : '🚚' }}
+              {{ coupon.discountType === 'percentage' ? coupon.discountValue + '%' : coupon.discountType === 'fixed' ? '$' + coupon.discountValue : (coupon.discountType === 'free_shipping' ? 'FREE' : '') }}
             </span>
             <span class="text-[10px] font-medium opacity-90 mt-0.5">
               {{ coupon.discountType === 'free_shipping' ? 'SHIP' : 'OFF' }}
@@ -47,7 +47,10 @@
         <span v-else-if="coupon.userStatus === 'upcoming'"
           class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-500 text-[11px] font-semibold rounded-full shrink-0">Upcoming</span>
         <span v-else-if="timeRemaining.endsSoon"
-          class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[11px] font-semibold rounded-full shrink-0 animate-pulse">🔥 Ending</span>
+          class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[11px] font-semibold rounded-full shrink-0 animate-pulse flex items-center gap-1">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Ending
+        </span>
       </div>
 
       <!-- Description -->

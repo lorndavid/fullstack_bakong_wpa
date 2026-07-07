@@ -30,9 +30,16 @@
         <span v-if="!notif.read" class="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary-500 rounded-full"></span>
 
         <!-- Icon -->
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
           :class="iconBgClass(notif.type)">
-          {{ store.getNotificationIcon(notif.type) }}
+          <svg class="w-4 h-4" :class="iconColorClass(notif.type)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path v-if="notif.type === 'order_confirmed'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            <path v-else-if="notif.type === 'payment_successful'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path v-else-if="notif.type === 'shipping_update'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+            <path v-else-if="notif.type === 'flash_sale'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <path v-else-if="notif.type === 'new_coupon'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
         </div>
 
         <!-- Content -->
@@ -104,6 +111,19 @@ function handleClick(notif: any) {
     emit('close')
     router.push(notif.link)
   }
+}
+
+function iconColorClass(type: string): string {
+  const classes: Record<string, string> = {
+    order_confirmed: 'text-blue-500',
+    payment_successful: 'text-green-500',
+    shipping_update: 'text-amber-500',
+    flash_sale: 'text-purple-500',
+    new_coupon: 'text-rose-500',
+    wishlist_price_drop: 'text-teal-500',
+    admin_broadcast: 'text-primary-500',
+  }
+  return classes[type] || 'text-surface-500'
 }
 
 function iconBgClass(type: string): string {

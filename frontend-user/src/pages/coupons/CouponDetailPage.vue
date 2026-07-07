@@ -19,7 +19,7 @@
     <div v-else class="relative rounded-2xl overflow-hidden mb-6 shadow-lg">
       <div class="p-8 sm:p-10 text-white text-center space-y-3" :style="{ background: coupon.themeColor || '#6366F1' }">
         <p class="text-5xl sm:text-6xl font-black">
-          {{ coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : coupon.discountType === 'fixed' ? `$${coupon.discountValue}` : '🚚' }}
+          {{ coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : coupon.discountType === 'fixed' ? `$${coupon.discountValue}` : 'FREE' }}
         </p>
         <p class="text-2xl font-bold">{{ coupon.discountType === 'free_shipping' ? 'FREE SHIPPING' : 'OFF' }}</p>
         <p class="text-lg opacity-90">{{ coupon.name }}</p>
@@ -83,23 +83,25 @@
         <h3 class="font-semibold text-surface-800 dark:text-white">Rules</h3>
         <ul class="space-y-1.5 text-sm text-surface-600 dark:text-surface-300">
           <li class="flex items-center gap-2">
-            <span :class="!coupon.newCustomerOnly ? 'text-green-500' : 'text-surface-300'">{{ coupon.newCustomerOnly ? '❌' : '✅' }}</span>
+            <svg v-if="!coupon.newCustomerOnly" class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <svg v-else class="w-4 h-4 text-surface-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             New customers only
           </li>
           <li class="flex items-center gap-2">
-            <span :class="!coupon.firstOrderOnly ? 'text-green-500' : 'text-surface-300'">{{ coupon.firstOrderOnly ? '❌' : '✅' }}</span>
+            <svg v-if="!coupon.firstOrderOnly" class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <svg v-else class="w-4 h-4 text-surface-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             First order only
           </li>
           <li v-if="coupon.applicableProducts?.length > 0" class="flex items-center gap-2">
-            <span class="text-blue-500">📦</span>
+            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
             Applicable to specific products
           </li>
           <li v-if="coupon.applicableCategories?.length > 0" class="flex items-center gap-2">
-            <span class="text-purple-500">📂</span>
+            <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z"/></svg>
             Applicable to specific categories
           </li>
           <li v-if="coupon.excludedProducts?.length > 0" class="flex items-center gap-2">
-            <span class="text-red-500">🚫</span>
+            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
             Some products excluded
           </li>
         </ul>
@@ -173,7 +175,6 @@ onMounted(async () => {
       const data: any = await api.get(`/coupons/code/${id}`)
       coupon.value = data.coupon
     } catch {
-      // try fetching via code
       try {
         const data: any = await api.get(`/coupons/code/${id}`)
         coupon.value = data.coupon

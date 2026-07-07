@@ -191,15 +191,15 @@ export const useNotificationStore = defineStore('notification', () => {
   // ─── Icon & label helpers ────────────────────────────────────
   function getNotificationIcon(type: string): string {
     const icons: Record<string, string> = {
-      order_confirmed: '📋',
-      payment_successful: '💳',
-      shipping_update: '🚚',
-      flash_sale: '⚡',
-      new_coupon: '🎉',
-      wishlist_price_drop: '💰',
-      admin_broadcast: '📢',
+      order_confirmed: 'clipboard',
+      payment_successful: 'check-circle',
+      shipping_update: 'truck',
+      flash_sale: 'zap',
+      new_coupon: 'gift',
+      wishlist_price_drop: 'dollar-sign',
+      admin_broadcast: 'bell',
     }
-    return icons[type] || '🔔'
+    return icons[type] || 'bell'
   }
 
   function getRelativeTime(dateStr: string): string {

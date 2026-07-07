@@ -3,7 +3,8 @@
     <!-- Announcement Banner -->
     <div class="bg-gradient-to-r from-primary-500 to-accent-500 text-white text-center py-1.5 sm:py-2 px-4 text-xs sm:text-sm font-medium">
       <p class="flex items-center justify-center gap-1.5">
-        <span>🚚</span>          <span><strong class="font-semibold">{{ $t('banner.freeShipping') }}</strong></span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+        <span><strong class="font-semibold">{{ $t('banner.freeShipping') }}</strong></span>
       </p>
     </div>
 
@@ -27,8 +28,8 @@
             <span class="font-bold text-lg text-primary-500 dark:text-primary-300 hidden sm:block">{{ $t('app.name') }}</span>
           </router-link>
 
-          <!-- Search Bar (desktop only) -->
-          <div class="hidden sm:block flex-1 max-w-md mx-4">
+          <!-- Search Bar (desktop + mobile) -->
+          <div class="flex-1 max-w-md mx-2 sm:mx-4">
             <router-link to="/search" class="block">
               <div class="relative">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,13 +131,18 @@
           </svg>
           <span class="text-[10px] font-medium">{{ $t('nav.categories') }}</span>
         </router-link>
-        <!-- Search (mobile bottom nav) -->
-        <router-link to="/search" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
-          :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'search' }">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
-          <span class="text-[10px] font-medium">{{ $t('nav.search') }}</span>
+        <!-- Notifications (mobile bottom nav) -->
+        <router-link to="/notifications" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors relative"
+          :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'notifications' }">
+          <div class="relative">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span v-if="notifStore.hasUnread" class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              {{ notifStore.unreadCount > 99 ? '99+' : notifStore.unreadCount }}
+            </span>
+          </div>
+          <span class="text-[10px] font-medium">{{ $t('nav.notifications') }}</span>
         </router-link>
         <router-link to="/cart" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors relative"
           :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'cart' }">
@@ -181,6 +187,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import ChatWidget from '@/components/chat/ChatWidget.vue'
 import NotificationBell from '@/components/NotificationBell.vue'
+import { useNotificationStore } from '@/stores/notification'
 
 const auth = useAuthStore()
 const siteLogo = inject('siteLogo', ref('')) as Ref<string>
@@ -189,6 +196,7 @@ const theme = useThemeStore()
 const router = useRouter()
 
 const showUserMenu = ref(false)
+const notifStore = useNotificationStore()
 const avatarError = ref(false)
 const bottomAvatarError = ref(false)
 

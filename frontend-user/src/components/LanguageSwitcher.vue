@@ -7,8 +7,8 @@
       : 'bg-surface-50 dark:bg-surface-700 text-surface-600 dark:text-surface-300 border-surface-200 dark:border-surface-600 hover:border-primary-300'"
     :title="currentLocale === 'en' ? 'ភាសាខ្មែរ' : 'English'"
   >
-    <span class="text-base leading-none">{{ currentLocale === 'en' ? '🇰🇭' : '🇺🇸' }}</span>
     <span class="hidden sm:inline font-semibold">{{ currentLocale === 'en' ? 'ខ្មែរ' : 'EN' }}</span>
+    <span class="sm:hidden font-semibold">{{ currentLocale === 'en' ? 'KH' : 'EN' }}</span>
   </button>
 </template>
 
@@ -24,7 +24,6 @@ function toggleLocale() {
   const newLocale = locale.value === 'en' ? 'km' : 'en'
   locale.value = newLocale
   localStorage.setItem('locale', newLocale)
-  // Update html lang attribute for font styling
   document.documentElement.lang = newLocale
 }
 </script>
