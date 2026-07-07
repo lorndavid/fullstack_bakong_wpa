@@ -114,8 +114,54 @@
                 </div>
               </div>
 
-              <div v-if="searchHistory.recentSearches.value.length === 0">
-                <p class="text-sm text-surface-400 text-center py-8">{{ $t('search.noSearches') }}</p>
+              <!-- Trending Now -->
+              <div class="mt-6">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-sm font-semibold text-surface-600 dark:text-surface-300 flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    Trending Now
+                  </h3>
+                  <button
+                    @click="viewAllTrending"
+                    class="text-xs text-primary-500 hover:text-primary-600 font-medium transition-colors"
+                  >
+                    View All
+                  </button>
+                </div>
+                <div v-if="trendingLoading" class="flex items-center justify-center py-6">
+                  <div class="w-5 h-5 border-3 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
+                </div>
+                <div v-else class="grid grid-cols-3 gap-3">
+                  <div
+                    v-for="product in trendingProducts"
+                    :key="product._id"
+                    @click="goToProduct(product._id)"
+                    class="group cursor-pointer"
+                  >
+                    <div class="aspect-square rounded-xl overflow-hidden bg-surface-100 dark:bg-surface-700 mb-1.5">
+                      <img
+                        v-if="product.images?.length"
+                        :src="product.images[0].secure_url"
+                        :alt="product.name"
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                      <div v-else class="w-full h-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-surface-300 dark:text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <p class="text-xs font-medium text-surface-700 dark:text-surface-200 truncate">{{ product.name }}</p>
+                    <p class="text-xs font-bold text-primary-500">${{ product.price.toFixed(2) }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="searchHistory.recentSearches.value.length === 0 && trendingProducts.length === 0" class="mt-4">
+                <p class="text-sm text-surface-400 text-center py-4">{{ $t('search.noSearches') }}</p>
               </div>
             </div>
 
@@ -228,6 +274,8 @@ const searching = ref(false)
 const error = ref<string | null>(null)
 const searchInputRef = ref<HTMLInputElement | null>(null)
 const isListening = ref(false)
+const trendingProducts = ref<Product[]>([])
+const trendingLoading = ref(false)
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
 // Auto-focus input when overlay opens
@@ -235,6 +283,7 @@ watch(() => props.visible, async (val) => {
   if (val) {
     await nextTick()
     searchInputRef.value?.focus()
+    fetchTrending()
   } else {
     query.value = ''
     products.value = []
@@ -316,6 +365,25 @@ function viewAllResults() {
   searchHistory.addSearch(query.value.trim())
   close()
   router.push({ path: '/search', query: { q: query.value.trim() } })
+}
+
+function viewAllTrending() {
+  close()
+  router.push({ path: '/search', query: { sort: 'best_seller' } })
+}
+
+async function fetchTrending() {
+  trendingLoading.value = true
+  try {
+    const data: any = await api.get('/products', {
+      params: { sort: 'best_seller', limit: 6 },
+    })
+    trendingProducts.value = data.products || []
+  } catch {
+    // silent
+  } finally {
+    trendingLoading.value = false
+  }
 }
 
 // Voice Search
