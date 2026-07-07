@@ -124,11 +124,19 @@
           <span class="text-[10px] font-medium">{{ $t('nav.home') }}</span>
         </router-link>
         <router-link to="/categories" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
-          :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'categories' }">
+          :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'categories' || $route.name === 'category-products' }">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
           </svg>
           <span class="text-[10px] font-medium">{{ $t('nav.categories') }}</span>
+        </router-link>
+        <!-- Search (mobile bottom nav) -->
+        <router-link to="/search" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+          :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'search' }">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <span class="text-[10px] font-medium">{{ $t('nav.search') }}</span>
         </router-link>
         <router-link to="/cart" class="flex flex-col items-center space-y-0.5 px-3 py-1 text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors relative"
           :class="{ 'text-primary-500 dark:text-primary-400': $route.name === 'cart' }">
@@ -159,35 +167,15 @@
     <!-- Chat Widget (only when logged in) -->
     <ChatWidget v-if="auth.isAuthenticated" />
 
-    <!-- Toast Container -->
-    <div class="fixed top-4 right-4 z-[100] space-y-2 max-w-sm w-full pointer-events-none">
-      <transition-group name="toast">
-        <div v-for="toast in toastList" :key="toast.id"
-          class="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg backdrop-blur-sm animate-slide-up"
-          :class="toastClasses(toast.type)">
-          <span v-if="toast.type === 'success'" class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-          </span>
-          <span v-else-if="toast.type === 'error'" class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-          </span>
-          <span class="text-white text-sm font-medium flex-1">{{ toast.message }}</span>
-          <button @click="removeToast(toast.id)" class="text-white/70 hover:text-white transition-colors">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-          </button>
-        </div>
-      </transition-group>
-    </div>
+    <!-- Toast Container removed - handled by App.vue -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, provide, inject, watch, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, inject, onMounted, onUnmounted, type Ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
 import { useThemeStore } from '@/stores/theme'
-import { useNotificationStore } from '@/stores/notification'
-import { useToast, Toast } from '@/composables/useToast'
 import { useRouter } from 'vue-router'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import AppFooter from '@/components/AppFooter.vue'
@@ -198,7 +186,6 @@ const auth = useAuthStore()
 const siteLogo = inject('siteLogo', ref('')) as Ref<string>
 const cart = useCartStore()
 const theme = useThemeStore()
-const notifications = useNotificationStore()
 const router = useRouter()
 
 const showUserMenu = ref(false)
@@ -213,37 +200,7 @@ function handleScroll() {
 onMounted(() => window.addEventListener('scroll', handleScroll, { passive: true }))
 onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 
-// Toast system
-const { toasts: toastList, remove: removeToast } = useToast()
-provide('toast', useToast())
-
-function toastClasses(type: Toast['type']) {
-  return {
-    success: 'bg-accent-500',
-    error: 'bg-red-500',
-    warning: 'bg-yellow-500',
-    info: 'bg-primary-500',
-  }[type]
-}
-
-// Connect notification socket when authenticated
-onMounted(() => {
-  if (auth.isAuthenticated) {
-    notifications.connect()
-    notifications.fetchUnreadCount()
-    notifications.initBrowserNotifications()
-  }
-})
-
-watch(() => auth.isAuthenticated, (val) => {
-  if (val) {
-    notifications.connect()
-    notifications.fetchUnreadCount()
-    notifications.initBrowserNotifications()
-  } else {
-    notifications.disconnect()
-  }
-})
+// Toast system is now handled in App.vue
 
 function handleLogout() {
   auth.logout()

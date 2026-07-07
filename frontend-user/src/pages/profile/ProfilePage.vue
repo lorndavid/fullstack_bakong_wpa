@@ -183,25 +183,20 @@
     <div v-if="activeTab === 'settings'" class="space-y-4">
       <!-- Theme -->
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
-        <h3 class="text-base font-semibold text-surface-800 dark:text-white mb-4">{{ $t('profile.theme') }}</h3>
+        <h3 class="text-base font-semibold text-surface-800 dark:text-white mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+          {{ $t('profile.theme') }}
+        </h3>
         <div class="flex gap-3">
-          <button
-            @click="setTheme(false)"
+          <button @click="setTheme(false)"
             class="flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border-2 transition-all"
-            :class="!theme.isDark
-              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600'
-              : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'"
-          >
+            :class="!theme.isDark ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             <span class="text-sm font-medium">{{ $t('profile.themeLight') }}</span>
           </button>
-          <button
-            @click="setTheme(true)"
+          <button @click="setTheme(true)"
             class="flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border-2 transition-all"
-            :class="theme.isDark
-              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600'
-              : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'"
-          >
+            :class="theme.isDark ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
             <span class="text-sm font-medium">{{ $t('profile.themeDark') }}</span>
           </button>
@@ -210,34 +205,59 @@
 
       <!-- Language -->
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
-        <h3 class="text-base font-semibold text-surface-800 dark:text-white mb-4">{{ $t('profile.language') }}</h3>
+        <h3 class="text-base font-semibold text-surface-800 dark:text-white mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+          {{ $t('profile.language') }}
+        </h3>
         <div class="flex gap-3">
-          <button
-            @click="setLocale('en')"
+          <button @click="setLocale('en')"
             class="flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border-2 transition-all"
-            :class="locale === 'en'
-              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600'
-              : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'"
-          >
+            :class="locale === 'en' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'">
             <span class="text-lg">🇺🇸</span>
             <span class="text-sm font-medium">English</span>
           </button>
-          <button
-            @click="setLocale('km')"
+          <button @click="setLocale('km')"
             class="flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border-2 transition-all"
-            :class="locale === 'km'
-              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600'
-              : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'"
-          >
+            :class="locale === 'km' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-300'">
             <span class="text-lg">🇰🇭</span>
             <span class="text-sm font-medium">ភាសាខ្មែរ</span>
           </button>
         </div>
       </div>
 
+      <!-- Accessibility -->
+      <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
+        <h3 class="text-base font-semibold text-surface-800 dark:text-white mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          {{ $t('profile.accessibility') }}
+        </h3>
+        <div class="space-y-3">
+          <label class="flex items-center justify-between p-3 rounded-xl hover:bg-surface-50 dark:hover:bg-surface-700/50 cursor-pointer transition-colors">
+            <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ $t('accessibility.reduceMotion') }}</span>
+            <div class="relative">
+              <input type="checkbox" v-model="reduceMotion" @change="toggleReduceMotion" class="sr-only peer" />
+              <div class="w-10 h-6 bg-surface-200 dark:bg-surface-600 rounded-full peer-checked:bg-primary-500 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-5 after:h-5 after:bg-white after:rounded-full after:shadow after:transition-all peer-checked:after:translate-x-4"></div>
+            </div>
+          </label>
+          <label class="flex items-center justify-between p-3 rounded-xl hover:bg-surface-50 dark:hover:bg-surface-700/50 cursor-pointer transition-colors">
+            <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ $t('accessibility.highContrast') }}</span>
+            <div class="relative">
+              <input type="checkbox" v-model="highContrast" @change="toggleHighContrast" class="sr-only peer" />
+              <div class="w-10 h-6 bg-surface-200 dark:bg-surface-600 rounded-full peer-checked:bg-primary-500 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-5 after:h-5 after:bg-white after:rounded-full after:shadow after:transition-all peer-checked:after:translate-x-4"></div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Cache Center -->
+      <CacheCenter />
+
       <!-- Account Type -->
       <div class="bg-white dark:bg-surface-800 rounded-2xl p-5 sm:p-6 shadow-card">
-        <h3 class="text-base font-semibold text-surface-800 dark:text-white mb-3">{{ $t('profile.accountInfo') }}</h3>
+        <h3 class="text-base font-semibold text-surface-800 dark:text-white mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          {{ $t('profile.accountInfo') }}
+        </h3>
         <div class="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700/50 rounded-xl">
           <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
             <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
@@ -259,6 +279,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api'
+import CacheCenter from '@/components/CacheCenter.vue'
 
 interface OrderItem {
   productId: string
@@ -298,6 +319,35 @@ const tabs = computed<{ key: TabKey; label: string; icon: string }[]>(() => [
   { key: 'orders', label: t('profile.tabOrders'), icon: '📋' },
   { key: 'settings', label: t('profile.tabSettings'), icon: '⚙️' },
 ])
+
+const reduceMotion = ref(localStorage.getItem('reduce_motion') === 'true')
+const highContrast = ref(localStorage.getItem('high_contrast') === 'true')
+
+// Apply accessibility settings on mount
+if (reduceMotion.value) {
+  document.documentElement.classList.add('reduce-motion')
+}
+if (highContrast.value) {
+  document.documentElement.classList.add('high-contrast')
+}
+
+function toggleReduceMotion() {
+  localStorage.setItem('reduce_motion', reduceMotion.value ? 'true' : 'false')
+  if (reduceMotion.value) {
+    document.documentElement.classList.add('reduce-motion')
+  } else {
+    document.documentElement.classList.remove('reduce-motion')
+  }
+}
+
+function toggleHighContrast() {
+  localStorage.setItem('high_contrast', highContrast.value ? 'true' : 'false')
+  if (highContrast.value) {
+    document.documentElement.classList.add('high-contrast')
+  } else {
+    document.documentElement.classList.remove('high-contrast')
+  }
+}
 
 const memberSinceText = computed(() => {
   // createdAt is available from /auth/me response but not stored in the auth store

@@ -25,3 +25,5 @@ authStore.loadFromStorage()
 if (authStore.accessToken) {
   authStore.fetchMe()
 }
+
+// PWA registration and offline sync are handled in App.vue

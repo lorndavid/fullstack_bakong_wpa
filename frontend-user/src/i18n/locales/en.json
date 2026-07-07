@@ -27,7 +27,10 @@
     "sold": "sold",
     "noFlashSale": "No flash sale items available",
     "noNewArrivals": "No new arrivals yet",
-    "promotions": "🔥 Promotions"
+    "promotions": "🔥 Promotions",
+    "continueShopping": "Continue Shopping",
+    "recentlyViewed": "Recently Viewed",
+    "quickActions": "Quick Actions"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -179,7 +182,9 @@
     "goHome": "Go Home",
     "clear": "Clear",
     "showLess": "Show less",
-    "showMore": "Show {count} more"
+    "showMore": "Show {count} more",
+    "noResults": "No results found",
+    "noData": "No data available"
   },
   "notFound": {
     "title": "Page Not Found",
@@ -206,7 +211,8 @@
     "accountInfo": "Account Information",
     "connectedWithGoogle": "Connected with Google",
     "orderValue": "Total spent: ${amount}",
-    "appearance": "Appearance"
+    "appearance": "Appearance",
+    "wishlist": "Wishlist"
   },
   "banner": {
     "freeShipping": "Free Shipping on all orders — No minimum required!"
@@ -221,7 +227,11 @@
     "sortLatest": "Sort by: Latest",
     "sortLowHigh": "Price: Low to High",
     "sortHighLow": "Price: High to Low",
-    "sortBestSelling": "Best Selling"
+    "sortBestSelling": "Best Selling",
+    "recentSearches": "Recent Searches",
+    "popularSearches": "Popular Searches",
+    "noSearches": "Start typing to search products",
+    "voiceSearch": "Voice Search"
   },
   "coupons": {
     "title": "My Coupons",
@@ -270,7 +280,14 @@
     "noNotificationsDesc": "You'll see notifications here when something happens",
     "viewAll": "View All",
     "loadMore": "Load More",
-    "viewDetails": "View Details"
+    "viewDetails": "View Details",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "earlier": "Earlier",
+    "archive": "Archive",
+    "deleteAll": "Delete All"
   },
   "chat": {
     "liveChat": "Live Chat",
@@ -309,5 +326,82 @@
     "qualityGuaranteeSub": "Authentic products",
     "support": "24/7 Support",
     "supportSub": "Always here to help"
+  },
+  "pwa": {
+    "installTitle": "Install MY SHOP",
+    "installSubtitle": "Get the best shopping experience right on your home screen",
+    "installNow": "Install Now",
+    "maybeLater": "Maybe Later",
+    "neverShow": "Never Show Again",
+    "installSuccess": "App Installed Successfully! 🎉",
+    "installSuccessDesc": "You can now access MY SHOP from your home screen with one tap.",
+    "openApp": "Open App",
+    "estimatedSize": "Estimated size:",
+    "benefitSpeed": "Lightning Fast",
+    "benefitSpeedDesc": "Loads instantly, no waiting",
+    "benefitOffline": "Works Offline",
+    "benefitOfflineDesc": "Browse products without internet",
+    "benefitNotifications": "Push Notifications",
+    "benefitNotificationsDesc": "Get order updates & deals instantly",
+    "benefitExperience": "Full Screen",
+    "benefitExperienceDesc": "Immersive like a real app",
+    "updateAvailable": "New Version Available",
+    "updateDescription": "A new version of MY SHOP is available. Update now for the best experience.",
+    "updateNow": "Update Now"
+  },
+  "offline": {
+    "title": "You're Offline",
+    "description": "Don't worry! You can still browse products, view your wishlist, and check your cart.",
+    "autoConnect": "We'll automatically reconnect when internet is available",
+    "retry": "Try Again",
+    "youCan": "While offline you can:",
+    "browseProducts": "Browse cached products",
+    "viewWishlist": "View your wishlist",
+    "viewCart": "View your shopping cart",
+    "viewOrders": "View your recent orders"
+  },
+  "network": {
+    "online": "Back online",
+    "offline": "You are offline",
+    "slow": "Slow connection",
+    "syncing": "Syncing...",
+    "downloading": "Downloading..."
+  },
+  "cache": {
+    "storageUsage": "Storage Usage",
+    "totalCache": "Total Cache",
+    "clearAll": "Clear All",
+    "actions": "Cache Actions",
+    "refreshCache": "Refresh Cache",
+    "downloadOffline": "Download for Offline",
+    "appShell": "App Shell",
+    "images": "Product Images",
+    "categories": "Categories",
+    "products": "Products",
+    "cleared": "Cache cleared successfully",
+    "clearError": "Failed to clear cache",
+    "refreshed": "Cache refreshed",
+    "refreshError": "Failed to refresh cache",
+    "downloadComplete": "Content downloaded for offline use",
+    "downloadError": "Download failed"
+  },
+  "error": {
+    "notFound": "Page Not Found",
+    "notFoundDesc": "The page you're looking for doesn't exist or has been moved.",
+    "serverError": "Something went wrong",
+    "serverErrorDesc": "Our team has been notified. Please try again.",
+    "maintenance": "Under Maintenance",
+    "maintenanceDesc": "We're working hard to improve your experience. Be back soon!",
+    "updateRequired": "Update Required",
+    "updateRequiredDesc": "A new version is available. Please update to continue."
+  },
+  "accessibility": {
+    "skipToContent": "Skip to main content",
+    "closeMenu": "Close menu",
+    "openMenu": "Open menu",
+    "goBack": "Go back",
+    "reduceMotion": "Reduce Motion",
+    "highContrast": "High Contrast",
+    "largeText": "Large Text"
   }
-}
+}
