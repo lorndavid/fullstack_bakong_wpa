@@ -550,10 +550,39 @@ const getStockMovements = async (
     const filter: Record<string, any> = {};
     if (req.query.productId) filter.product = req.query.productId;
     if (req.query.type) filter.type = req.query.type;
+    if (req.query.warehouseId) filter.warehouse = req.query.warehouseId;
+    if (req.query.startDate || req.query.endDate) {
+      filter.createdAt = {};
+      if (req.query.startDate) filter.createdAt.$gte = new Date(req.query.startDate as string);
+      if (req.query.endDate) {
+        const end = new Date(req.query.endDate as string);
+        end.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = end;
+      }
+    }
+
+    // If searching by product name, find matching product IDs first
+    const searchQuery = req.query.search as string;
+    if (searchQuery && !req.query.productId) {
+      // Escape regex special characters to prevent ReDoS
+      const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const matchingProducts = await Product.find({
+        name: { $regex: escapedQuery, $options: 'i' },
+      }).select('_id').lean();
+      if (matchingProducts.length === 0) {
+        res.json({
+          success: true,
+          movements: [],
+          pagination: { page, limit, total: 0, pages: 0 },
+        });
+        return;
+      }
+      filter.product = { $in: matchingProducts.map(p => p._id.toString()) };
+    }
 
     const [movements, total] = await Promise.all([
       StockMovement.find(filter)
-        .populate('product', 'name images price stock')
+        .populate('product', 'name images price stock sku')
         .populate('warehouse', 'name')
         .populate('user', 'name email')
         .sort({ createdAt: -1 })

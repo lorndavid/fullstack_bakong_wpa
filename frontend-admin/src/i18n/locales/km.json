@@ -465,6 +465,22 @@
     "annualized": "ប្រចាំឆ្នាំ",
     "category": "ប្រភេទ"
   },
+  "stockMovement": {
+    "title": "ចលនាស្តុក",
+    "type": "ប្រភេទ",
+    "quantity": "បរិមាណ",
+    "stockChange": "ការប្រែប្រួលស្តុក",
+    "reason": "មូលហេតុ",
+    "reference": "ឯកសារយោង",
+    "from": "ចាប់ពី",
+    "to": "ដល់",
+    "searchProduct": "ស្វែងរកផលិតផល ឬ SKU...",
+    "noMovements": "រកមិនឃើញចលនាស្តុក",
+    "noMovementsDesc": "ចលនាស្តុកនឹងបង្ហាញនៅពេលដែលផលិតផលត្រូវបានបញ្ជាទិញ ទទួល ឬកែតម្រូវ។",
+    "showingOf": "បង្ហាញ {count} ក្នុងចំណោម {total} ចលនា",
+    "resetFilters": "កំណត់តម្រងឡើងវិញ",
+    "allWarehouses": "ឃ្លាំងទាំងអស់"
+  },
   "language": {
     "en": "អង់គ្លេស",
     "km": "ខ្មែរ"

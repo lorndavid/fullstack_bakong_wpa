@@ -428,6 +428,22 @@
     "annualized": "Annualized",
     "category": "Category"
   },
+  "stockMovement": {
+    "title": "Stock Movement",
+    "type": "Type",
+    "quantity": "Quantity",
+    "stockChange": "Stock Change",
+    "reason": "Reason",
+    "reference": "Reference",
+    "from": "From",
+    "to": "To",
+    "searchProduct": "Search product or SKU...",
+    "noMovements": "No stock movements found",
+    "noMovementsDesc": "Stock movements will appear here once products are ordered, received, or adjusted.",
+    "showingOf": "Showing {count} of {total} movements",
+    "resetFilters": "Reset Filters",
+    "allWarehouses": "All Warehouses"
+  },
   "chat": {
     "stats": {
       "active": "Active",
