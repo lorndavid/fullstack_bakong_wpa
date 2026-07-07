@@ -130,38 +130,56 @@
             </div>
 
             <!-- Results Grid -->
-            <div v-else-if="products.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              <div
-                v-for="product in products"
-                :key="product._id"
-                @click="goToProduct(product._id)"
-                class="group bg-white dark:bg-surface-800 rounded-2xl border border-surface-100 dark:border-surface-700 shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden cursor-pointer hover:-translate-y-1"
-              >
-                <div class="relative aspect-square overflow-hidden bg-surface-100 dark:bg-surface-700">
-                  <img
-                    v-if="product.images && product.images.length > 0"
-                    :src="product.images[0].secure_url"
-                    :alt="product.name"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  <div v-else class="w-full h-full flex items-center justify-center">
-                    <svg class="w-10 h-10 text-surface-300 dark:text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+            <div v-else-if="products.length > 0" class="space-y-4">
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                <div
+                  v-for="product in products"
+                  :key="product._id"
+                  @click="goToProduct(product._id)"
+                  class="group bg-white dark:bg-surface-800 rounded-2xl border border-surface-100 dark:border-surface-700 shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden cursor-pointer hover:-translate-y-1"
+                >
+                  <div class="relative aspect-square overflow-hidden bg-surface-100 dark:bg-surface-700">
+                    <img
+                      v-if="product.images && product.images.length > 0"
+                      :src="product.images[0].secure_url"
+                      :alt="product.name"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    <div v-else class="w-full h-full flex items-center justify-center">
+                      <svg class="w-10 h-10 text-surface-300 dark:text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <span v-if="product.discount > 0" class="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded">-{{ product.discount }}%</span>
                   </div>
-                  <span v-if="product.discount > 0" class="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded">-{{ product.discount }}%</span>
-                </div>
-                <div class="p-3 space-y-1">
-                  <h3 class="text-sm font-semibold text-surface-800 dark:text-white truncate">{{ product.name }}</h3>
-                  <div class="flex items-center gap-2">
-                    <span v-if="product.discount > 0" class="text-base font-bold text-accent-500">
-                      ${{ (product.price * (1 - product.discount / 100)).toFixed(2) }}
-                    </span>
-                    <span v-if="product.discount > 0" class="text-xs text-surface-400 line-through">${{ product.price.toFixed(2) }}</span>
-                    <span v-else class="text-base font-bold text-primary-500">${{ product.price.toFixed(2) }}</span>
+                  <div class="p-3 space-y-1">
+                    <h3 class="text-sm font-semibold text-surface-800 dark:text-white truncate">{{ product.name }}</h3>
+                    <div class="flex items-center gap-2">
+                      <span v-if="product.discount > 0" class="text-base font-bold text-accent-500">
+                        ${{ (product.price * (1 - product.discount / 100)).toFixed(2) }}
+                      </span>
+                      <span v-if="product.discount > 0" class="text-xs text-surface-400 line-through">${{ product.price.toFixed(2) }}</span>
+                      <span v-else class="text-base font-bold text-primary-500">${{ product.price.toFixed(2) }}</span>
+                    </div>
                   </div>
                 </div>
+              </div>
+
+              <!-- View All Results Button -->
+              <div class="flex justify-center pt-2 pb-4">
+                <button
+                  @click="viewAllResults"
+                  class="inline-flex items-center gap-2 px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-xl transition-all active:scale-[0.98] shadow-md shadow-primary-500/20"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  View All Results
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -291,6 +309,13 @@ function goToProduct(id: string) {
   searchHistory.addSearch(query.value.trim())
   close()
   router.push(`/product/${id}`)
+}
+
+function viewAllResults() {
+  if (!query.value.trim()) return
+  searchHistory.addSearch(query.value.trim())
+  close()
+  router.push({ path: '/search', query: { q: query.value.trim() } })
 }
 
 // Voice Search
