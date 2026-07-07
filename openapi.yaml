@@ -1,0 +1,3451 @@
+openapi: 3.0.3
+info:
+  title: MY SHOP - Cambodian E-commerce API
+  description: |
+    A production-ready e-commerce API built for the Cambodian market.
+    Integrates **Bakong KHQR** (National Bank of Cambodia QR payment) and **ABA PayWay**.
+    Features real-time chat and notifications via Socket.IO (documented separately).
+
+    ### Authentication
+    - **User/Admin endpoints**: `Authorization: Bearer <accessToken>`
+    - **Public endpoints**: No auth required
+    - **Admin-only endpoints**: Require `admin` role
+  version: 1.0.0
+  contact:
+    name: MY SHOP Development Team
+    url: https://myshop.com
+  license:
+    name: Private
+    url: https://myshop.com
+
+servers:
+  - url: http://localhost:5000/api
+    description: Local development (Vite proxy)
+  - url: https://api.myshop.com/api
+    description: Production
+
+tags:
+  - name: Health
+    description: API health check
+  - name: Auth
+    description: Authentication (Google OAuth, email login, token refresh)
+  - name: Products
+    description: Product listing, search, detail, flash sales
+  - name: Categories
+    description: Product category management
+  - name: Orders
+    description: Order creation, tracking, admin management
+  - name: Payments
+    description: Payment processing (KHQR, ABA PayWay), SSE streaming
+  - name: Coupons
+    description: Coupon system with validation, auto-apply, best-coupon
+  - name: Promotions
+    description: Promotion management with product assignment
+  - name: Notifications
+    description: User notifications and admin broadcast
+  - name: Chat
+    description: Live support chat (via REST + Socket.IO for real-time)
+  - name: Users
+    description: User management, admin dashboard stats
+  - name: Inventory
+    description: Warehouses, suppliers, stock movements, purchase orders
+  - name: Hero Slides
+    description: Homepage banner carousel management
+  - name: Settings
+    description: Site settings (singleton)
+
+paths:
+  # ── Health ──────────────────────────────────────────────────────
+  /health:
+    get:
+      tags: [Health]
+      summary: API health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: API is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  # ── Auth ────────────────────────────────────────────────────────
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Admin login with email and password
+      operationId: authLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: admin@myshop.com
+                password:
+                  type: string
+                  format: password
+                  example: secret123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/google:
+    post:
+      tags: [Auth]
+      summary: Login or register with Google OAuth
+      operationId: authGoogle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [credential]
+              properties:
+                credential:
+                  type: string
+                  description: Google ID token from the OAuth flow
+                  example: eyJhbGciOiJSUzI1NiIs...
+      responses:
+        '200':
+          description: Google login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoogleLoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Duplicate account
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token using a refresh token
+      operationId: authRefresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+                  example: eyJhbGciOiJSUzI1NiIs...
+      responses:
+        '200':
+          description: Tokens refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum: [true]
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout and record logout event
+      operationId: authLogout
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum: [true]
+                  message:
+                    type: string
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current authenticated user profile
+      operationId: authGetMe
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+
+  # ── Products ────────────────────────────────────────────────────
+  /products:
+    get:
+      tags: [Products]
+      summary: List products with search, filter, sort, and pagination
+      operationId: getProducts
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Full-text search across name and description
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Category ObjectId filter
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+            minimum: 0
+          description: Minimum price filter
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+            minimum: 0
+          description: Maximum price filter
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [price_asc, price_desc, newest, oldest, best_seller, discount]
+          description: Sort order
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 12
+            maximum: 100
+      responses:
+        '200':
+          description: Paginated product list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+    post:
+      tags: [Products]
+      summary: Create a new product (admin only)
+      operationId: createProduct
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [name, description, price, category]
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                stock:
+                  type: integer
+                  default: 0
+                discount:
+                  type: integer
+                  default: 0
+                category:
+                  type: string
+                  description: Category ObjectId
+                featured:
+                  type: boolean
+                  default: false
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Up to 5 product images
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /products/featured:
+    get:
+      tags: [Products]
+      summary: Get featured products
+      operationId: getFeaturedProducts
+      responses:
+        '200':
+          description: Featured products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  /products/flash-sale:
+    get:
+      tags: [Products]
+      summary: Get flash sale products (discounted items)
+      operationId: getFlashSaleProducts
+      responses:
+        '200':
+          description: Flash sale products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  /products/new-arrivals:
+    get:
+      tags: [Products]
+      summary: Get newest products
+      operationId: getNewArrivals
+      responses:
+        '200':
+          description: New arrivals
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  /products/low-stock/overview:
+    get:
+      tags: [Products]
+      summary: Get low stock products overview (admin)
+      operationId: getLowStockProducts
+      responses:
+        '200':
+          description: Low stock products
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+
+  /products/{id}:
+    get:
+      tags: [Products]
+      summary: Get single product detail
+      operationId: getProduct
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Product ObjectId
+      responses:
+        '200':
+          description: Product detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Products]
+      summary: Update a product (admin only)
+      operationId: updateProduct
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                stock:
+                  type: integer
+                discount:
+                  type: integer
+                category:
+                  type: string
+                featured:
+                  type: boolean
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+
+    delete:
+      tags: [Products]
+      summary: Delete a product (admin only)
+      operationId: deleteProduct
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /products/{id}/related:
+    get:
+      tags: [Products]
+      summary: Get related products for a given product
+      operationId: getRelatedProducts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Related products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ── Categories ──────────────────────────────────────────────────
+  /categories:
+    get:
+      tags: [Categories]
+      summary: List all categories
+      operationId: getCategories
+      responses:
+        '200':
+          description: Category list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+
+    post:
+      tags: [Categories]
+      summary: Create a category (admin only)
+      operationId: createCategory
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                icon:
+                  type: string
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+
+  /categories/{id}:
+    get:
+      tags: [Categories]
+      summary: Get a single category
+      operationId: getCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Category detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+
+    put:
+      tags: [Categories]
+      summary: Update a category (admin only)
+      operationId: updateCategory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                icon:
+                  type: string
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+
+    delete:
+      tags: [Categories]
+      summary: Delete a category (admin only)
+      operationId: deleteCategory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Category deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /categories/{id}/products:
+    get:
+      tags: [Categories]
+      summary: Get products by category
+      operationId: getCategoryProducts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Products in category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ── Orders ──────────────────────────────────────────────────────
+  /orders:
+    post:
+      tags: [Orders]
+      summary: Create a new order
+      operationId: createOrder
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+
+    get:
+      tags: [Orders]
+      summary: List current user's orders
+      operationId: getMyOrders
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User's orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+
+  /orders/{id}:
+    get:
+      tags: [Orders]
+      summary: Get order detail
+      operationId: getOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+
+  /orders/{id}/cancel:
+    put:
+      tags: [Orders]
+      summary: Cancel an order (user)
+      operationId: cancelOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+
+  /orders/admin/all:
+    get:
+      tags: [Orders]
+      summary: List all orders (admin)
+      operationId: getAllOrders
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+
+  /orders/admin/{id}/status:
+    put:
+      tags: [Orders]
+      summary: Update order status (admin)
+      operationId: updateOrderStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [pending, confirmed, shipping, delivered, cancelled]
+      responses:
+        '200':
+          description: Order status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+
+  /orders/admin/{id}:
+    delete:
+      tags: [Orders]
+      summary: Delete an order (admin)
+      operationId: deleteOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order deleted
+
+  /orders/admin/bulk-delete:
+    post:
+      tags: [Orders]
+      summary: Bulk delete orders (admin)
+      operationId: bulkDeleteOrders
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Orders deleted
+
+  # ── Payments ────────────────────────────────────────────────────
+  /payment/create:
+    post:
+      tags: [Payments]
+      summary: Create a payment (KHQR or ABA PayWay)
+      operationId: createPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, amount, provider]
+              properties:
+                orderId:
+                  type: string
+                amount:
+                  type: number
+                provider:
+                  type: string
+                  enum: [BAKONG, ABA_PAYWAY]
+      responses:
+        '200':
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePaymentResponse'
+
+  /payment/check:
+    post:
+      tags: [Payments]
+      summary: Check payment status by provider
+      operationId: checkPaymentStatus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                md5:
+                  type: string
+                provider:
+                  type: string
+                  enum: [BAKONG, ABA_PAYWAY]
+                tranId:
+                  type: string
+      responses:
+        '200':
+          description: Payment status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  status:
+                    type: string
+                    enum: [PENDING, PAID, FAILED, EXPIRED]
+
+  /payment/status/{md5}:
+    get:
+      tags: [Payments]
+      summary: Check Bakong payment status by MD5 hash
+      operationId: checkPaymentStatusByMd5
+      parameters:
+        - name: md5
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payment status
+
+  /payment/subscribe/{md5}:
+    get:
+      tags: [Payments]
+      summary: SSE endpoint for payment status push
+      operationId: subscribePayment
+      parameters:
+        - name: md5
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: SSE stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /payment/subscribe/tran/{tranId}:
+    get:
+      tags: [Payments]
+      summary: SSE endpoint by transaction ID
+      operationId: subscribePaymentByTran
+      parameters:
+        - name: tranId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: SSE stream
+
+  /payment/save:
+    post:
+      tags: [Payments]
+      summary: Save a transaction to the database
+      operationId: saveTransaction
+      responses:
+        '200':
+          description: Transaction saved
+
+  /payment/webhook:
+    post:
+      tags: [Payments]
+      summary: Webhook endpoint for payment providers
+      operationId: handlePaymentWebhook
+      responses:
+        '200':
+          description: Webhook received
+
+  /payment/transactions:
+    get:
+      tags: [Payments]
+      summary: List all transactions (admin)
+      operationId: getAllTransactions
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  transactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+
+  /payment/transactions/{id}:
+    delete:
+      tags: [Payments]
+      summary: Delete a transaction (admin)
+      operationId: deleteTransaction
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction deleted
+
+  /payment/stream:
+    get:
+      tags: [Payments]
+      summary: SSE stream for live transaction monitoring (admin)
+      operationId: paymentStream
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          schema:
+            type: string
+          description: JWT token for EventSource compatibility
+      responses:
+        '200':
+          description: SSE stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  # ── Coupons ─────────────────────────────────────────────────────
+  /coupons/available:
+    get:
+      tags: [Coupons]
+      summary: List coupons available to the current user
+      operationId: getUserCoupons
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Available coupons
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  coupons:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Coupon'
+
+  /coupons/auto-apply:
+    get:
+      tags: [Coupons]
+      summary: Get coupons eligible for auto-apply
+      operationId: getAutoApplyCoupons
+      responses:
+        '200':
+          description: Auto-apply coupons
+
+  /coupons/highlighted:
+    get:
+      tags: [Coupons]
+      summary: Get highlighted/promoted coupons for the coupon center
+      operationId: getHighlightedCoupons
+      responses:
+        '200':
+          description: Highlighted coupons
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  coupons:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Coupon'
+
+  /coupons/code/{code}:
+    get:
+      tags: [Coupons]
+      summary: Get a coupon by its code
+      operationId: getCouponByCode
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Coupon code (uppercase)
+      responses:
+        '200':
+          description: Coupon found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CouponResponse'
+
+  /coupons/validate:
+    post:
+      tags: [Coupons]
+      summary: Validate a coupon code against a cart total
+      operationId: validateCoupon
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, cartTotal]
+              properties:
+                code:
+                  type: string
+                  example: WELCOME10
+                cartTotal:
+                  type: number
+                  example: 50
+      responses:
+        '200':
+          description: Coupon validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  valid:
+                    type: boolean
+                  coupon:
+                    $ref: '#/components/schemas/Coupon'
+                  discountAmount:
+                    type: number
+
+  /coupons/apply:
+    post:
+      tags: [Coupons]
+      summary: Apply a coupon to the current user's cart
+      operationId: applyCoupon
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+      responses:
+        '200':
+          description: Coupon applied
+
+  /coupons/best-coupon:
+    post:
+      tags: [Coupons]
+      summary: Find the best coupon for a given cart
+      operationId: findBestCoupon
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cartTotal]
+              properties:
+                cartTotal:
+                  type: number
+                  example: 85
+                products:
+                  type: array
+                  items:
+                    type: string
+                  description: List of product ObjectIds
+      responses:
+        '200':
+          description: Best coupon found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  bestCoupon:
+                    $ref: '#/components/schemas/Coupon'
+                  savings:
+                    type: number
+
+  # Admin coupon endpoints
+  /coupons/admin/all:
+    get:
+      tags: [Coupons]
+      summary: List all coupons (admin)
+      operationId: adminGetCoupons
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All coupons
+
+  /coupons/admin/analytics:
+    get:
+      tags: [Coupons]
+      summary: Get coupon analytics overview (admin)
+      operationId: getCouponAnalytics
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Coupon analytics
+
+  /coupons/admin:
+    post:
+      tags: [Coupons]
+      summary: Create a coupon (admin)
+      operationId: createCoupon
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                name:
+                  type: string
+                description:
+                  type: string
+                discountType:
+                  type: string
+                  enum: [percentage, fixed, free_shipping]
+                discountValue:
+                  type: number
+                minOrderValue:
+                  type: number
+                maxDiscount:
+                  type: number
+                maxUses:
+                  type: integer
+                startDate:
+                  type: string
+                  format: date-time
+                endDate:
+                  type: string
+                  format: date-time
+                isActive:
+                  type: boolean
+                isHighlighted:
+                  type: boolean
+                autoApply:
+                  type: boolean
+                category:
+                  type: string
+                bannerImage:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Coupon created
+
+  /coupons/admin/{id}:
+    get:
+      tags: [Coupons]
+      summary: Get a single coupon (admin)
+      operationId: adminGetCoupon
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Coupon detail
+
+    put:
+      tags: [Coupons]
+      summary: Update a coupon (admin)
+      operationId: updateCoupon
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                name:
+                  type: string
+                description:
+                  type: string
+                discountType:
+                  type: string
+                  enum: [percentage, fixed, free_shipping]
+                discountValue:
+                  type: number
+                minOrderValue:
+                  type: number
+                maxDiscount:
+                  type: number
+                maxUses:
+                  type: integer
+                startDate:
+                  type: string
+                  format: date-time
+                endDate:
+                  type: string
+                  format: date-time
+                isActive:
+                  type: boolean
+                isHighlighted:
+                  type: boolean
+                autoApply:
+                  type: boolean
+                category:
+                  type: string
+                bannerImage:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Coupon updated
+
+    delete:
+      tags: [Coupons]
+      summary: Delete a coupon (admin)
+      operationId: deleteCoupon
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Coupon deleted
+
+  /coupons/admin/{id}/analytics:
+    get:
+      tags: [Coupons]
+      summary: Get analytics for a specific coupon (admin)
+      operationId: getSingleCouponAnalytics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Single coupon analytics
+
+  /coupons/admin/{id}/status:
+    patch:
+      tags: [Coupons]
+      summary: Update coupon active status (admin)
+      operationId: updateCouponStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isActive:
+                  type: boolean
+      responses:
+        '200':
+          description: Coupon status updated
+
+  # ── Promotions ──────────────────────────────────────────────────
+  /promotions/active:
+    get:
+      tags: [Promotions]
+      summary: Get active promotions (public)
+      operationId: getActivePromotions
+      responses:
+        '200':
+          description: Active promotions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  promotions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Promotion'
+
+  /promotions/products:
+    get:
+      tags: [Promotions]
+      summary: Get products for promotion selection
+      operationId: getPromotionProducts
+      responses:
+        '200':
+          description: Products available for promotion assignment
+
+  /promotions:
+    get:
+      tags: [Promotions]
+      summary: List all promotions (admin)
+      operationId: getPromotions
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All promotions
+
+    post:
+      tags: [Promotions]
+      summary: Create a promotion (admin)
+      operationId: createPromotion
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [name, discountPercent, products]
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                discountPercent:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                products:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of product ObjectIds
+                startDate:
+                  type: string
+                  format: date-time
+                endDate:
+                  type: string
+                  format: date-time
+                isActive:
+                  type: boolean
+                bannerImage:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Promotion created
+
+  /promotions/{id}:
+    get:
+      tags: [Promotions]
+      summary: Get a single promotion (admin)
+      operationId: getPromotion
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Promotion detail
+
+    put:
+      tags: [Promotions]
+      summary: Update a promotion (admin)
+      operationId: updatePromotion
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                discountPercent:
+                  type: integer
+                products:
+                  type: array
+                  items:
+                    type: string
+                startDate:
+                  type: string
+                  format: date-time
+                endDate:
+                  type: string
+                  format: date-time
+                isActive:
+                  type: boolean
+                bannerImage:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Promotion updated
+
+    delete:
+      tags: [Promotions]
+      summary: Delete a promotion (admin)
+      operationId: deletePromotion
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Promotion deleted
+
+  # ── Notifications ───────────────────────────────────────────────
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: List current user's notifications
+      operationId: getMyNotifications
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  notifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+
+  /notifications/unread-count:
+    get:
+      tags: [Notifications]
+      summary: Get unread notification count for the current user
+      operationId: getUnreadCount
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Unread count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+
+  /notifications/{id}/read:
+    put:
+      tags: [Notifications]
+      summary: Mark a single notification as read
+      operationId: markNotificationRead
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Notification marked as read
+
+  /notifications/read-all:
+    put:
+      tags: [Notifications]
+      summary: Mark all notifications as read
+      operationId: markAllNotificationsRead
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All notifications marked as read
+
+  /notifications/{id}:
+    delete:
+      tags: [Notifications]
+      summary: Delete a notification
+      operationId: deleteNotification
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Notification deleted
+
+  # Admin notification endpoints
+  /notifications/admin/all:
+    get:
+      tags: [Notifications]
+      summary: List all notifications (admin)
+      operationId: adminGetAllNotifications
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All notifications
+
+  /notifications/admin/stats:
+    get:
+      tags: [Notifications]
+      summary: Get notification statistics (admin)
+      operationId: getNotificationStats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Notification stats
+
+  /notifications/admin/create:
+    post:
+      tags: [Notifications]
+      summary: Create and broadcast a notification (admin)
+      operationId: createNotification
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, title, message, recipient]
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - order_confirmed
+                    - payment_successful
+                    - shipping_update
+                    - flash_sale
+                    - new_coupon
+                    - wishlist_price_drop
+                    - admin_broadcast
+                title:
+                  type: string
+                  example: Flash Sale Tomorrow!
+                message:
+                  type: string
+                  example: Up to 50% off on all skincare products
+                recipient:
+                  oneOf:
+                    - type: string
+                      enum: [allUsers]
+                    - type: object
+                      properties:
+                        role:
+                          type: string
+                          enum: [user, admin]
+                channels:
+                  type: array
+                  items:
+                    type: string
+                    enum: [in_app, email, push]
+                  default: [in_app]
+                scheduledFor:
+                  type: string
+                  format: date-time
+                  nullable: true
+                link:
+                  type: string
+      responses:
+        '201':
+          description: Notification created and sent
+
+  /notifications/admin/{id}:
+    delete:
+      tags: [Notifications]
+      summary: Delete a notification as admin
+      operationId: adminDeleteNotification
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Notification deleted
+
+  # ── Chat ────────────────────────────────────────────────────────
+  /chat/conversation:
+    get:
+      tags: [Chat]
+      summary: Get or create a conversation for the current user
+      operationId: getOrCreateConversation
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResponse'
+
+  /chat/conversations:
+    get:
+      tags: [Chat]
+      summary: List current user's conversations
+      operationId: getUserConversations
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User conversations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  conversations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conversation'
+
+  /chat/conversations/{id}/messages:
+    get:
+      tags: [Chat]
+      summary: Get messages in a conversation
+      operationId: getMessages
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatMessage'
+
+    post:
+      tags: [Chat]
+      summary: Send a message in a conversation
+      operationId: sendMessage
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+                messageType:
+                  type: string
+                  enum: [text, file]
+                  default: text
+                fileUrl:
+                  type: string
+                fileName:
+                  type: string
+      responses:
+        '201':
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /chat/upload:
+    post:
+      tags: [Chat]
+      summary: Upload a file for chat
+      operationId: uploadChatFile
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: File uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  url:
+                    type: string
+                  fileName:
+                    type: string
+
+  # Admin chat endpoints
+  /chat/admin/conversations:
+    get:
+      tags: [Chat]
+      summary: List all conversations (admin)
+      operationId: getAdminConversations
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All conversations
+
+  /chat/admin/conversations/{id}/messages:
+    get:
+      tags: [Chat]
+      summary: Get conversation messages (admin)
+      operationId: adminGetMessages
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Messages
+
+  /chat/admin/conversations/{id}/assign:
+    patch:
+      tags: [Chat]
+      summary: Assign staff to a conversation (admin)
+      operationId: assignStaff
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                adminId:
+                  type: string
+                adminName:
+                  type: string
+      responses:
+        '200':
+          description: Staff assigned
+
+  /chat/admin/conversations/{id}/close:
+    patch:
+      tags: [Chat]
+      summary: Close a conversation (admin)
+      operationId: closeConversation
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Conversation closed
+
+  /chat/admin/stats:
+    get:
+      tags: [Chat]
+      summary: Get chat statistics (admin)
+      operationId: getChatStats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Chat statistics
+
+  # ── Users ───────────────────────────────────────────────────────
+  /users:
+    get:
+      tags: [Users]
+      summary: List all users (admin)
+      operationId: getUsers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+
+  /users/stats:
+    get:
+      tags: [Users]
+      summary: Get dashboard statistics (admin)
+      operationId: getDashboardStats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  stats:
+                    $ref: '#/components/schemas/DashboardStats'
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get user detail (admin)
+      operationId: getUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+    put:
+      tags: [Users]
+      summary: Update a user (admin)
+      operationId: updateUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                role:
+                  type: string
+                  enum: [user, admin]
+                avatar:
+                  type: string
+      responses:
+        '200':
+          description: User updated
+
+    delete:
+      tags: [Users]
+      summary: Delete a user (admin)
+      operationId: deleteUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User deleted
+
+  /users/{id}/orders:
+    get:
+      tags: [Users]
+      summary: Get user's orders (admin)
+      operationId: getUserOrders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User's orders
+
+  /users/{id}/login-history:
+    get:
+      tags: [Users]
+      summary: Get user login history (admin)
+      operationId: getUserLoginHistory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Login history
+
+  /users/bulk/delete:
+    delete:
+      tags: [Users]
+      summary: Bulk delete users (admin)
+      operationId: bulkDeleteUsers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Users deleted
+
+  /users/create-admin:
+    post:
+      tags: [Users]
+      summary: Create a new admin user (admin)
+      operationId: createAdminUser
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '201':
+          description: Admin user created
+
+  /users/permissions/list:
+    get:
+      tags: [Users]
+      summary: List all permissions (admin)
+      operationId: getPermissionsList
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Permissions list
+
+  # ── Inventory ───────────────────────────────────────────────────
+  /inventory/overview:
+    get:
+      tags: [Inventory]
+      summary: Get inventory overview (admin)
+      operationId: getInventoryOverview
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Inventory overview
+
+  /inventory/warehouses:
+    get:
+      tags: [Inventory]
+      summary: List warehouses (admin)
+      operationId: getWarehouses
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Warehouse list
+
+    post:
+      tags: [Inventory]
+      summary: Create a warehouse (admin)
+      operationId: createWarehouse
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                location:
+                  type: string
+                contactPerson:
+                  type: string
+                contactPhone:
+                  type: string
+                isActive:
+                  type: boolean
+      responses:
+        '201':
+          description: Warehouse created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WarehouseResponse'
+
+  /inventory/warehouses/{id}:
+    put:
+      tags: [Inventory]
+      summary: Update a warehouse (admin)
+      operationId: updateWarehouse
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                location:
+                  type: string
+                contactPerson:
+                  type: string
+                contactPhone:
+                  type: string
+                isActive:
+                  type: boolean
+      responses:
+        '200':
+          description: Warehouse updated
+
+    delete:
+      tags: [Inventory]
+      summary: Delete a warehouse (admin)
+      operationId: deleteWarehouse
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Warehouse deleted
+
+  /inventory/suppliers:
+    get:
+      tags: [Inventory]
+      summary: List suppliers (admin)
+      operationId: getSuppliers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Supplier list
+
+    post:
+      tags: [Inventory]
+      summary: Create a supplier (admin)
+      operationId: createSupplier
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                contactPerson:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                phone:
+                  type: string
+                address:
+                  type: string
+                isActive:
+                  type: boolean
+      responses:
+        '201':
+          description: Supplier created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponse'
+
+  /inventory/suppliers/{id}:
+    put:
+      tags: [Inventory]
+      summary: Update a supplier (admin)
+      operationId: updateSupplier
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                contactPerson:
+                  type: string
+                email:
+                  type: string
+                phone:
+                  type: string
+                address:
+                  type: string
+                isActive:
+                  type: boolean
+      responses:
+        '200':
+          description: Supplier updated
+
+    delete:
+      tags: [Inventory]
+      summary: Delete a supplier (admin)
+      operationId: deleteSupplier
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Supplier deleted
+
+  /inventory/movements:
+    get:
+      tags: [Inventory]
+      summary: List stock movements (admin)
+      operationId: getStockMovements
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Stock movement list
+
+  /inventory/purchase-orders:
+    get:
+      tags: [Inventory]
+      summary: List purchase orders (admin)
+      operationId: getPurchaseOrders
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Purchase order list
+
+    post:
+      tags: [Inventory]
+      summary: Create a purchase order (admin)
+      operationId: createPurchaseOrder
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [supplierId, warehouseId, items]
+              properties:
+                supplierId:
+                  type: string
+                warehouseId:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      productId:
+                        type: string
+                      productName:
+                        type: string
+                      quantity:
+                        type: integer
+                      unitCost:
+                        type: number
+                notes:
+                  type: string
+      responses:
+        '201':
+          description: Purchase order created
+
+  /inventory/purchase-orders/{id}:
+    put:
+      tags: [Inventory]
+      summary: Update a purchase order (admin)
+      operationId: updatePurchaseOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Purchase order updated
+
+  /inventory/purchase-orders/{id}/receive:
+    post:
+      tags: [Inventory]
+      summary: Receive a purchase order, updating stock (admin)
+      operationId: receivePurchaseOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Purchase order received, stock updated
+
+  # ── Hero Slides ─────────────────────────────────────────────────
+  /hero-slides:
+    get:
+      tags: [Hero Slides]
+      summary: Get active hero slides for the homepage
+      operationId: getHeroSlides
+      responses:
+        '200':
+          description: Active hero slides
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  slides:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/HeroSlide'
+
+    post:
+      tags: [Hero Slides]
+      summary: Create a hero slide (admin)
+      operationId: createHeroSlide
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                title:
+                  type: string
+                subtitle:
+                  type: string
+                image:
+                  type: string
+                  format: binary
+                link:
+                  type: string
+                isActive:
+                  type: boolean
+                order:
+                  type: integer
+      responses:
+        '201':
+          description: Hero slide created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeroSlideResponse'
+
+  /hero-slides/all:
+    get:
+      tags: [Hero Slides]
+      summary: Get all hero slides (admin)
+      operationId: getAllHeroSlides
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All hero slides
+
+  /hero-slides/{id}:
+    put:
+      tags: [Hero Slides]
+      summary: Update a hero slide (admin)
+      operationId: updateHeroSlide
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                subtitle:
+                  type: string
+                image:
+                  type: string
+                  format: binary
+                link:
+                  type: string
+                isActive:
+                  type: boolean
+                order:
+                  type: integer
+      responses:
+        '200':
+          description: Hero slide updated
+
+    delete:
+      tags: [Hero Slides]
+      summary: Delete a hero slide (admin)
+      operationId: deleteHeroSlide
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Hero slide deleted
+
+  # ── Settings ────────────────────────────────────────────────────
+  /settings:
+    get:
+      tags: [Settings]
+      summary: Get site settings (public)
+      operationId: getSettings
+      responses:
+        '200':
+          description: Site settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingResponse'
+
+    put:
+      tags: [Settings]
+      summary: Update site settings (admin)
+      operationId: updateSettings
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                siteName:
+                  type: string
+                description:
+                  type: string
+                contactEmail:
+                  type: string
+                  format: email
+                contactPhone:
+                  type: string
+                address:
+                  type: string
+                socialLinks[facebook]:
+                  type: string
+                socialLinks[instagram]:
+                  type: string
+                socialLinks[telegram]:
+                  type: string
+                logo:
+                  type: string
+                  format: binary
+                favicon:
+                  type: string
+                  format: binary
+                payment[bakongAccountId]:
+                  type: string
+                payment[merchantName]:
+                  type: string
+                payment[merchantCity]:
+                  type: string
+                payment[abaPaywayEnabled]:
+                  type: boolean
+                payment[abaPaywayMerchantId]:
+                  type: string
+                shipping[freeShippingThreshold]:
+                  type: number
+                shipping[shippingFee]:
+                  type: number
+                seo[metaTitle]:
+                  type: string
+                seo[metaDescription]:
+                  type: string
+      responses:
+        '200':
+          description: Settings updated
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        JWT access token obtained from `/auth/login` or `/auth/google`.
+        Include in the `Authorization` header: `Bearer <token>`.
+
+  schemas:
+    # ── Health ──
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        message:
+          type: string
+          example: Bakong E-commerce API is running
+        timestamp:
+          type: string
+          format: date-time
+
+    # ── Common ──
+    ApiError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        message:
+          type: string
+          example: Error description
+
+    # ── Auth ──
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        token:
+          type: string
+          description: JWT access token
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+            role:
+              type: string
+              enum: [user, admin]
+            avatar:
+              type: string
+              nullable: true
+
+    GoogleLoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        user:
+          type: object
+          properties:
+            _id:
+              type: string
+            googleId:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+            avatar:
+              type: string
+              nullable: true
+
+    # ── User ──
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [user, admin]
+        avatar:
+          type: string
+          nullable: true
+        googleId:
+          type: string
+          nullable: true
+        provider:
+          type: string
+          enum: [email, google]
+        isVerified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        user:
+          $ref: '#/components/schemas/User'
+
+    DashboardStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+          example: 150
+        totalOrders:
+          type: integer
+          example: 320
+        totalRevenue:
+          type: number
+          example: 12500.0
+        totalProducts:
+          type: integer
+          example: 85
+        ordersByStatus:
+          type: object
+          properties:
+            pending:
+              type: integer
+            confirmed:
+              type: integer
+            shipping:
+              type: integer
+            delivered:
+              type: integer
+            cancelled:
+              type: integer
+        revenueByDay:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              revenue:
+                type: number
+
+    # ── Product ──
+    Product:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        stock:
+          type: integer
+        discount:
+          type: integer
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              public_id:
+                type: string
+              secure_url:
+                type: string
+                format: uri
+        category:
+          type: string
+          description: Category ObjectId
+        rating:
+          type: number
+        numReviews:
+          type: integer
+        sold:
+          type: integer
+        featured:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProductResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        product:
+          $ref: '#/components/schemas/Product'
+
+    ProductListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        count:
+          type: integer
+        total:
+          type: integer
+        page:
+          type: integer
+        totalPages:
+          type: integer
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+
+    # ── Category ──
+    Category:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        icon:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CategoryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        category:
+          $ref: '#/components/schemas/Category'
+
+    # ── Order ──
+    CreateOrderRequest:
+      type: object
+      required:
+        - products
+        - shippingAddress
+        - paymentMethod
+      properties:
+        products:
+          type: array
+          items:
+            type: object
+            required: [productId, quantity]
+            properties:
+              productId:
+                type: string
+              quantity:
+                type: integer
+                minimum: 1
+        shippingAddress:
+          type: object
+          required: [fullName, phone]
+          properties:
+            fullName:
+              type: string
+            phone:
+              type: string
+        paymentMethod:
+          type: string
+          enum: [khqr, cod, aba_payway]
+        couponCode:
+          type: string
+          description: Optional coupon code
+          example: WELCOME10
+
+    Order:
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          type: string
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              productId:
+                type: string
+              name:
+                type: string
+              image:
+                type: string
+              price:
+                type: number
+              quantity:
+                type: integer
+        subtotal:
+          type: number
+        shipping:
+          type: number
+        promotionDiscount:
+          type: number
+        total:
+          type: number
+        coupon:
+          type: string
+          nullable: true
+        discountAmount:
+          type: number
+          nullable: true
+        appliedPromotions:
+          type: array
+          items:
+            type: object
+            properties:
+              promotionId:
+                type: string
+              name:
+                type: string
+              discountPercent:
+                type: integer
+        status:
+          type: string
+          enum: [pending, confirmed, shipping, delivered, cancelled]
+        shippingAddress:
+          type: object
+          properties:
+            fullName:
+              type: string
+            phone:
+              type: string
+        paymentMethod:
+          type: string
+          enum: [khqr, cod, aba_payway]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    OrderResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        order:
+          $ref: '#/components/schemas/Order'
+
+    # ── Transaction ──
+    Transaction:
+      type: object
+      properties:
+        _id:
+          type: string
+        orderId:
+          type: string
+        amount:
+          type: number
+        provider:
+          type: string
+          enum: [BAKONG, ABA_PAYWAY]
+        tranId:
+          type: string
+        md5:
+          type: string
+        qr:
+          type: string
+          description: Base64 QR image data URL
+        status:
+          type: string
+          enum: [PENDING, PAID, FAILED, EXPIRED]
+        expireAt:
+          type: string
+          format: date-time
+        paidAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    # ── Payment ──
+    CreatePaymentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        provider:
+          type: string
+          enum: [BAKONG, ABA_PAYWAY]
+        qrString:
+          type: string
+          description: Base64 QR image data URL
+        qrImage:
+          type: string
+          description: QR image data URL (Bakong)
+        tranId:
+          type: string
+        md5:
+          type: string
+          description: Bakong MD5 hash
+        expireInSec:
+          type: integer
+          example: 180
+        clientId:
+          type: string
+          description: ABA PayWay client ID
+
+    # ── Coupon ──
+    Coupon:
+      type: object
+      properties:
+        _id:
+          type: string
+        code:
+          type: string
+          description: Uppercase coupon code
+        name:
+          type: string
+        description:
+          type: string
+        bannerImage:
+          type: string
+          format: uri
+        discountType:
+          type: string
+          enum: [percentage, fixed, free_shipping]
+        discountValue:
+          type: number
+        minOrderValue:
+          type: number
+        maxDiscount:
+          type: number
+        maxUses:
+          type: integer
+        currentUses:
+          type: integer
+        maxUsesPerUser:
+          type: integer
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+        isHighlighted:
+          type: boolean
+        autoApply:
+          type: boolean
+        category:
+          type: string
+        applicableProducts:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    CouponResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        coupon:
+          $ref: '#/components/schemas/Coupon'
+
+    # ── Promotion ──
+    Promotion:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        bannerImage:
+          type: string
+          format: uri
+        discountPercent:
+          type: integer
+        products:
+          type: array
+          items:
+            type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ── Notification ──
+    Notification:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+          description: User ObjectId (null for system)
+        type:
+          type: string
+          enum:
+            - order_confirmed
+            - payment_successful
+            - shipping_update
+            - flash_sale
+            - new_coupon
+            - wishlist_price_drop
+            - admin_broadcast
+        title:
+          type: string
+        message:
+          type: string
+        data:
+          type: object
+        link:
+          type: string
+          nullable: true
+        read:
+          type: boolean
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+        channels:
+          type: array
+          items:
+            type: string
+            enum: [in_app, email, push]
+        scheduledFor:
+          type: string
+          format: date-time
+          nullable: true
+        sentAt:
+          type: string
+          format: date-time
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ── Chat ──
+    Conversation:
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          type: string
+        userName:
+          type: string
+        userEmail:
+          type: string
+        status:
+          type: string
+          enum: [waiting, active, closed]
+        assignedTo:
+          type: object
+          nullable: true
+          properties:
+            adminId:
+              type: string
+            adminName:
+              type: string
+        lastMessage:
+          type: string
+        lastMessageAt:
+          type: string
+          format: date-time
+        unreadCount:
+          type: integer
+        greeted:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ConversationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        conversation:
+          $ref: '#/components/schemas/Conversation'
+
+    ChatMessage:
+      type: object
+      properties:
+        _id:
+          type: string
+        conversationId:
+          type: string
+        sender:
+          type: string
+          enum: [user, admin, system]
+        senderId:
+          type: string
+        senderName:
+          type: string
+        content:
+          type: string
+        messageType:
+          type: string
+          enum: [text, file, system]
+        fileUrl:
+          type: string
+          nullable: true
+        fileName:
+          type: string
+          nullable: true
+        read:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    MessageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          $ref: '#/components/schemas/ChatMessage'
+
+    # ── Hero Slide ──
+    HeroSlide:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: string
+        image:
+          type: string
+          format: uri
+        link:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        order:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    HeroSlideResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        slide:
+          $ref: '#/components/schemas/HeroSlide'
+
+    # ── Settings ──
+    Settings:
+      type: object
+      properties:
+        _id:
+          type: string
+        siteName:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        favicon:
+          type: string
+          nullable: true
+        description:
+          type: string
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+        address:
+          type: string
+        socialLinks:
+          type: object
+          properties:
+            facebook:
+              type: string
+            instagram:
+              type: string
+            telegram:
+              type: string
+        payment:
+          type: object
+          properties:
+            bakongAccountId:
+              type: string
+            merchantName:
+              type: string
+            merchantCity:
+              type: string
+            abaPaywayEnabled:
+              type: boolean
+            abaPaywayMerchantId:
+              type: string
+        shipping:
+          type: object
+          properties:
+            freeShippingThreshold:
+              type: number
+            shippingFee:
+              type: number
+        updatedAt:
+          type: string
+          format: date-time
+
+    SettingResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        settings:
+          $ref: '#/components/schemas/Settings'
+
+    # ── Inventory ──
+    Warehouse:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        location:
+          type: string
+        contactPerson:
+          type: string
+          nullable: true
+        contactPhone:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    WarehouseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        warehouse:
+          $ref: '#/components/schemas/Warehouse'
+
+    Supplier:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        contactPerson:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    SupplierResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        supplier:
+          $ref: '#/components/schemas/Supplier'
+
+  responses:
+    BadRequest:
+      description: Bad request — missing or invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Unauthorized:
+      description: Unauthorized — missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Forbidden:
+      description: Forbidden — requires admin role
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
