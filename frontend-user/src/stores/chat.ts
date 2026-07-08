@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { io, Socket } from 'socket.io-client'
 import api from '@/services/api'
+import { SOCKET_URL } from '@/utils/apiUrl'
 
 interface Message {
   _id: string
@@ -71,7 +72,7 @@ export const useChatStore = defineStore('chat', () => {
 
     if (socket.value?.connected) return
 
-    socket.value = io('/', {
+    socket.value = io(SOCKET_URL, {
       auth: { token },
       transports: ['websocket', 'polling'],
     })
