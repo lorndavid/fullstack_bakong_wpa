@@ -3,36 +3,27 @@ import { Server, Socket } from 'socket.io';
 import { verifyAccessToken } from '../utils/generateToken';
 import { Conversation, Message } from '../models/Chat';
 import { getAutoReply, getWelcomeMessage } from './autoResponder';
-
+ 
 let io: Server;
-
+ 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
   userRole?: string;
   userName?: string;
 }
-
+ 
 export function initSocket(httpServer: HTTPServer) {
-  // Build allowed origins (include www variants for Vercel)
-  const userUrl = process.env.FRONTEND_USER_URL || 'http://localhost:5173';
-  const adminUrl = process.env.FRONTEND_ADMIN_URL || 'http://localhost:5174';
-  const allowedOrigins = [userUrl, adminUrl];
-
-  // Add www subdomain variant if applicable
-  if (userUrl.startsWith('https://') && !userUrl.includes('www.')) {
-    allowedOrigins.push(userUrl.replace('https://', 'https://www.'));
-  }
-  if (adminUrl.startsWith('https://') && !adminUrl.includes('www.')) {
-    allowedOrigins.push(adminUrl.replace('https://', 'https://www.'));
-  }
-
   io = new Server(httpServer, {
     cors: {
-      origin: allowedOrigins,
+      origin: [
+        'https://lorndavid.online',
+        'https://www.lorndavid.online',
+        'https://admin.lorndavid.online',
+      ],
       credentials: true,
     },
   });
-
+ 
   // ─── Authentication middleware ────────────────────────────────
   io.use((socket: AuthenticatedSocket, next) => {
     const token = socket.handshake.auth?.token || socket.handshake.query?.token;
@@ -49,21 +40,21 @@ export function initSocket(httpServer: HTTPServer) {
       return next(new Error('Invalid or expired token'));
     }
   });
-
+ 
   // ─── Connection handler ───────────────────────────────────────
   io.on('connection', async (socket: AuthenticatedSocket) => {
     const userId = socket.userId!;
     const userRole = socket.userRole!;
     const userName = socket.userName!;
-
+ 
     // Join user's personal room for targeted events
     socket.join(`user:${userId}`);
-
+ 
     // Join admin notification room if admin
     if (userRole === 'admin') {
       socket.join('admin:notifications');
     }
-
+ 
     // ── Join conversation room ──────────────────────────────────
     socket.on('chat:join', async (conversationId: string) => {
       try {
@@ -73,17 +64,17 @@ export function initSocket(httpServer: HTTPServer) {
           socket.emit('error', { message: 'Conversation not found' });
           return;
         }
-
+ 
         const isUser = conversation.userId.toString() === userId;
         const isAdmin = userRole === 'admin';
-
+ 
         if (!isUser && !isAdmin) {
           socket.emit('error', { message: 'Not authorized to join this conversation' });
           return;
         }
-
+ 
         socket.join(`conversation:${conversationId}`);
-
+ 
         // Mark messages as read if admin is viewing
         if (isAdmin) {
           await Message.updateMany(
@@ -102,12 +93,12 @@ export function initSocket(httpServer: HTTPServer) {
         socket.emit('error', { message: 'Failed to join conversation' });
       }
     });
-
+ 
     // ── Leave conversation room ─────────────────────────────────
     socket.on('chat:leave', (conversationId: string) => {
       socket.leave(`conversation:${conversationId}`);
     });
-
+ 
     // ── Send message ────────────────────────────────────────────
     socket.on('chat:send', async (data: {
       conversationId: string;
@@ -122,22 +113,22 @@ export function initSocket(httpServer: HTTPServer) {
           socket.emit('error', { message: 'Conversation not found' });
           return;
         }
-
+ 
         if (conversation.status === 'closed') {
           socket.emit('error', { message: 'This conversation is closed' });
           return;
         }
-
+ 
         const isUser = conversation.userId.toString() === userId;
         const isAdmin = userRole === 'admin';
-
+ 
         if (!isUser && !isAdmin) {
           socket.emit('error', { message: 'Not authorized' });
           return;
         }
-
+ 
         const senderRole = isUser ? 'user' : 'admin';
-
+ 
         // If user is sending and conversation is waiting, set to active
         if (isUser && conversation.status === 'waiting') {
           conversation.status = 'active';
@@ -147,7 +138,7 @@ export function initSocket(httpServer: HTTPServer) {
             status: 'active',
           });
         }
-
+ 
         // Auto-assign admin when they send their first message in a conversation
         if (isAdmin && !conversation.assignedTo) {
           conversation.assignedTo = { adminId: userId, adminName: userName };
@@ -160,7 +151,7 @@ export function initSocket(httpServer: HTTPServer) {
             assignedTo: { adminId: userId, adminName: userName },
           });
           io.to('admin:notifications').emit('admin:conversation-updated', conversation.toObject());
-
+ 
           // System message about assignment
           const assignMsg = await Message.create({
             conversationId: data.conversationId,
@@ -173,7 +164,7 @@ export function initSocket(httpServer: HTTPServer) {
           });
           io.to(`conversation:${data.conversationId}`).emit('chat:message', assignMsg.toObject());
         }
-
+ 
         const message = await Message.create({
           conversationId: data.conversationId,
           sender: senderRole,
@@ -185,7 +176,7 @@ export function initSocket(httpServer: HTTPServer) {
           fileName: data.fileName,
           read: isAdmin, // Messages from admin are pre-read for the admin
         });
-
+ 
         // Update conversation metadata
         conversation.lastMessage = data.content.substring(0, 200);
         conversation.lastMessageAt = new Date();
@@ -193,10 +184,10 @@ export function initSocket(httpServer: HTTPServer) {
           conversation.unreadCount += 1;
         }
         await conversation.save();
-
+ 
         // Emit message to conversation room
         io.to(`conversation:${data.conversationId}`).emit('chat:message', message.toObject());
-
+ 
         // Notify admin list about new message
         if (senderRole === 'user') {
           io.to('admin:notifications').emit('admin:new-message', {
@@ -205,20 +196,20 @@ export function initSocket(httpServer: HTTPServer) {
             lastMessageAt: message.createdAt,
             unreadCount: conversation.unreadCount,
           });
-
+ 
           // ── Auto-responder ──────────────────────────────────
           // Determine the reply — use welcome message if first greeting, otherwise use auto-reply
           const reply = !conversation.greeted
             ? getWelcomeMessage()
             : getAutoReply(data.content);
-
+ 
           if (reply) {
             // Mark as greeted
             if (!conversation.greeted) {
               conversation.greeted = true;
               await conversation.save();
             }
-
+ 
             // Send typing indicator before replying (natural feel)
             io.to(`conversation:${data.conversationId}`).emit('chat:typing', {
               conversationId: data.conversationId,
@@ -226,7 +217,7 @@ export function initSocket(httpServer: HTTPServer) {
               userName: '🤖 Assistant',
               isTyping: true,
             });
-
+ 
             // Small delay to simulate typing (500ms-800ms)
             const typingDelay = 600 + Math.random() * 400;
             setTimeout(async () => {
@@ -237,10 +228,10 @@ export function initSocket(httpServer: HTTPServer) {
                 userName: '🤖 Assistant',
                 isTyping: false,
               });
-
+ 
               // Small extra pause before message appears
               await new Promise(r => setTimeout(r, 200));
-
+ 
               const autoMsg = await Message.create({
                 conversationId: data.conversationId,
                 sender: 'system',
@@ -250,15 +241,15 @@ export function initSocket(httpServer: HTTPServer) {
                 messageType: 'text',
                 read: false,
               });
-
+ 
               // Update conversation metadata
               conversation.lastMessage = reply.substring(0, 200);
               conversation.lastMessageAt = new Date();
               conversation.unreadCount += 1;
               await conversation.save();
-
+ 
               io.to(`conversation:${data.conversationId}`).emit('chat:message', autoMsg.toObject());
-
+ 
               // Notify admin
               io.to('admin:notifications').emit('admin:new-message', {
                 conversationId: data.conversationId,
@@ -273,7 +264,7 @@ export function initSocket(httpServer: HTTPServer) {
         socket.emit('error', { message: 'Failed to send message' });
       }
     });
-
+ 
     // ── Mark as read ────────────────────────────────────────────
     socket.on('chat:mark-read', async (conversationId: string) => {
       if (userRole !== 'admin') return;
@@ -292,7 +283,7 @@ export function initSocket(httpServer: HTTPServer) {
         // silent
       }
     });
-
+ 
     // ── Typing indicator ────────────────────────────────────────
     socket.on('chat:typing', (data: { conversationId: string; isTyping: boolean }) => {
       socket.to(`conversation:${data.conversationId}`).emit('chat:typing', {
@@ -301,7 +292,9 @@ export function initSocket(httpServer: HTTPServer) {
         userName,
         isTyping: data.isTyping,
       });
-    });        // ── Admin: Assign staff ─────────────────────────────────────
+    });
+ 
+    // ── Admin: Assign staff ─────────────────────────────────────
     socket.on('admin:assign', async (data: { conversationId: string; adminId: string; adminName: string }) => {
       if (userRole !== 'admin') return;
       try {
@@ -314,12 +307,12 @@ export function initSocket(httpServer: HTTPServer) {
           { new: true }
         );
         if (!conversation) return;
-
+ 
         const content = `Assigned to ${data.adminName}`;
         conversation.lastMessage = content;
         conversation.lastMessageAt = new Date();
         await conversation.save();
-
+ 
         const sysMsg = await Message.create({
           conversationId: data.conversationId,
           sender: 'system',
@@ -329,7 +322,7 @@ export function initSocket(httpServer: HTTPServer) {
           messageType: 'system',
           read: false,
         });
-
+ 
         io.to(`conversation:${data.conversationId}`).emit('chat:message', sysMsg.toObject());
         io.to(`conversation:${data.conversationId}`).emit('chat:assigned', {
           conversationId: data.conversationId,
@@ -339,7 +332,9 @@ export function initSocket(httpServer: HTTPServer) {
       } catch {
         socket.emit('error', { message: 'Failed to assign staff' });
       }
-    });        // ── Admin: Close conversation ───────────────────────────────
+    });
+ 
+    // ── Admin: Close conversation ───────────────────────────────
     socket.on('admin:close', async (conversationId: string) => {
       if (userRole !== 'admin') return;
       try {
@@ -349,12 +344,12 @@ export function initSocket(httpServer: HTTPServer) {
           { new: true }
         );
         if (!conversation) return;
-
+ 
         const content = 'Conversation closed';
         conversation.lastMessage = content;
         conversation.lastMessageAt = new Date();
         await conversation.save();
-
+ 
         const sysMsg = await Message.create({
           conversationId,
           sender: 'system',
@@ -364,7 +359,7 @@ export function initSocket(httpServer: HTTPServer) {
           messageType: 'system',
           read: false,
         });
-
+ 
         io.to(`conversation:${conversationId}`).emit('chat:message', sysMsg.toObject());
         io.to(`conversation:${conversationId}`).emit('chat:closed', { conversationId });
         io.to('admin:notifications').emit('admin:conversation-updated', conversation.toObject());
@@ -372,7 +367,7 @@ export function initSocket(httpServer: HTTPServer) {
         socket.emit('error', { message: 'Failed to close conversation' });
       }
     });
-
+ 
     // ── Notification: Mark as read via socket ───────────────────
     socket.on('notification:mark-read', async (notificationId: string) => {
       try {
@@ -386,7 +381,7 @@ export function initSocket(httpServer: HTTPServer) {
         // silent
       }
     });
-
+ 
     // ── Notification: Mark all as read via socket ───────────────
     socket.on('notification:mark-all-read', async () => {
       try {
@@ -397,19 +392,19 @@ export function initSocket(httpServer: HTTPServer) {
         // silent
       }
     });
-
+ 
     // ── Disconnect ──────────────────────────────────────────────
     socket.on('disconnect', () => {
       // Cleanup is handled automatically by Socket.IO
     });
   });
-
+ 
   return io;
 }
-
+ 
 export function getIO(): Server {
   if (!io) throw new Error('Socket.IO not initialized');
   return io;
 }
-
+ 
 export { AuthenticatedSocket };
