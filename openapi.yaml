@@ -54,6 +54,32 @@ tags:
   - name: Settings
     description: Site settings (singleton)
 
+x-tagGroups:
+  - name: Core Shopping
+    tags:
+      - Products
+      - Categories
+      - Orders
+      - Payments
+      - Coupons
+      - Promotions
+  - name: Account & Communication
+    tags:
+      - Auth
+      - Notifications
+      - Chat
+  - name: Administration
+    tags:
+      - Users
+      - Inventory
+      - Hero Slides
+      - Settings
+  - name: System
+    tags:
+      - Health
+
+security: []
+
 paths:
   # ── Health ──────────────────────────────────────────────────────
   /health:
