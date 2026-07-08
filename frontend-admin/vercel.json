@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://api.lorndavid.online/api/:path*"
+    },
+    {
+      "source": "/socket.io/:path*",
+      "destination": "https://api.lorndavid.online/socket.io/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
