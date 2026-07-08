@@ -20,12 +20,22 @@ const PORT = process.env.PORT || 5000;
 // Configure Cloudinary
 configureCloudinary();
 
+// Build allowed origins (include www variants for Vercel)
+const userUrl = process.env.FRONTEND_USER_URL || 'http://localhost:5173';
+const adminUrl = process.env.FRONTEND_ADMIN_URL || 'http://localhost:5174';
+const allowedOrigins = [userUrl, adminUrl];
+
+// Add www subdomain variant if applicable
+if (userUrl.startsWith('https://') && !userUrl.includes('www.')) {
+  allowedOrigins.push(userUrl.replace('https://', 'https://www.'));
+}
+if (adminUrl.startsWith('https://') && !adminUrl.includes('www.')) {
+  allowedOrigins.push(adminUrl.replace('https://', 'https://www.'));
+}
+
 // Middlewares
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_USER_URL || 'http://localhost:5173',
-    process.env.FRONTEND_ADMIN_URL || 'http://localhost:5174',
-  ],
+  origin: allowedOrigins,
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
