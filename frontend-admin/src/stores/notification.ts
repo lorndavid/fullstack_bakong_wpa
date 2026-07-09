@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { io, Socket } from 'socket.io-client'
 import api from '@/services/api'
+import { SOCKET_URL } from '@/utils/apiUrl'
 
 export interface AdminNotification {
   _id: string
