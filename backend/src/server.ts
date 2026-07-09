@@ -22,11 +22,27 @@ configureCloudinary();
  
 // Middlewares
 app.use(cors({
-  origin: [
-    'https://lorndavid.online',
-    'https://www.lorndavid.online',
-    'https://admin.lorndavid.online',
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    const allowedDomains = [
+      'lorndavid.online',
+      'www.lorndavid.online',
+      'admin.lorndavid.online',
+    ];
+
+    // Check if the origin matches our specific domains or ends with .vercel.app
+    if (
+      allowedDomains.includes(new URL(origin).hostname) || 
+      origin.endsWith('.vercel.app') || 
+      origin.startsWith('http://localhost')
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
