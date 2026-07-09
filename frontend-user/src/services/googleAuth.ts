@@ -9,6 +9,7 @@ declare global {
             auto_select?: boolean;
             cancel_on_tap_outside?: boolean;
             context?: 'signin' | 'signup' | 'use';
+            use_fedcm_for_prompt?: boolean;
           }) => void;
           prompt: (momentListener?: (notification: {
             isNotDisplayed: () => boolean;
@@ -104,6 +105,7 @@ export function requestGoogleCredential(clientId: string): Promise<string> {
       },
       cancel_on_tap_outside: false,
       context: 'signin',
+      use_fedcm_for_prompt: true,
     })
 
     // Trigger the Google One Tap / popup UI
