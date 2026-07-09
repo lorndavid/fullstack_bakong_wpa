@@ -92,6 +92,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useI18n } from 'vue-i18n'
 import GoogleLoginButton from '@/components/GoogleLoginButton.vue'
 import { initGoogleAuth, requestGoogleCredential } from '@/services/googleAuth'
+import { GOOGLE_CLIENT_ID } from '@/config'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -111,7 +112,7 @@ async function handleGoogleLogin() {
   error.value = ''
 
   try {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+    const clientId = GOOGLE_CLIENT_ID
 
     if (!clientId) {
       throw new Error(t('auth.missingClientId'))
