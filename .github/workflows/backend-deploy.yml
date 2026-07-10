@@ -93,11 +93,10 @@ jobs:
     # node_modules, releases/, .env, and other untracked files!
     defaults:
       run:
-        working-directory: $HOME/fullstack_bakong_wpa
+        working-directory: /home/david/fullstack_bakong_wpa
     # Override GITHUB_WORKSPACE to match our working directory
-    # Prevents confusion if actions/scripts reference $GITHUB_WORKSPACE
     env:
-      GITHUB_WORKSPACE: $HOME/fullstack_bakong_wpa
+      GITHUB_WORKSPACE: /home/david/fullstack_bakong_wpa
 
     steps:
       - name: Start Deployment
