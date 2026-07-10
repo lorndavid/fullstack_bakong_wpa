@@ -100,7 +100,7 @@
     "backToOrders": "ត្រឡប់ទៅការបញ្ជាទិញ",
     "status": {
       "pending": "កំពុងរង់ចាំ",
-      "confirmed": "បានបញ្ជាក់",
+      "confirmed": "បានទូទាត់",
       "shipping": "កំពុងដឹកជញ្ជូន",
       "delivered": "បានដឹកជញ្ជូន",
       "cancelled": "បានបោះបង់"
@@ -419,4 +419,4 @@
     "highContrast": "កម្រិតពណ៌ខ្ពស់",
     "largeText": "អក្សរធំ"
   }
-}
+}
