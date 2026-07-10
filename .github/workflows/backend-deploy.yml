@@ -1,18 +1,45 @@
 # ──────────────────────────────────────────────────────────────
 # Backend Deploy — Continuous Deployment
 # ──────────────────────────────────────────────────────────────
-# Triggers:
-#   - push to main (merge of PR)
-#   - manual trigger via workflow_dispatch (for emergency patches)
+# 
+# Architecture:
+#   You push to main ──▶ GitHub triggers this workflow
+#                              │
+#                              ▼
+#                    ┌──────────────────┐
+#                    │  Self-Hosted      │
+#                    │  Runner           │  (runs ON your Debian VM)
+#                    │  (runs-on: self-  │
+#                    │   hosted)         │
+#                    └────────┬─────────┘
+#                             │
+#                    ┌────────▼─────────┐
+#                    │  deploy.sh        │
+#                    │  (zero-downtime)  │
+#                    └────────┬─────────┘
+#                             │
+#                    ┌────────▼─────────┐
+#                    │  PM2 reload       │
+#                    │  + health check   │
+#                    └────────┬─────────┘
+#                             │
+#              ┌──────────────┴──────────────┐
+#              ▼                              ▼
+#     ┌─────────────────┐          ┌──────────────────┐
+#     │ Vercel Deploy    │          │ Telegram          │
+#     │ (user + admin)   │          │ Notification      │
+#     └─────────────────┘          └──────────────────┘
 #
-# What it does:
-#   1. SSH into Debian VM
-#   2. Execute deploy.sh on the server (zero-downtime)
-#   3. Trigger Vercel deploy hooks for both frontends
-#   4. Run health check against live API
-#   5. Auto-rollback on health check failure
-#   6. Send Telegram notification with full status
-#   7. Save deployment summary as GitHub Job Summary
+# Why self-hosted runner?
+#   - Your VM is behind a home router firewall (no public SSH)
+#   - The runner runs directly ON your VM — no SSH needed
+#   - More secure (no open ports to the internet)
+#   - Faster (no network latency for SSH commands)
+#
+# Setup:
+#   1. Go to GitHub → Settings → Actions → Runners → Add runner
+#   2. Follow the Linux instructions to install on your Debian VM
+#   3. Make sure the runner service is running (svc.sh start)
 # ──────────────────────────────────────────────────────────────
 
 name: Backend Deploy
@@ -45,15 +72,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ──── JOB: Deploy Backend ──────────────────────────────────
+  # ──── JOB: Deploy Backend (Self-Hosted Runner) ────────────
   deploy:
     name: Deploy Backend to Production
-    runs-on: ubuntu-latest
+    runs-on: self-hosted     # ← Runs directly on your Debian VM!
     timeout-minutes: 15
 
     # ── Declare job outputs for cross-job access ────────────
-    # These are set via $GITHUB_OUTPUT in steps.deploy
-    # Accessed via needs.deploy.outputs.* in downstream jobs
     outputs:
       deployment_started: ${{ steps.deploy.outputs.deployment_started }}
       deployment_status: ${{ steps.deploy.outputs.deployment_status }}
@@ -62,108 +87,58 @@ jobs:
       name: production
       url: https://api.lorndavid.online
 
+    # ── Default working directory ──────────────────────────
+    # The repo already exists on the VM at $HOME/fullstack_bakong_wpa
+    # We do NOT use actions/checkout because that would DELETE
+    # node_modules, releases/, .env, and other untracked files!
+    defaults:
+      run:
+        working-directory: $HOME/fullstack_bakong_wpa
+    # Override GITHUB_WORKSPACE to match our working directory
+    # Prevents confusion if actions/scripts reference $GITHUB_WORKSPACE
+    env:
+      GITHUB_WORKSPACE: $HOME/fullstack_bakong_wpa
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup SSH Agent
-        uses: webfactory/ssh-agent@v0.10.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Check SSH Connectivity
-        run: |
-          PORT="${{ secrets.SERVER_PORT }}"
-          if [ -z "$PORT" ]; then PORT=22; fi
-
-          echo "🔌 Testing connectivity to ${{ secrets.SERVER_HOST }} on port $PORT..."
-          echo ""
-
-          if nc -z -w 10 "${{ secrets.SERVER_HOST }}" "$PORT" 2>/dev/null; then
-            echo "✅ Server is reachable on port $PORT"
-          else
-            echo "❌ Cannot reach ${{ secrets.SERVER_HOST }} on port $PORT"
-            echo ""
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "  DIAGNOSIS: Run these ON your VM:"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo ""
-            echo "  1. Is SSH running?"
-            echo "     sudo systemctl status ssh"
-            echo ""
-            echo "  2. Is firewall blocking?"
-            echo "     sudo ufw status"
-            echo "     sudo ufw allow 22/tcp   # (if blocked)"
-            echo ""
-            echo "  3. What port is SSH on?"
-            echo "     grep ^Port /etc/ssh/sshd_config"
-            echo ""
-            echo "  4. What is your public IP?"
-            echo "     curl -s ifconfig.me"
-            echo ""
-            echo "  5. Can you SSH from another device?"
-            echo "     ssh david@<IP> -p <PORT>"
-            echo ""
-            echo "  Also check your VPS provider's firewall panel (if using DigitalOcean,"
-            echo "  Hetzner, Vultr, etc. — they have external firewalls separate from UFW)"
-            echo ""
-            echo "  Still stuck? Your VM likely needs its SSH port opened to the internet."
-            echo "  If your VM is behind NAT (home network), use a self-hosted runner:"
-            echo "  → https://github.com/${{ github.repository }}/settings/actions/runners"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            exit 1
-          fi
-
-      - name: Add Server to Known Hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts 2>&1 || echo "⚠️ ssh-keyscan failed (non-fatal)"
-
-      - name: Execute Remote Deploy Script
+      - name: Start Deployment
         id: deploy
         run: |
-          echo "🚀 Starting deployment to ${{ secrets.SERVER_HOST }}..."
+          echo "🚀 Starting deployment at $(date)..."
           echo "deployment_started=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+          echo "✅ Repository: ${{ github.repository }}"
+          echo "✅ Branch: ${{ github.ref_name }}"
+          echo "✅ Commit: ${{ github.sha }}"
 
-          # Handle SERVER_PORT (default to 22 if not set)
-          SERVER_PORT_FLAG=""
-          if [ -n "${{ secrets.SERVER_PORT }}" ]; then
-            SERVER_PORT_FLAG="-p ${{ secrets.SERVER_PORT }}"
+      - name: Pull Latest Code
+        run: |
+          echo "📦 Pulling latest code..."
+          # git fetch + reset --hard is safe for existing repos
+          # It updates tracked files without touching untracked ones
+          git fetch origin main 2>&1 || {
+            echo "❌ Git fetch failed"
+            exit 1
+          }
+          git reset --hard origin/main 2>&1 || {
+            echo "❌ Git reset failed"
+            exit 1
+          }
+          echo "✅ Latest code pulled (commit: $(git log --oneline -1))"
+
+      - name: Run Deploy Script
+        id: deploy_script
+        run: |
+          echo "⚙️ Running deploy.sh (zero-downtime deployment)..."
+          chmod +x backend/deploy.sh
+          bash -x ./backend/deploy.sh 2>&1
+          EXIT_CODE=$?
+
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "❌ Deployment script failed with exit code $EXIT_CODE"
+            exit $EXIT_CODE
           fi
 
-          ssh -o StrictHostKeyChecking=no \
-              ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-              $SERVER_PORT_FLAG \
-              "bash -s" << 'DEPLOYSCRIPT'
-
-            cd /home/${{ secrets.SERVER_USER }}/fullstack_bakong_wpa || {
-              echo "❌ Project directory not found"
-              exit 1
-            }
-
-            echo "📦 Pulling latest code..."
-            git pull origin main 2>&1 || {
-              echo "❌ Git pull failed"
-              exit 1
-            }
-
-            echo "⚙️ Running deploy.sh (with debug output)..."
-            chmod +x backend/deploy.sh
-            bash -x ./backend/deploy.sh 2>&1
-            EXIT_CODE=$?
-
-            if [ $EXIT_CODE -ne 0 ]; then
-              echo "❌ Deployment script failed with exit code $EXIT_CODE"
-              exit $EXIT_CODE
-            fi
-
-            echo "✅ Deployment completed successfully"
-          DEPLOYSCRIPT
-
           echo "deployment_status=success" >> $GITHUB_OUTPUT
-        shell: bash
+          echo "✅ Deployment script completed successfully"
 
       - name: Health Check
         id: health
@@ -185,23 +160,9 @@ jobs:
 
           echo "❌ Health check failed after 5 attempts"
           echo "health_status=failed" >> $GITHUB_OUTPUT
+          echo "⚠️ Rolling back..."
+          cd backend && ./deploy.sh --rollback || true
           exit 1
-
-      - name: Rollback on Failure
-        if: failure() && steps.deploy.outputs.deployment_status == 'success'
-        run: |
-          echo "⚠️ Health check failed. Rolling back..."
-          SERVER_PORT_FLAG=""
-          if [ -n "${{ secrets.SERVER_PORT }}" ]; then
-            SERVER_PORT_FLAG="-p ${{ secrets.SERVER_PORT }}"
-          fi
-
-          ssh -o StrictHostKeyChecking=no \
-              ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-              $SERVER_PORT_FLAG \
-              "cd /home/${{ secrets.SERVER_USER }}/fullstack_bakong_wpa/backend && \
-               ./deploy.sh --rollback"
-          echo "🔄 Rollback executed"
 
       - name: Deployment Summary
         if: always()
@@ -210,7 +171,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Detail | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Server | ${{ secrets.SERVER_HOST }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Runner | Self-hosted (on VM) |" >> $GITHUB_STEP_SUMMARY
           echo "| Branch | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Author | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
@@ -222,7 +183,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [deploy]
     if: success()
-    # Only runs if backend deploy succeeded
 
     steps:
       - name: Trigger Vercel User Frontend Deploy
@@ -231,14 +191,6 @@ jobs:
           curl -X POST "${{ secrets.VERCEL_USER_DEPLOY_HOOK }}"
           echo ""
           echo "✅ User frontend deploy triggered"
-        # Vercel Deploy Hooks are generated in:
-        #   Vercel Dashboard → Project → Settings → Git → Deploy Hooks
-        # Create a hook named "Production Deploy" for each project.
-        # The hook URL looks like:
-        #   https://api.vercel.com/v1/integrations/deploy/prj_xxx/yyy
-        # Add as secrets:
-        #   VERCEL_USER_DEPLOY_HOOK
-        #   VERCEL_ADMIN_DEPLOY_HOOK
 
       - name: Trigger Vercel Admin Frontend Deploy
         run: |
