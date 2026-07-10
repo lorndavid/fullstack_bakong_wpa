@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup SSH Agent
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
@@ -20,5 +20,14 @@ jobs:
 
       - name: Test SSH Connection
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "echo '✅ SSH connection successful from GitHub Actions'; hostname; uptime"
+          echo "🔌 Testing SSH to ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}..."
+
+          PORT_FLAG=""
+          if [ -n "${{ secrets.SERVER_PORT }}" ]; then
+            PORT_FLAG="-p ${{ secrets.SERVER_PORT }}"
+          fi
+
+          ssh -o StrictHostKeyChecking=no \
+              $PORT_FLAG \
+              ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+              "echo '✅ SSH OK'; hostname; uptime; pm2 list 2>/dev/null || echo 'No PM2'"
