@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "eslint src --ext .vue,.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "axios": "^1.7.7",
@@ -20,13 +23,21 @@
   },
   "devDependencies": {
     "@types/node": "^26.0.1",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
     "@vitejs/plugin-vue": "^5.1.4",
+    "@vitest/coverage-v8": "^2.0.0",
     "@vue/tsconfig": "^0.5.1",
     "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.28.0",
+    "jsdom": "^24.0.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
     "typescript": "~5.6.2",
     "vite": "^5.4.8",
+    "vitest": "^2.0.0",
+    "vue-eslint-parser": "^9.4.3",
     "vue-tsc": "^2.1.6"
   }
 }

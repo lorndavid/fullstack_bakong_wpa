@@ -8,7 +8,10 @@
     "start": "node dist/server.js",
     "seed": "ts-node src/seed.ts",
     "seed:sample": "ts-node src/seed-sample.ts",
-    "clear:products": "ts-node src/clear-products.ts"
+    "clear:products": "ts-node src/clear-products.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "test": "jest"
   },
   "dependencies": {
     "axios": "^1.7.7",
@@ -33,12 +36,18 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.7.4",
     "@types/qrcode": "^1.5.6",
     "@types/socket.io": "^3.0.1",
     "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.4",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.6.2"
   }

@@ -1,0 +1,124 @@
+# ──────────────────────────────────────────────────────────────
+# Backend CI — Continuous Integration
+# ──────────────────────────────────────────────────────────────
+# Triggers:
+#   - push to any feature/*, hotfix/*, release/* branch
+#   - pull_request targeting main
+#
+# What it does:
+#   1. Install dependencies (cached for speed)
+#   2. TypeScript type-check (tsc --noEmit)
+#   3. ESLint static analysis
+#   4. Run unit tests (Jest)
+#   5. Run npm audit (security advisory check)
+#   6. Build the backend (tsc -> dist/)
+#
+# Why this exists:
+#   - Catches type errors, lint violations, test failures BEFORE merge
+#   - Ensures the code compiles before review
+#   - npm audit alerts on vulnerable dependencies early
+# ──────────────────────────────────────────────────────────────
+
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'hotfix/**'
+      - 'release/**'
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches:
+      - main
+      - release/**
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+# ─── Prevent duplicate runs on the same branch ───────────────
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-backend
+  cancel-in-progress: true
+
+jobs:
+  # ──── JOB: Quality Checks ──────────────────────────────────
+  quality:
+    name: Quality Check (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+
+    # ─── Strategy: test across multiple Node versions ─────────
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+      fail-fast: false    # Don't cancel other versions if one fails
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      # ── Step 1: Checkout code ─────────────────────────────
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # ── Step 2: Setup Node.js with caching ─────────────────
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      # ── Step 3: Install dependencies ──────────────────────
+      - name: Install Dependencies
+        run: npm ci
+        # npm ci is preferred over npm install in CI because:
+        #   - Uses exact versions from lockfile (deterministic)
+        #   - Fails if lockfile is out of sync with package.json
+        #   - Faster (no version resolution)
+
+      # ── Step 4: TypeScript Type Check ─────────────────────
+      - name: TypeScript Check
+        run: npm run typecheck
+        # Runs tsc --noEmit — catches type errors without outputting files.
+        # This is separate from build because we test compilation separately.
+
+      # ── Step 5: ESLint ────────────────────────────────────
+      - name: ESLint
+        run: npm run lint
+        # Static analysis: catches unused vars, potential bugs,
+        # style violations, and security anti-patterns.
+
+      # ── Step 6: Unit Tests ────────────────────────────────
+      - name: Run Tests
+        run: npm test -- --coverage
+        # --coverage generates code coverage reports.
+        # Tests run in isolated Node environment (no DB needed).
+
+      # ── Step 7: npm Audit ─────────────────────────────────
+      - name: Security Audit
+        run: npm audit --audit-level=high
+        # Scans dependencies for known CVEs.
+        # --audit-level=high means only fail on high/critical.
+        continue-on-error: true
+        # Don't block the pipeline — just warn. (Some audit
+        # warnings are false positives in dev dependencies.)
+
+      # ── Step 8: Build ─────────────────────────────────────
+      - name: Build
+        run: npm run build
+        # Compiles TypeScript -> JavaScript in dist/
+        # Also validates that the full build pipeline works.
+
+      # ── Step 9: Check Build Output ────────────────────────
+      - name: Verify Build Artifacts
+        run: |
+          if [ ! -f "dist/server.js" ]; then
+            echo "❌ Build failed: dist/server.js not found"
+            exit 1
+          fi
+          echo "✅ Build artifacts verified"
+          ls -lh dist/

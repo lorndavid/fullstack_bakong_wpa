@@ -1,0 +1,245 @@
+# ──────────────────────────────────────────────────────────────
+# Backend Deploy — Continuous Deployment
+# ──────────────────────────────────────────────────────────────
+# Triggers:
+#   - push to main (merge of PR)
+#   - manual trigger via workflow_dispatch (for emergency patches)
+#
+# What it does:
+#   1. SSH into Debian VM
+#   2. Execute deploy.sh on the server (zero-downtime)
+#   3. Trigger Vercel deploy hooks for both frontends
+#   4. Run health check against live API
+#   5. Auto-rollback on health check failure
+#   6. Send Telegram notification with full status
+#   7. Save deployment summary as GitHub Job Summary
+# ──────────────────────────────────────────────────────────────
+
+name: Backend Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'main'
+        type: choice
+        options:
+          - main
+          - hotfix/*
+      skip_ci:
+        description: 'Skip CI checks (emergency only)'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: production-backend
+  cancel-in-progress: true
+
+jobs:
+  # ──── JOB: Deploy Backend ──────────────────────────────────
+  deploy:
+    name: Deploy Backend to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # ── Declare job outputs for cross-job access ────────────
+    # These are set via $GITHUB_OUTPUT in steps.deploy
+    # Accessed via needs.deploy.outputs.* in downstream jobs
+    outputs:
+      deployment_started: ${{ steps.deploy.outputs.deployment_started }}
+      deployment_status: ${{ steps.deploy.outputs.deployment_status }}
+
+    environment:
+      name: production
+      url: https://api.lorndavid.online
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add Server to Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Execute Remote Deploy Script
+        id: deploy
+        run: |
+          echo "🚀 Starting deployment to ${{ secrets.SERVER_HOST }}..."
+          echo "deployment_started=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+
+          # Handle SERVER_PORT (default to 22 if not set)
+          SERVER_PORT_FLAG=""
+          if [ -n "${{ secrets.SERVER_PORT }}" ]; then
+            SERVER_PORT_FLAG="-p ${{ secrets.SERVER_PORT }}"
+          fi
+
+          ssh -o StrictHostKeyChecking=no \
+              ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+              $SERVER_PORT_FLAG \
+              "bash -s" << 'DEPLOYSCRIPT'
+
+            cd /home/${{ secrets.SERVER_USER }}/fullstack_bakong_wpa || {
+              echo "❌ Project directory not found"
+              exit 1
+            }
+
+            echo "📦 Pulling latest code..."
+            git pull origin main 2>&1 || {
+              echo "❌ Git pull failed"
+              exit 1
+            }
+
+            echo "⚙️ Running deploy.sh..."
+            chmod +x backend/deploy.sh
+            ./backend/deploy.sh 2>&1
+            EXIT_CODE=$?
+
+            if [ $EXIT_CODE -ne 0 ]; then
+              echo "❌ Deployment script failed with exit code $EXIT_CODE"
+              exit $EXIT_CODE
+            fi
+
+            echo "✅ Deployment completed successfully"
+          DEPLOYSCRIPT
+
+          echo "deployment_status=success" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Health Check
+        id: health
+        run: |
+          echo "🔍 Running health check..."
+          for i in 1 2 3 4 5; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+              https://api.lorndavid.online/api/health)
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Health check passed (attempt $i/5)"
+              echo "health_status=passed" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            echo "⏳ Waiting... health check attempt $i/5 returned $HTTP_CODE"
+            sleep 5
+          done
+
+          echo "❌ Health check failed after 5 attempts"
+          echo "health_status=failed" >> $GITHUB_OUTPUT
+          exit 1
+
+      - name: Rollback on Failure
+        if: failure() && steps.deploy.outputs.deployment_status == 'success'
+        run: |
+          echo "⚠️ Health check failed. Rolling back..."
+          SERVER_PORT_FLAG=""
+          if [ -n "${{ secrets.SERVER_PORT }}" ]; then
+            SERVER_PORT_FLAG="-p ${{ secrets.SERVER_PORT }}"
+          fi
+
+          ssh -o StrictHostKeyChecking=no \
+              ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+              $SERVER_PORT_FLAG \
+              "cd /home/${{ secrets.SERVER_USER }}/fullstack_bakong_wpa/backend && \
+               ./deploy.sh --rollback"
+          echo "🔄 Rollback executed"
+
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "## Backend Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Detail | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Server | ${{ secrets.SERVER_HOST }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Author | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+
+  # ──── JOB: Deploy Frontends (Vercel) ──────────────────────
+  deploy-frontends:
+    name: Deploy Frontends to Vercel
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: success()
+    # Only runs if backend deploy succeeded
+
+    steps:
+      - name: Trigger Vercel User Frontend Deploy
+        run: |
+          echo "🚀 Triggering Vercel deploy for User Frontend..."
+          curl -X POST "${{ secrets.VERCEL_USER_DEPLOY_HOOK }}"
+          echo ""
+          echo "✅ User frontend deploy triggered"
+        # Vercel Deploy Hooks are generated in:
+        #   Vercel Dashboard → Project → Settings → Git → Deploy Hooks
+        # Create a hook named "Production Deploy" for each project.
+        # The hook URL looks like:
+        #   https://api.vercel.com/v1/integrations/deploy/prj_xxx/yyy
+        # Add as secrets:
+        #   VERCEL_USER_DEPLOY_HOOK
+        #   VERCEL_ADMIN_DEPLOY_HOOK
+
+      - name: Trigger Vercel Admin Frontend Deploy
+        run: |
+          echo "🚀 Triggering Vercel deploy for Admin Frontend..."
+          curl -X POST "${{ secrets.VERCEL_ADMIN_DEPLOY_HOOK }}"
+          echo ""
+          echo "✅ Admin frontend deploy triggered"
+
+      - name: Frontend Deploy Summary
+        run: |
+          echo "## Frontend Deployments" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | Triggered |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| User     | ✅ Deploy hook sent |" >> $GITHUB_STEP_SUMMARY
+          echo "| Admin    | ✅ Deploy hook sent |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> Vercel deployment progress: https://vercel.com/dashboard" >> $GITHUB_STEP_SUMMARY
+
+  # ──── JOB: Telegram Notification ──────────────────────────
+  notify:
+    name: Send Telegram Notification
+    runs-on: ubuntu-latest
+    needs: [deploy, deploy-frontends]
+    if: always()
+
+    steps:
+      - name: Send Telegram Message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          format: markdown
+          message: |
+            ── *Bakong E-commerce — Deployment* ──
+
+            *Repository:* ${{ github.repository }}
+            *Branch:* ${{ github.ref_name }}
+            *Commit:* `${{ github.sha }}`
+            *Author:* ${{ github.actor }}
+            *Time:* ${{ needs.deploy.outputs.deployment_started }}
+
+            *Backend:* ${{ needs.deploy.result == 'success' && '✅ **Deployed**' || needs.deploy.result == 'failure' && '❌ **Failed**' || '⚠️ **Skipped**' }}
+            *Frontends:* ${{ needs.deploy-frontends.result == 'success' && '✅ **Triggered**' || needs.deploy-frontends.result == 'failure' && '❌ **Failed**' || '⚠️ **Skipped**' }}
+
+            ${{ needs.deploy.result == 'success' && '🔗 https://api.lorndavid.online/api/health' || '🔄 Rollback may have been triggered' }}
+            ${{ needs.deploy-frontends.result == 'success' && '🔗 https://vercel.com/dashboard' || '' }}
