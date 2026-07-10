@@ -1,6 +1,6 @@
 # MY SHOP — Cambodian E-commerce Platform
 
-A production-ready e-commerce platform built for Cambodia with **Bakong KHQR** payment integration. Features a user-facing **Progressive Web App (PWA)** , an **admin dashboard**, and a **Node.js + Express API** backed by MongoDB.
+A production-ready e-commerce platform built for Cambodia with **Bakong KHQR** payment integration. Features a user-facing **Progressive Web App (PWA)** , an **admin dashboard**, and a **Node.js + Express API** backed by MongoDB — with **fully automated CI/CD** via GitHub Actions.
 
 ---
 
@@ -10,7 +10,7 @@ A production-ready e-commerce platform built for Cambodia with **Bakong KHQR** p
 ┌─────────────────────┐     ┌─────────────────────┐
 │   Frontend User     │     │   Frontend Admin    │
 │   (Vue 3 + PWA)     │     │   (Vue 3)           │
-│   :5173             │     │   :5174             │
+│   Vercel (CDN)      │     │   Vercel (CDN)      │
 └────────┬────────────┘     └────────┬────────────┘
          │                           │
          └──────────┬────────────────┘
@@ -19,7 +19,8 @@ A production-ready e-commerce platform built for Cambodia with **Bakong KHQR** p
          ┌─────────────────────┐     ┌─────────────────┐
          │   Backend API       │────▶│   MongoDB Atlas │
          │   Express + TS      │     │   (Mongoose)    │
-         │   :5000             │     └─────────────────┘
+         │   PM2 + Debian VM   │     └─────────────────┘
+         │   (Home Server)     │
          └────────┬────────────┘
                   │
         ┌─────────┼────────────┐
@@ -28,6 +29,32 @@ A production-ready e-commerce platform built for Cambodia with **Bakong KHQR** p
    │Bakong  │ │ABA     │ │Cloudinary│
    │KHQR API│ │PayWay  │ │(Images)  │
    └────────┘ └────────┘ └──────────┘
+```
+
+### Deployment Architecture
+
+```
+GitHub.com ─────────────── GitHub Actions ──────────────── Telegram
+    │                            │                            │
+    │                            ├── Backend Deploy ──────►   │
+    │  push to main              │   (self-hosted runner)     │
+    │  triggers workflows        │   on Debian VM             │
+    │                            │                            │
+    │                            ├── Frontend Deploy ────►   │
+    │                            │   (Vercel deploy hooks)    │
+    │                            │                            │
+    └────────────────────────────┴────────────────────────────┘
+
+          Backend Pipeline                          Frontend Pipeline
+  ┌─────────────────────────┐        ┌───────────────────────────┐
+  │ git fetch + reset --hard│        │ POST Vercel Deploy Hooks  │
+  │ ./backend/deploy.sh     │        │ (User + Admin)            │
+  │   ├─ npm ci / install   │        │ Vercel builds on their    │
+  │   ├─ tsc (build)        │        │ servers automatically     │
+  │   ├─ PM2 gracefulReload │        └───────────────────────────┘
+  │   └─ Health check       │
+  ├─ Vercel frontend hooks  │
+  └─ Telegram notification  │
 ```
 
 ---
@@ -50,6 +77,7 @@ A production-ready e-commerce platform built for Cambodia with **Bakong KHQR** p
 | **Multer** | File upload handling |
 | **bcryptjs** | Password hashing |
 | **Google Auth Library** | Google OAuth |
+| **PM2** | Process manager (production) |
 
 ### Frontend User (`frontend-user/`)
 | Technology | Purpose |
@@ -81,6 +109,15 @@ A production-ready e-commerce platform built for Cambodia with **Bakong KHQR** p
 | **Chart.js + vue-chartjs** | Analytics charts |
 | **vue-i18n** | Internationalization |
 
+### DevOps & CI/CD
+| Technology | Purpose |
+|---|---|
+| **GitHub Actions** | CI/CD pipeline automation |
+| **Self-hosted runner** | Debian VM (back-end builds) |
+| **Vercel Deploy Hooks** | Front-end auto-deploy |
+| **PM2** | Process management, zero-downtime reload |
+| **Telegram Bot** | Deployment notifications |
+
 ---
 
 ## Project Structure
@@ -89,7 +126,16 @@ A production-ready e-commerce platform built for Cambodia with **Bakong KHQR** p
 root/
 ├── package.json                    # Root monorepo scripts
 │
+├── .github/workflows/              # GitHub Actions CI/CD
+│   ├── backend-deploy.yml          # Backend auto-deploy pipeline
+│   └── frontend-deploy.yml         # Frontend auto-deploy pipeline
+│
 ├── backend/                        # Express.js API server
+│   ├── deploy.sh                   # Zero-downtime deployment script
+│   ├── ecosystem.config.js         # PM2 configuration
+│   ├── releases/                   # Versioned release directories
+│   ├── current -> releases/v2     # Active release symlink
+│   ├── deploy.log                  # Deployment log
 │   └── src/
 │       ├── server.ts               # Entry point
 │       ├── config/                 # DB, Cloudinary config
@@ -102,7 +148,7 @@ root/
 │       ├── types/                  # TypeScript interfaces
 │       └── utils/                  # Helpers (JWT generation)
 │
-├── frontend-user/                  # Customer-facing PWA
+├── frontend-user/                  # Customer-facing PWA (Vercel)
 │   └── src/
 │       ├── App.vue                 # Root component
 │       ├── main.ts                 # Entry point
@@ -120,7 +166,7 @@ root/
 │       ├── services/               # API services (axios, auth, payment)
 │       └── stores/                 # Pinia stores
 │
-├── frontend-admin/                 # Admin dashboard
+├── frontend-admin/                 # Admin dashboard (Vercel)
 │   └── src/
 │       ├── App.vue
 │       ├── main.ts
@@ -196,7 +242,89 @@ root/
 
 ---
 
-## Quick Start
+## CI/CD Pipeline
+
+The project uses **GitHub Actions** with two separate workflows for automated deployment.
+
+### Workflow 1: Backend Deploy (`backend-deploy.yml`)
+
+**Triggers:** When `backend/**` or `.github/workflows/backend-deploy.yml` changes on `main`
+
+| Step | What Happens |
+|------|-------------|
+| 1. Self-hosted Runner | Runs on Debian VM (no SSH needed) |
+| 2. Pull Latest Code | `git fetch origin main && git reset --hard origin/main` |
+| 3. Run Deploy Script | `bash -x ./backend/deploy.sh` |
+| 4. Health Check | Curls `https://api.lorndavid.online/api/health` (5 retries) |
+| 5. Vercel Deploy | Triggers deploy hooks for both frontends |
+| 6. Telegram Notification | Sends status update with commit info |
+
+**Self-hosted Runner Setup:**
+```bash
+# On the Debian VM:
+mkdir -p ~/actions-runner && cd ~/actions-runner
+
+# Download and configure (get token from GitHub → Settings → Actions → Runners)
+curl -o actions-runner-linux-x64-2.321.0.tar.gz -L \
+  https://github.com/actions/runner/releases/download/v2.321.0/actions-runner-linux-x64-2.321.0.tar.gz
+tar xzf actions-runner-linux-x64-2.321.0.tar.gz
+./config.sh --url https://github.com/lorndavid/fullstack_bakong_wpa --token YOUR_TOKEN
+
+# Install as a service (starts on boot)
+sudo ./svc.sh install
+sudo ./svc.sh start
+```
+
+### Workflow 2: Frontend Deploy (`frontend-deploy.yml`)
+
+**Triggers:** When `frontend-user/**`, `frontend-admin/**`, or `.github/workflows/frontend-deploy.yml` changes on `main`
+
+| Step | What Happens |
+|------|-------------|
+| 1. Vercel User Hook | POSTs to Vercel deploy hook → auto-builds user frontend |
+| 2. Vercel Admin Hook | POSTs to Vercel deploy hook → auto-builds admin dashboard |
+| 3. Telegram Notification | Sends status update with commit info |
+
+### Which Pipeline Runs?
+
+| You change... | Workflow triggered |
+|---|---|
+| `backend/**` | ✅ Backend Deploy (builds on VM + deploys frontends) |
+| `frontend-user/**` or `frontend-admin/**` | ✅ Frontend Deploy (Vercel only) |
+| Both in same commit | ✅ Both run in parallel |
+
+### Deployment Script (`backend/deploy.sh`)
+
+The `deploy.sh` script provides **zero-downtime deployments** with:
+
+- **Release versioning** — Each deploy creates `releases/v1`, `v2`, etc.
+- **Atomic symlink swap** — `current` symlink switches instantly
+- **PM2 graceful reload** — Handles existing connections before restarting
+- **Health check** — Verifies the API is responding before completing
+- **Automatic rollback** — Reverts to previous release if health check fails
+- **Cleanup** — Keeps last 5 releases, removes older ones
+
+```bash
+# Usage
+./backend/deploy.sh              # Normal deployment
+./backend/deploy.sh --rollback   # Rollback to previous release
+./backend/deploy.sh --status     # Show deployment status
+```
+
+### Required GitHub Secrets
+
+| Secret | Used By | Description |
+|--------|---------|-------------|
+| `VERCEL_USER_DEPLOY_HOOK` | Both workflows | Vercel deploy hook URL for user frontend |
+| `VERCEL_ADMIN_DEPLOY_HOOK` | Both workflows | Vercel deploy hook URL for admin frontend |
+| `TELEGRAM_BOT_TOKEN` | Both workflows | Telegram bot token for notifications |
+| `TELEGRAM_CHAT_ID` | Both workflows | Telegram chat ID to send notifications to |
+
+> **Note:** SSH secrets (`SERVER_HOST`, `SERVER_PORT`, `SSH_PRIVATE_KEY`, etc.) are **no longer needed** — the self-hosted runner handles deployment directly on the VM.
+
+---
+
+## Quick Start (Local Development)
 
 ### Prerequisites
 - **Node.js** >= 18
@@ -327,27 +455,46 @@ See the [WIKI.md](WIKI.md) for the full API reference.
 
 ## Deployment
 
-### Backend
+### Production URLs
+| Service | URL | Hosting |
+|---------|-----|---------|
+| Backend API | `https://api.lorndavid.online` | Debian VM (home server) via Cloudflare Tunnel |
+| User Frontend | User-facing PWA URL | Vercel |
+| Admin Dashboard | Admin panel URL | Vercel |
+
+### How Deployments Work
+
+1. **Edit code** in VS Code on your Windows machine
+2. **Commit and push** to the `main` branch
+3. **GitHub Actions** automatically triggers the appropriate workflow:
+   - Backend changes → builds on your Debian VM, reloads PM2
+   - Frontend changes → Vercel rebuilds and deploys
+4. **Telegram bot** sends a status notification
+
+### Manual Commands (if needed)
+
 ```bash
+# SSH into VM
+ssh david@<vm-ip>
+
+# Update code and deploy manually
+cd ~/fullstack_bakong_wpa
+git pull origin main
 cd backend
-npm run build          # Compile TypeScript → dist/
-node dist/server.js    # Start production server
+./deploy.sh
+
+# Check deployment status
+./deploy.sh --status
+
+# Rollback if needed
+./deploy.sh --rollback
+
+# View PM2 logs
+pm2 logs myshop-backend
+pm2 monit
 ```
 
-### Frontend User (PWA)
-```bash
-cd frontend-user
-npm run build          # Outputs to dist/
-# Serve dist/ with any static host (Netlify, Vercel, Nginx)
-```
-
-### Frontend Admin
-```bash
-cd frontend-admin
-npm run build          # Outputs to dist/
-```
-
-See the [WIKI.md](WIKI.md) for detailed deployment instructions.
+> **Note:** Manual deployment is rarely needed — the CI/CD pipeline handles everything automatically on push.
 
 ---
 
