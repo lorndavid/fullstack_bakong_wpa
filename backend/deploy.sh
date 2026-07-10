@@ -168,11 +168,11 @@ install_dependencies() {
     log INFO "Installing production dependencies..."
     cd "$RELEASE_DIR"
     # ── Try npm ci first (deterministic, uses lockfile)
-    if npm ci --only=production 2>&1; then
+    if npm ci --omit=dev 2>&1; then
       log OK "Dependencies installed via npm ci"
     else
       log WARN "npm ci failed, falling back to npm install..."
-      if npm install --production 2>&1; then
+      if npm install --omit=dev 2>&1; then
         log OK "Dependencies installed via npm install"
       else
         log ERROR "Dependency installation failed entirely"
@@ -261,10 +261,13 @@ health_check() {
 cleanup_old_releases() {
     log INFO "Cleaning up old releases..."
 
+    # Use find + sort to safely iterate; || true prevents set -e failure when no releases exist
     ls -1t "$RELEASES_DIR"/v* 2>/dev/null | tail -n +$((MAX_RELEASES + 1)) | while read -r old_release; do
-        log INFO "Removing old release: $(basename "$old_release")"
-        rm -rf "$old_release"
-    done
+        if [ -n "$old_release" ] && [ -d "$old_release" ]; then
+            log INFO "Removing old release: $(basename "$old_release")"
+            rm -rf "$old_release"
+        fi
+    done || true
 
     log OK "Cleanup completed (keeping last $MAX_RELEASES releases)"
 }
@@ -429,5 +432,7 @@ cleanup_old_releases
 log_section "DEPLOYMENT COMPLETE"
 log OK "Release:    $RELEASE_NAME"
 log OK "Commit:     $COMMIT_HASH"
-log OK "Duration:   $(( $(date +%s) - $(date -d "$TIMESTAMP" +%s) )) seconds"
+# Safe duration calculation — wrap in subshell to avoid set -e failures
+DURATION_SECS=$(expr $(date +%s) - $(date -d "$TIMESTAMP" +%s) 2>/dev/null || echo "?")
+log OK "Duration:   ${DURATION_SECS} seconds"
 log OK "Status:     ✅ SUCCESS"

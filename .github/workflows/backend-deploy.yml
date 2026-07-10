@@ -73,10 +73,53 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Check SSH Connectivity
+        run: |
+          PORT="${{ secrets.SERVER_PORT }}"
+          if [ -z "$PORT" ]; then PORT=22; fi
+
+          echo "🔌 Testing connectivity to ${{ secrets.SERVER_HOST }} on port $PORT..."
+          echo ""
+
+          if nc -z -w 10 "${{ secrets.SERVER_HOST }}" "$PORT" 2>/dev/null; then
+            echo "✅ Server is reachable on port $PORT"
+          else
+            echo "❌ Cannot reach ${{ secrets.SERVER_HOST }} on port $PORT"
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "  DIAGNOSIS: Run these ON your VM:"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "  1. Is SSH running?"
+            echo "     sudo systemctl status ssh"
+            echo ""
+            echo "  2. Is firewall blocking?"
+            echo "     sudo ufw status"
+            echo "     sudo ufw allow 22/tcp   # (if blocked)"
+            echo ""
+            echo "  3. What port is SSH on?"
+            echo "     grep ^Port /etc/ssh/sshd_config"
+            echo ""
+            echo "  4. What is your public IP?"
+            echo "     curl -s ifconfig.me"
+            echo ""
+            echo "  5. Can you SSH from another device?"
+            echo "     ssh david@<IP> -p <PORT>"
+            echo ""
+            echo "  Also check your VPS provider's firewall panel (if using DigitalOcean,"
+            echo "  Hetzner, Vultr, etc. — they have external firewalls separate from UFW)"
+            echo ""
+            echo "  Still stuck? Your VM likely needs its SSH port opened to the internet."
+            echo "  If your VM is behind NAT (home network), use a self-hosted runner:"
+            echo "  → https://github.com/${{ github.repository }}/settings/actions/runners"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            exit 1
+          fi
+
       - name: Add Server to Known Hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts 2>&1 || echo "⚠️ ssh-keyscan failed (non-fatal)"
 
       - name: Execute Remote Deploy Script
         id: deploy
@@ -106,9 +149,9 @@ jobs:
               exit 1
             }
 
-            echo "⚙️ Running deploy.sh..."
+            echo "⚙️ Running deploy.sh (with debug output)..."
             chmod +x backend/deploy.sh
-            ./backend/deploy.sh 2>&1
+            bash -x ./backend/deploy.sh 2>&1
             EXIT_CODE=$?
 
             if [ $EXIT_CODE -ne 0 ]; then
