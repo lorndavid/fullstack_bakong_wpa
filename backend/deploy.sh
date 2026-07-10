@@ -165,20 +165,25 @@ copy_source() {
 
 # ─── Install Dependencies ─────────────────────────────────────
 install_dependencies() {
-    log INFO "Installing production dependencies..."
+    log INFO "Installing dependencies (including devDependencies for build)..."
     cd "$RELEASE_DIR"
-    # ── Try npm ci first (deterministic, uses lockfile)
-    if npm ci --omit=dev 2>&1; then
+    # ── Try npm ci first (deterministic, uses lockfile) ──
+    # We install ALL deps (including dev) because TypeScript is a
+    # devDependency and needed for the build step.
+    if npm ci 2>&1; then
       log OK "Dependencies installed via npm ci"
     else
       log WARN "npm ci failed, falling back to npm install..."
-      if npm install --omit=dev 2>&1; then
+      if npm install 2>&1; then
         log OK "Dependencies installed via npm install"
       else
         log ERROR "Dependency installation failed entirely"
         return 1
       fi
     fi
+    # ── Clean up: install build deps but remove devDeps from production runtime ──
+    # Uncomment to keep release lean:
+    # npm prune --omit=dev 2>&1 || true
     log OK "Dependencies installed"
 }
 
