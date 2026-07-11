@@ -6,3 +6,7 @@ dist/
 coverage/
 .vite/
 nul
+# VM local files (untracked in git status)
+backend/current
+backend/.envy
+backend/cloudflared.deb

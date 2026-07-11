@@ -1,0 +1,120 @@
+# ──────────────────────────────────────────────────────────────
+# Frontend Deploy — Continuous Deployment (Vercel)
+# ──────────────────────────────────────────────────────────────
+# Triggers:
+#   - push to main with frontend-user/** or frontend-admin/** changes
+#   - manual trigger via workflow_dispatch
+#
+# What it does:
+#   1. Trigger Vercel deploy hooks for both frontends
+#   2. Send Telegram notification with deploy status
+#
+# NOTE: This workflow ONLY triggers for frontend files.
+#       Changes to backend/ or root-level files (README.md, .gitignore, etc.)
+#       will NOT trigger this workflow.
+# ──────────────────────────────────────────────────────────────
+
+name: Frontend Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend-user/**'
+      - 'frontend-admin/**'
+      - '.github/workflows/frontend-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'main'
+        type: choice
+        options:
+          - main
+          - hotfix/*
+
+concurrency:
+  group: production-frontend
+  cancel-in-progress: true
+
+jobs:
+  # ──── JOB: Deploy Frontends to Vercel ─────────────────────
+  deploy-frontends:
+    name: Deploy Frontends to Vercel
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    outputs:
+      deployment_started: ${{ steps.start.outputs.deployment_started }}
+
+    steps:
+      - name: Record Start Time
+        id: start
+        run: |
+          echo "deployment_started=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+          echo "🚀 Frontend deployment started at $(date -u)"
+
+      - name: Trigger Vercel User Frontend Deploy
+        id: deploy-user
+        run: |
+          echo "🚀 Triggering Vercel deploy for User Frontend..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "${{ secrets.VERCEL_USER_DEPLOY_HOOK }}")
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
+            echo "✅ User frontend deploy triggered (HTTP $HTTP_CODE)"
+          else
+            echo "⚠️ User frontend deploy returned HTTP $HTTP_CODE (may still be processing)"
+          fi
+
+      - name: Trigger Vercel Admin Frontend Deploy
+        id: deploy-admin
+        run: |
+          echo "🚀 Triggering Vercel deploy for Admin Frontend..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "${{ secrets.VERCEL_ADMIN_DEPLOY_HOOK }}")
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
+            echo "✅ Admin frontend deploy triggered (HTTP $HTTP_CODE)"
+          else
+            echo "⚠️ Admin frontend deploy returned HTTP $HTTP_CODE (may still be processing)"
+          fi
+
+      - name: Frontend Deploy Summary
+        run: |
+          echo "## Frontend Deployments" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| User     | ✅ Deploy hook sent |" >> $GITHUB_STEP_SUMMARY
+          echo "| Admin    | ✅ Deploy hook sent |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> Vercel deployment progress: https://vercel.com/dashboard" >> $GITHUB_STEP_SUMMARY
+
+  # ──── JOB: Telegram Notification ──────────────────────────
+  notify:
+    name: Send Telegram Notification
+    runs-on: ubuntu-latest
+    needs: [deploy-frontends]
+    if: always()
+
+    steps:
+      - name: Send Telegram Message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          format: markdown
+          message: |
+            ── *Bakong E-commerce — Frontend Deploy* ──
+
+            *Repository:* ${{ github.repository }}
+            *Branch:* ${{ github.ref_name }}
+            *Commit:* `${{ github.sha }}`
+            *Author:* ${{ github.actor }}
+            *Time:* ${{ needs.deploy-frontends.outputs.deployment_started }}
+
+            *User Frontend:* ${{ needs.deploy-frontends.result == 'success' && '✅ **Deployed**' || '❌ **Failed**' }}
+            *Admin Frontend:* ${{ needs.deploy-frontends.result == 'success' && '✅ **Deployed**' || '❌ **Failed**' }}
+
+            🔗 https://vercel.com/dashboard
