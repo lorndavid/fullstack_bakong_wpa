@@ -217,27 +217,93 @@ switch_symlink() {
 pm2_reload() {
     log INFO "Reloading PM2 process..."
 
-    # ── Use PM2 ecosystem config for all process settings ──
     ECOSYSTEM_FILE="$BACKEND_DIR/ecosystem.config.js"
 
-    # Check if PM2 process exists
     if pm2 describe myshop-backend >/dev/null 2>&1; then
-        # gracefulReload sends SIGUSR2, waits for existing connections
-        # to finish, then starts new workers — ZERO DOWNTIME
-        # --update-env forces PM2 to re-read .env file
-        pm2 gracefulReload "$ECOSYSTEM_FILE" --update-env 2>&1 || {
-            log WARN "gracefulReload failed, trying restart..."
-            pm2 restart "$ECOSYSTEM_FILE" --update-env 2>&1
+        # ⚠️ CRITICAL: Use process NAME, NOT the ecosystem file!
+        #
+        # Using `pm2 gracefulReload "$ECOSYSTEM_FILE"` compares the
+        # config's script path with PM2's stored value. Since the
+        # ecosystem uses a symlink (./current/dist/server.js), PM2
+        # stores the SYMLINK path — which doesn't change between
+        # releases. PM2 sees "no change" and SKIPS the restart.
+        #
+        # Using `pm2 gracefulReload myshop-backend` tells PM2 to
+        # directly restart the named process, regardless of config
+        # comparison. The --update-env forces re-reading .env.
+        pm2 gracefulReload myshop-backend --update-env 2>&1 || {
+            log WARN "gracefulReload failed, trying hard restart..."
+            pm2 restart myshop-backend --update-env 2>&1
         }
     else
         log WARN "PM2 process not found. Starting new instance..."
         pm2 start "$ECOSYSTEM_FILE" --update-env 2>&1
     fi
 
-    # Save PM2 process list (survives server reboot)
+    pm2 save
+    log OK "PM2 reloaded"
+}
+
+# ─── PM2 Verification (confirm new code is running) ───────────
+pm2_verify() {
+    log INFO "Verifying PM2 is running the new release..."
+
+    # Check that the process exists
+    if ! pm2 describe myshop-backend >/dev/null 2>&1; then
+        log ERROR "PM2 process 'myshop-backend' not found after reload!"
+        return 1
+    fi
+
+    # Get the actual script path PM2 is using
+    # PM2 show output format: │ script path │ /path/to/file │
+    # We extract the 3rd field using │ as delimiter, then trim whitespace
+    local pm2_script_path
+    pm2_script_path=$(pm2 show myshop-backend 2>/dev/null | \
+      grep 'script path' | head -1 | \
+      awk -F'│' '{print $3}' | xargs)
+
+    if [ -z "$pm2_script_path" ]; then
+        log WARN "Could not determine PM2 script path — skipping verification"
+        return 0
+    fi
+
+    log INFO "PM2 script path: $pm2_script_path"
+    log INFO "Expected release: $RELEASE_DIR/dist/server.js"
+
+    # Verify the path points to our new release
+    if echo "$pm2_script_path" | grep -q "$RELEASE_NAME"; then
+        log OK "✅ PM2 is running from release $RELEASE_NAME"
+        return 0
+    fi
+
+    # Path doesn't mention the release name — do a deeper check:
+    # resolve symlinks and compare physical paths
+    local resolved_script
+    resolved_script=$(readlink -f "$pm2_script_path" 2>/dev/null || echo "")
+    local expected_script="$RELEASE_DIR/dist/server.js"
+    local resolved_expected
+    resolved_expected=$(readlink -f "$expected_script" 2>/dev/null || echo "$expected_script")
+
+    if [ "$resolved_script" = "$resolved_expected" ]; then
+        log OK "✅ PM2 is running from the correct release (verified by physical path)"
+        return 0
+    fi
+
+    log WARN "⚠️ PM2 may not be running the new release!"
+    log WARN "   Running:  $pm2_script_path"
+    log WARN "   Expected: $expected_script"
+    log WARN "   Attempting forced restart..."
+
+    # Force restart by deleting and re-starting the process
+    pm2 delete myshop-backend 2>/dev/null || true
+    pm2 start "$ECOSYSTEM_FILE" --update-env 2>&1 || {
+        log ERROR "Forced restart failed!"
+        return 1
+    }
     pm2 save
 
-    log OK "PM2 reloaded"
+    log OK "Forced restart completed"
+    return 0
 }
 
 # ─── Health Check ─────────────────────────────────────────────
@@ -422,6 +488,13 @@ switch_symlink
 
 # 8. Reload PM2 (zero-downtime)
 pm2_reload
+
+# 8a. Verify PM2 is running the new release
+pm2_verify || {
+    log ERROR "PM2 verification failed — rolling back"
+    rollback
+    exit 1
+}
 
 # 9. Health check
 health_check || {

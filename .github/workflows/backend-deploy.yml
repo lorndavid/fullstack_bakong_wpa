@@ -139,6 +139,19 @@ jobs:
           echo "deployment_status=success" >> $GITHUB_OUTPUT
           echo "✅ Deployment script completed successfully"
 
+      - name: Verify PM2 Process
+        id: pm2_verify
+        run: |
+          echo "🔍 Verifying PM2 process..."
+          # Check process exists
+          pm2 describe myshop-backend > /dev/null 2>&1 || {
+            echo "❌ PM2 process 'myshop-backend' not found"
+            exit 1
+          }
+          # Show process info
+          pm2 show myshop-backend 2>&1 | head -20
+          echo "✅ PM2 process is running"
+
       - name: Health Check
         id: health
         run: |
@@ -162,6 +175,34 @@ jobs:
           echo "⚠️ Rolling back..."
           cd backend && ./deploy.sh --rollback || true
           exit 1
+
+      - name: Verify New Code Routes
+        id: verify_routes
+        run: |
+          echo "🔍 Verifying new code is live..."
+          # Check the /api/v1 endpoint that was added in recent commits
+          V1_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            https://api.lorndavid.online/api/v1)
+          echo "  /api/v1 returned HTTP $V1_CODE"
+          if [ "$V1_CODE" = "200" ]; then
+            BODY=$(curl -s https://api.lorndavid.online/api/v1)
+            echo "  Response: $BODY"
+            echo "✅ New code is live!"
+          else
+            echo "❌ /api/v1 returned HTTP $V1_CODE — new code is NOT live!"
+            BODY=$(curl -s https://api.lorndavid.online/api/v1 2>/dev/null || echo "")
+            echo "  Body: $BODY"
+            echo "⚠️ Rolling back..."
+            cd backend && ./deploy.sh --rollback || true
+            exit 1
+          fi
+          # Also check the root route (added in same changeset)
+          ROOT_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            https://api.lorndavid.online/)
+          echo "  Root / returned HTTP $ROOT_CODE"
+          if [ "$ROOT_CODE" != "200" ]; then
+            echo "  ⚠️ Root route not 200 (got $ROOT_CODE) — unexpected but continuing"
+          fi
 
       - name: Deployment Summary
         if: always()
