@@ -6,6 +6,3 @@ dist/
 coverage/
 .vite/
 nul
-backend/current
-backend/.envy
-backend/cloudflared.deb
