@@ -157,7 +157,7 @@
         </div>
       </section>
 
-      <!-- Free Shipping Banner -->
+      <!-- Free Shipping Banner / Auto Deploy Test -->
       <section class="max-w-7xl mx-auto px-4 sm:px-6">
         <div class="bg-gradient-to-r from-accent-500 to-accent-600 rounded-2xl p-6 sm:p-8 text-white animate-fade-in overflow-hidden relative">
           <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
@@ -167,6 +167,10 @@
               <span class="inline-block px-3 py-1 bg-white/20 text-xs font-semibold rounded-full backdrop-blur-sm">🎉 {{ $t('home.alwaysFreeShipping') }}</span>
               <h3 class="text-xl sm:text-2xl font-bold">{{ $t('home.freeShipping') }}</h3>
               <p class="text-white/80 text-sm">{{ $t('home.freeShippingDesc') }}</p>
+              <div class="flex items-center gap-1.5 text-xs text-white/60">
+                <span class="inline-block w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                <span>Auto Deploy Active</span>
+              </div>
             </div>
             <div class="text-right hidden sm:block">
               <svg class="w-16 h-16 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>

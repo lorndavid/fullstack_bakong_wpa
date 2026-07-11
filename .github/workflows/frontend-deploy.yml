@@ -1,0 +1,86 @@
+name: Frontend Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend-user/**'
+      - 'frontend-admin/**'
+      - '.github/workflows/frontend-deploy.yml'
+  workflow_dispatch:     # Manual trigger from Actions tab
+
+concurrency:
+  group: production-frontend
+  cancel-in-progress: true
+
+jobs:
+  deploy-frontends:
+    name: Trigger Vercel Deployments
+    runs-on: ubuntu-latest
+    outputs:
+      deployment_started: ${{ steps.start.outputs.deployment_started }}
+
+    steps:
+      - name: Record deployment start time
+        id: start
+        run: echo "deployment_started=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+
+      - name: Trigger Vercel User Frontend Deploy
+        id: deploy_user
+        run: |
+          echo "🚀 Deploying User Frontend to Vercel..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "${{ secrets.VERCEL_USER_DEPLOY_HOOK }}")
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
+            echo "✅ User frontend deploy triggered (HTTP $HTTP_CODE)"
+          else
+            echo "⚠️  User frontend deploy returned HTTP $HTTP_CODE (might still work)"
+          fi
+
+      - name: Trigger Vercel Admin Frontend Deploy
+        id: deploy_admin
+        run: |
+          echo "🚀 Deploying Admin Frontend to Vercel..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "${{ secrets.VERCEL_ADMIN_DEPLOY_HOOK }}")
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
+            echo "✅ Admin frontend deploy triggered (HTTP $HTTP_CODE)"
+          else
+            echo "⚠️  Admin frontend deploy returned HTTP $HTTP_CODE (might still work)"
+          fi
+
+  notify:
+    name: Send Telegram Notification
+    needs: [deploy-frontends]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Determine status
+        id: status
+        run: |
+          if [ "${{ needs.deploy-frontends.result }}" = "success" ]; then
+            echo "status=✅ Success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          else
+            echo "status=❌ Failed" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Telegram notification
+        uses: appleboy/telegram-action@master
+        with:
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          format: markdown
+          message: |
+            ── Bakong E-commerce — Frontend Deployment ──
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+            Author: ${{ github.actor }}
+            Time: ${{ needs.deploy-frontends.outputs.deployment_started || github.event.head_commit.timestamp }}
+
+            Frontends: ${{ steps.status.outputs.emoji }} ${{ steps.status.outputs.status }}
