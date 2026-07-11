@@ -13,6 +13,8 @@ import { startPaymentWatcher } from './services/paymentWatcher';
 import { initSocket } from './services/socket';
 import { processScheduledNotifications } from './services/notificationService';
 import http from 'http';
+import logger, { dbLogger, httpLogger, correlationIdMiddleware } from './services/logger';
+import { apiLimiter } from './middlewares/rateLimiter';
  
 const app = express();
 const httpServer = http.createServer(app);
@@ -21,6 +23,38 @@ const PORT = process.env.PORT || 5000;
 // Configure Cloudinary
 configureCloudinary();
  
+// Trust proxy — required by helmet HSTS, rate limiting, and pino-http
+// to correctly detect the client IP behind Cloudflare
+app.set('trust proxy', true);
+
+// Security headers (Helmet)
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
+      connectSrc: ["'self'", 'https://api.lorndavid.online'],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+  strictTransportSecurity: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+}));
+
+// Request logging (pino-http) — logs method, URL, status, and response time for every request
+app.use(httpLogger);
+
+// Correlation ID response header
+app.use(correlationIdMiddleware);
+
 // Middlewares
 app.use(cors({
   origin: function (origin, callback) {
@@ -50,7 +84,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
  
 // Serve uploaded files statically (local file storage fallback)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));// API Routes
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Global API rate limiter — 100 req / 15 min on ALL API routes
+app.use('/api', apiLimiter);
+
+// API Routes
 app.use('/api', routes);
 
 // Root route — welcome / API info
