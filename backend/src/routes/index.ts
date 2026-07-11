@@ -16,6 +16,7 @@ import chatRoutes from './chatRoutes';
 import notificationRoutes from './notificationRoutes';
 import couponRoutes from './couponRoutes';
 import inventoryRoutes from './inventoryRoutes';
+import pkg from '../../package.json';
 
 const router = Router();
 
@@ -62,6 +63,20 @@ router.get('/health', (_req, res) => {
   res.json({
     success: true,
     message: 'Bakong E-commerce API is running',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Version — reads from package.json
+router.get('/v1', (_req, res) => {
+  res.json({
+    success: true,
+    version: pkg.version,
+    name: pkg.name,
+    node: process.version,
+    platform: process.platform,
+    arch: process.arch,
+    uptime: Math.floor(process.uptime()),
     timestamp: new Date().toISOString(),
   });
 });

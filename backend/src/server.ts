@@ -96,7 +96,7 @@ initSocket(httpServer);
  
 // Start server (don't block on DB connection)
 httpServer.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT} (npm ci enabled)`);
+  console.log(`🚀 Server running on port ${PORT}`);
   console.log(`API: http://localhost:${PORT}/api`);
   console.log(`Health: http://localhost:${PORT}/api/health`);
 });
