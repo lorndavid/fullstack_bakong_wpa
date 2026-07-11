@@ -12,6 +12,7 @@ import { startPaymentWatcher } from './services/paymentWatcher';
 import { initSocket } from './services/socket';
 import { processScheduledNotifications } from './services/notificationService';
 import http from 'http';
+import { apiLimiter } from './middlewares/rateLimiter';
  
 const app = express();
 const httpServer = http.createServer(app);
@@ -20,6 +21,11 @@ const PORT = process.env.PORT || 5000;
 // Configure Cloudinary
 configureCloudinary();
  
+// ── Trust Proxy ────────────────────────────────────────────
+// Required for accurate IP detection behind Cloudflare/CDN/reverse-proxy.
+// Without this, rate-limiting sees the proxy IP instead of the real client IP.
+app.set('trust proxy', true); // Trust Cloudflare/CDN proxy headers
+
 // Middlewares
 app.use(cors({
   origin: function (origin, callback) {
@@ -47,6 +53,11 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// ── Global Rate Limiter ─────────────────────────────────────
+// Protects all API routes from abuse (100 req / 15 min per IP).
+// Stricter auth limiter is applied separately on auth routes.
+app.use('/api', apiLimiter);
  
 // Serve uploaded files statically (local file storage fallback)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));// API Routes
