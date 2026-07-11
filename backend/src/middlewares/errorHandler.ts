@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { sendError } from '../utils/response';
 
 interface AppError extends Error {
   statusCode?: number;
@@ -9,13 +10,13 @@ interface AppError extends Error {
 
 const errorHandler = (
   err: AppError,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction
 ): void => {
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Internal Server Error';
-  let errors: Record<string, string> | undefined;
+  let fieldErrors: Record<string, string> | undefined;
 
   // Mongoose duplicate key error
   if (err.code === 11000 && err.keyValue) {
@@ -27,9 +28,9 @@ const errorHandler = (
   // Mongoose validation error
   if (err.name === 'ValidationError' && err.errors) {
     statusCode = 400;
-    errors = {};
+    fieldErrors = {};
     for (const [key, val] of Object.entries(err.errors)) {
-      errors[key] = val.message;
+      fieldErrors[key] = val.message;
     }
     message = 'Validation failed';
   }
@@ -46,10 +47,15 @@ const errorHandler = (
     message = 'File size exceeds 5MB limit';
   }
 
-  res.status(statusCode).json({
-    success: false,
-    message,
-    errors,
+  // Log the error with correlation ID for debugging
+  const requestId = (req as any).id;
+  const reqLog = (req as any).log;
+  if (reqLog) {
+    reqLog.error({ err, statusCode }, message);
+  }
+
+  sendError(res, message, statusCode, fieldErrors, {
+    ...(requestId && { requestId }),
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 };
