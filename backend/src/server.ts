@@ -49,14 +49,40 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
  
 // Serve uploaded files statically (local file storage fallback)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
- 
-// API Routes
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));// API Routes
 app.use('/api', routes);
- 
+
+// Root route — welcome / API info
+app.get('/', (_req, res) => {
+  res.json({
+    success: true,
+    message: 'Bakong E-commerce API',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      health: '/api/health',
+      docs: '/api/docs',
+      auth: '/api/auth',
+      products: '/api/products',
+      categories: '/api/categories',
+      orders: '/api/orders',
+      payments: '/api/payment',
+      users: '/api/users',
+      promotions: '/api/promotions',
+      coupons: '/api/coupons',
+      notifications: '/api/notifications',
+      chat: '/api/chat',
+      inventory: '/api/inventory',
+      settings: '/api/settings',
+      'hero-slides': '/api/hero-slides',
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Error Handler
 app.use(errorHandler);
- 
+
 // 404 handler
 app.use((_req, res) => {
   res.status(404).json({
