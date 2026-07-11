@@ -117,7 +117,7 @@ check_prerequisites() {
 setup_release() {
     mkdir -p "$RELEASES_DIR"
 
-    # Find the next release number
+    # Find the next release number by listing directory contents
     local last_release=$(ls -1 "$RELEASES_DIR" 2>/dev/null | \
                          grep -E '^v[0-9]+$' | \
                          sed 's/^v//' | \
@@ -181,9 +181,6 @@ install_dependencies() {
         return 1
       fi
     fi
-    # ── Clean up: install build deps but remove devDeps from production runtime ──
-    # Uncomment to keep release lean:
-    # npm prune --omit=dev 2>&1 || true
     log OK "Dependencies installed"
 }
 
@@ -217,28 +214,35 @@ switch_symlink() {
 pm2_reload() {
     log INFO "Reloading PM2 process..."
 
-    ECOSYSTEM_FILE="$BACKEND_DIR/ecosystem.config.js"
+    # ⚠️ CRITICAL: Always cd to BACKEND_DIR before using the ecosystem config!
+    #
+    # The ecosystem config has `script: './current/dist/server.js'` — a
+    # RELATIVE path. If PM2 is invoked from the release directory (where
+    # npm ci + npm run build run), the relative path resolves to:
+    #   releases/v8/current/dist/server.js  ← WRONG (doesn't exist)
+    #
+    # Instead, we must be in BACKEND_DIR so it resolves to:
+    #   backend/current/dist/server.js      ← CORRECT (symlink to release)
+    cd "$BACKEND_DIR"
 
     if pm2 describe myshop-backend >/dev/null 2>&1; then
-        # ⚠️ CRITICAL: Use process NAME, NOT the ecosystem file!
+        # ⚠️ CRITICAL: Always delete and recreate the PM2 process!
         #
-        # Using `pm2 gracefulReload "$ECOSYSTEM_FILE"` compares the
-        # config's script path with PM2's stored value. Since the
-        # ecosystem uses a symlink (./current/dist/server.js), PM2
-        # stores the SYMLINK path — which doesn't change between
-        # releases. PM2 sees "no change" and SKIPS the restart.
+        # The PM2 process may have been started with a wrong script path
+        # (e.g., raw `dist/server.js` instead of through the `current`
+        # symlink). Restarting by process name preserves the OLD stored
+        # script path, so the new code is never picked up.
         #
-        # Using `pm2 gracefulReload myshop-backend` tells PM2 to
-        # directly restart the named process, regardless of config
-        # comparison. The --update-env forces re-reading .env.
-        pm2 gracefulReload myshop-backend --update-env 2>&1 || {
-            log WARN "gracefulReload failed, trying hard restart..."
-            pm2 restart myshop-backend --update-env 2>&1
-        }
-    else
-        log WARN "PM2 process not found. Starting new instance..."
-        pm2 start "$ECOSYSTEM_FILE" --update-env 2>&1
+        # Deleting and re-starting from the ecosystem config registers the
+        # correct script path `./current/dist/server.js` (symlink-based).
+        pm2 delete myshop-backend 2>/dev/null || true
     fi
+
+    # Start (or restart) from the ecosystem config with updated env
+    pm2 start ecosystem.config.js --update-env 2>&1 || {
+        log ERROR "PM2 start failed"
+        return 1
+    }
 
     pm2 save
     log OK "PM2 reloaded"
@@ -256,47 +260,45 @@ pm2_verify() {
 
     # Get the actual script path PM2 is using
     # PM2 show output format: │ script path │ /path/to/file │
-    # We extract the 3rd field using │ as delimiter, then trim whitespace
-    local pm2_script_path
-    pm2_script_path=$(pm2 show myshop-backend 2>/dev/null | \
+    local script_path
+    script_path=$(pm2 show myshop-backend 2>/dev/null | \
       grep 'script path' | head -1 | \
       awk -F'│' '{print $3}' | xargs)
 
-    if [ -z "$pm2_script_path" ]; then
+    if [ -z "$script_path" ]; then
         log WARN "Could not determine PM2 script path — skipping verification"
         return 0
     fi
 
-    log INFO "PM2 script path: $pm2_script_path"
-    log INFO "Expected release: $RELEASE_DIR/dist/server.js"
+    log INFO "PM2 script path: $script_path"
+    log INFO "Expected release: $RELEASE_NAME"
 
-    # Verify the path points to our new release
-    if echo "$pm2_script_path" | grep -q "$RELEASE_NAME"; then
+    # Primary check: does the path contain the release name?
+    if echo "$script_path" | grep -q "$RELEASE_NAME"; then
         log OK "✅ PM2 is running from release $RELEASE_NAME"
         return 0
     fi
 
-    # Path doesn't mention the release name — do a deeper check:
-    # resolve symlinks and compare physical paths
-    local resolved_script
-    resolved_script=$(readlink -f "$pm2_script_path" 2>/dev/null || echo "")
-    local expected_script="$RELEASE_DIR/dist/server.js"
+    # Secondary check: resolve symlinks and compare physical files
+    local resolved
+    resolved=$(readlink -f "$script_path" 2>/dev/null || echo "")
+    local expected="$RELEASE_DIR/dist/server.js"
     local resolved_expected
-    resolved_expected=$(readlink -f "$expected_script" 2>/dev/null || echo "$expected_script")
+    resolved_expected=$(readlink -f "$expected" 2>/dev/null || echo "$expected")
 
-    if [ "$resolved_script" = "$resolved_expected" ]; then
+    if [ "$resolved" = "$resolved_expected" ]; then
         log OK "✅ PM2 is running from the correct release (verified by physical path)"
         return 0
     fi
 
-    log WARN "⚠️ PM2 may not be running the new release!"
-    log WARN "   Running:  $pm2_script_path"
-    log WARN "   Expected: $expected_script"
-    log WARN "   Attempting forced restart..."
+    # Verification failed — try a forced restart from the correct CWD
+    log WARN "⚠️ PM2 not running new release — attempting restart..."
+    log WARN "   Running:  $script_path"
+    log WARN "   Expected: $expected"
 
-    # Force restart by deleting and re-starting the process
+    cd "$BACKEND_DIR"
     pm2 delete myshop-backend 2>/dev/null || true
-    pm2 start "$ECOSYSTEM_FILE" --update-env 2>&1 || {
+    pm2 start ecosystem.config.js --update-env 2>&1 || {
         log ERROR "Forced restart failed!"
         return 1
     }
@@ -332,13 +334,20 @@ health_check() {
 cleanup_old_releases() {
     log INFO "Cleaning up old releases..."
 
-    # Use find + sort to safely iterate; || true prevents set -e failure when no releases exist
-    ls -1t "$RELEASES_DIR"/v* 2>/dev/null | tail -n +$((MAX_RELEASES + 1)) | while read -r old_release; do
-        if [ -n "$old_release" ] && [ -d "$old_release" ]; then
-            log INFO "Removing old release: $(basename "$old_release")"
-            rm -rf "$old_release"
-        fi
-    done || true
+    # List all version directories, sorted ascending
+    local releases
+    releases=$(ls -1 "$RELEASES_DIR" 2>/dev/null | grep -E '^v[0-9]+$' | sort -V)
+    local total
+    total=$(echo "$releases" | grep -c . 2>/dev/null || echo "0")
+
+    if [ "$total" -gt "$MAX_RELEASES" ]; then
+        local delete_count=$((total - MAX_RELEASES))
+        echo "$releases" | head -n "$delete_count" | while read -r old_release; do
+            local old_path="$RELEASES_DIR/$old_release"
+            log INFO "Removing old release: $old_release"
+            rm -rf "$old_path"
+        done || true
+    fi
 
     log OK "Cleanup completed (keeping last $MAX_RELEASES releases)"
 }
@@ -347,16 +356,17 @@ cleanup_old_releases() {
 rollback() {
     log_section "ROLLBACK"
 
-    # Find previous release
-    local current_release
+    # Get current release name from the symlink
+    local current_release=""
     if [ -L "$CURRENT_LINK" ]; then
-        current_release=$(readlink "$CURRENT_LINK")
-        current_release=$(basename "$current_release")
+        current_release=$(basename "$(readlink "$CURRENT_LINK")")
     fi
 
-    # Get the previous release (sorted by version number)
+    # List all version directories and find the one before current
+    # Uses directory listing (not glob) to avoid path parsing issues
     local previous_release
-    previous_release=$(ls -1 "$RELEASES_DIR"/v* 2>/dev/null | \
+    previous_release=$(ls -1 "$RELEASES_DIR" 2>/dev/null | \
+                       grep -E '^v[0-9]+$' | \
                        grep -v "$current_release" | \
                        sort -V | \
                        tail -1)
@@ -366,23 +376,20 @@ rollback() {
         exit 1
     fi
 
-    local prev_name=$(basename "$previous_release")
+    local prev_name="$previous_release"
+    local prev_dir="$RELEASES_DIR/$previous_release"
+
     log INFO "Rolling back from $current_release to $prev_name"
 
-    # Switch symlink
+    # Switch symlink atomically
     local temp_link="${CURRENT_LINK}.tmp"
-    ln -sfn "$previous_release" "$temp_link"
+    ln -sfn "$prev_dir" "$temp_link"
     mv -Tf "$temp_link" "$CURRENT_LINK"
 
-    # Reload PM2
-    if pm2 describe myshop-backend >/dev/null 2>&1; then
-        pm2 gracefulReload myshop-backend --update-env 2>&1 || \
-        pm2 restart myshop-backend --update-env 2>&1
-    else
-        pm2 start "$CURRENT_LINK/dist/server.js" \
-            --name "myshop-backend" --update-env 2>&1
-    fi
-
+    # Restart PM2 from the BACKEND_DIR (correct CWD for relative paths)
+    cd "$BACKEND_DIR"
+    pm2 delete myshop-backend 2>/dev/null || true
+    pm2 start ecosystem.config.js --update-env 2>&1
     pm2 save
 
     # Health check after rollback
@@ -414,12 +421,12 @@ show_status() {
 
     echo ""
     echo "Available Releases:"
-    ls -1 "$RELEASES_DIR"/v* 2>/dev/null | while read -r release; do
+    ls -1 "$RELEASES_DIR" 2>/dev/null | grep -E '^v[0-9]+$' | while read -r release; do
         local mark=" "
-        if [ -L "$CURRENT_LINK" ] && [ "$(readlink "$CURRENT_LINK")" = "$release" ]; then
+        if [ -L "$CURRENT_LINK" ] && [ "$(readlink "$CURRENT_LINK")" = "$RELEASES_DIR/$release" ]; then
             mark="→"
         fi
-        echo "  $mark $(basename "$release")"
+        echo "  $mark $release"
     done
     echo ""
     echo "Log:           $DEPLOY_LOG"
@@ -486,7 +493,7 @@ fi
 # 7. Switch symlink atomically
 switch_symlink
 
-# 8. Reload PM2 (zero-downtime)
+# 8. Reload PM2 (zero-downtime) — always from BACKEND_DIR
 pm2_reload
 
 # 8a. Verify PM2 is running the new release
