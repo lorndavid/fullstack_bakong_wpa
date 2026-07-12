@@ -24,8 +24,11 @@ const PORT = process.env.PORT || 5000;
 configureCloudinary();
  
 // Trust proxy — required by helmet HSTS, rate limiting, and pino-http
-// to correctly detect the client IP behind Cloudflare
-app.set('trust proxy', true);
+// to correctly detect the client IP behind Nginx / Cloudflare.
+// Set to the number of proxy hops (1 for a single reverse proxy like Nginx).
+// Using `true` is rejected by express-rate-limit v7+ as a security risk
+// because it allows anyone to spoof their IP via X-Forwarded-For.
+app.set('trust proxy', 1);
 
 // Security headers (Helmet)
 app.use(helmet({
@@ -86,7 +89,7 @@ app.use(express.urlencoded({ extended: true }));
 // Serve uploaded files statically (local file storage fallback)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Global API rate limiter — 100 req / 15 min on ALL API routes
+// Global API rate limiter — 500 req / 15 min on ALL API routes
 app.use('/api', apiLimiter);
 
 // API Routes

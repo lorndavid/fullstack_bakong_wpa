@@ -10,7 +10,7 @@ import {
   deleteTransaction,
   paymentStream,
 } from '../controllers/paymentController';
-import { protect, authorize } from '../middlewares/auth';
+import { protect, protectWithRateLimit, authorize } from '../middlewares/auth';
 import { validate, validateParams, validateQuery } from '../middlewares/validate';
 import {
   createPaymentSchema,
@@ -43,14 +43,14 @@ router.get('/subscribe/tran/:tranId', subscribePayment);
 router.post('/webhook', handleWebhook);
 
 // Admin-only routes below
-router.get('/transactions', protect, authorize('admin'), validateQuery(paginationQuery), getAllTransactions);
-router.delete('/transactions/:id', protect, authorize('admin'), validateParams(mongoIdParam), deleteTransaction);
+router.get('/transactions', protectWithRateLimit, authorize('admin'), validateQuery(paginationQuery), getAllTransactions);
+router.delete('/transactions/:id', protectWithRateLimit, authorize('admin'), validateParams(mongoIdParam), deleteTransaction);
 
 // SSE stream — inject token from query param for EventSource compatibility
 router.get('/stream', (req, _res, next) => {
   const token = req.query.token as string;
   if (token) req.headers.authorization = `Bearer ${token}`;
   next();
-}, protect, authorize('admin'), paymentStream);
+}, protectWithRateLimit, authorize('admin'), paymentStream);
 
 export default router;

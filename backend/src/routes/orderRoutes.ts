@@ -9,7 +9,7 @@ import {
   deleteOrder,
   bulkDeleteOrders,
 } from '../controllers/orderController';
-import { protect, authorize } from '../middlewares/auth';
+import { protect, protectWithRateLimit, authorize } from '../middlewares/auth';
 import { validate, validateParams, validateQuery } from '../middlewares/validate';
 import {
   createOrderSchema,
@@ -21,13 +21,13 @@ import {
 
 const router = Router();
 
-router.get('/admin/all', protect, authorize('admin'), validateQuery(paginationQuery), getAllOrders);
-router.delete('/admin/:id', protect, authorize('admin'), validateParams(mongoIdParam), deleteOrder);
-router.post('/admin/bulk-delete', protect, authorize('admin'), validate(bulkDeleteOrdersSchema), bulkDeleteOrders);
-router.put('/admin/:id/status', protect, authorize('admin'), validateParams(mongoIdParam), validate(updateOrderStatusSchema), updateOrderStatus);
-router.post('/', protect, validate(createOrderSchema), createOrder);
+router.get('/admin/all', protectWithRateLimit, authorize('admin'), validateQuery(paginationQuery), getAllOrders);
+router.delete('/admin/:id', protectWithRateLimit, authorize('admin'), validateParams(mongoIdParam), deleteOrder);
+router.post('/admin/bulk-delete', protectWithRateLimit, authorize('admin'), validate(bulkDeleteOrdersSchema), bulkDeleteOrders);
+router.put('/admin/:id/status', protectWithRateLimit, authorize('admin'), validateParams(mongoIdParam), validate(updateOrderStatusSchema), updateOrderStatus);
+router.post('/', protectWithRateLimit, validate(createOrderSchema), createOrder);
 router.get('/', protect, validateQuery(paginationQuery), getMyOrders);
 router.get('/:id', protect, validateParams(mongoIdParam), getOrder);
-router.put('/:id/cancel', protect, validateParams(mongoIdParam), cancelOrder);
+router.put('/:id/cancel', protectWithRateLimit, validateParams(mongoIdParam), cancelOrder);
 
 export default router;

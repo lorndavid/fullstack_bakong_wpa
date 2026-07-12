@@ -15,7 +15,7 @@ import {
   updatePurchaseOrder,
   receivePurchaseOrder,
 } from '../controllers/inventoryController';
-import { protect, authorize } from '../middlewares/auth';
+import { protectWithRateLimit, authorize } from '../middlewares/auth';
 import { validate, validateParams, validateQuery } from '../middlewares/validate';
 import {
   createWarehouseSchema,
@@ -32,7 +32,7 @@ import {
 const router = Router();
 
 // All inventory routes require admin authentication
-router.use(protect, authorize('admin'));
+router.use(protectWithRateLimit, authorize('admin'));
 
 // Overview
 router.get('/overview', getInventoryOverview);

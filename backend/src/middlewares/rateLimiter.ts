@@ -18,10 +18,13 @@ const isWhitelisted = (req: Request): boolean => {
 
 // ─── Global API Limiter ──────────────────────────────────────
 // Applied to ALL /api/* routes. Prevents general API abuse.
-// 100 requests per 15 minutes per IP — generous but protective.
+// Since all users behind an Nginx reverse proxy share the same IP,
+// the limit must be generous enough to accommodate concurrent users.
+// 500 requests per 15 minutes per IP — allows real traffic while
+// still blocking runaway abuse.
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: 500,
   standardHeaders: 'draft-7', // Send RateLimit-* headers
   legacyHeaders: false,       // Disable X-RateLimit-* headers
   skip: (req: Request) => isWhitelisted(req),
@@ -33,14 +36,14 @@ export const apiLimiter = rateLimit({
   },
 });
 
-// ─── Strict Auth Limiter ─────────────────────────────────────
+// ─── Auth Limiter ────────────────────────────────────────────
 // Applied specifically to login/register endpoints.
 // Prevents brute-force password attacks.
-// 10 requests per 15 minutes — strict because auth is the
-// highest-value target for attackers.
+// 60 requests per 15 minutes — generous enough for multiple users
+// behind a single proxy IP, but still blocks brute-force.
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
+  max: 60,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   skip: (req: Request) => isWhitelisted(req),
@@ -48,6 +51,33 @@ export const authLimiter = rateLimit({
     res.status(429).json({
       success: false,
       message: 'Too many login attempts. Please try again later.',
+    });
+  },
+});
+
+// ─── Authenticated User Limiter ──────────────────────────────
+// Only applies to authenticated requests — keyed by user ID
+// instead of IP. This prevents a single user from hammering
+// protected endpoints while not affecting other users.
+// ─── Authenticated User Limiter ──────────────────────────────
+// Only applies to authenticated requests — keyed by user ID
+// instead of IP. This prevents a single user from hammering
+// protected endpoints while not affecting other users.
+// Must be applied AFTER `protect` middleware so req.user is set.
+export const userLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => {
+    const authReq = req as Request & { user?: { id: string } };
+    return authReq.user?.id || req.ip || 'unknown';
+  },
+  skip: (req: Request) => isWhitelisted(req),
+  handler: (_req: Request, res: Response) => {
+    res.status(429).json({
+      success: false,
+      message: 'Too many requests. Please try again later.',
     });
   },
 });
