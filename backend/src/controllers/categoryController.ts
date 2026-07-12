@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import Category from '../models/Category';
 import Product from '../models/Product';
 import { AuthRequest } from '../types';
-import { sendSuccess, sendError, sendCreated, sendDeleted, sendPaginated } from '../utils/response';
+import { sendSuccess, sendError, sendCreated, sendDeleted } from '../utils/response';
 
 
 const getCategories = async (

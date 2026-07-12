@@ -370,7 +370,7 @@ export const updatePromotionSchema = z.object({
 //  SETTINGS
 // ═══════════════════════════════════════════════════════════════
 
-export const updateSettingsSchema = z.object({
+const updateSettingsSchema = z.object({
   colors: z.string().optional(), // JSON string when coming via FormData
   textOverrides: z.string().optional(),
   flashSale: z.string().optional(),

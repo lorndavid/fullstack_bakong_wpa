@@ -1,7 +1,7 @@
 import { Response } from 'express';
 
 // ─── Types ───────────────────────────────────────────────────
-export interface PaginationInfo {
+interface PaginationInfo {
   page: number;
   limit: number;
   total: number;
@@ -10,7 +10,7 @@ export interface PaginationInfo {
   hasPrevPage: boolean;
 }
 
-export interface ApiResponseBody<T = unknown> {
+interface ApiResponseBody<T = unknown> {
   success: boolean;
   message?: string;
   data?: T;
