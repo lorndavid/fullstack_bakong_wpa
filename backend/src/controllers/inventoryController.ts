@@ -7,6 +7,7 @@ import Supplier from '../models/Supplier';
 import StockMovement from '../models/StockMovement';
 import PurchaseOrder from '../models/PurchaseOrder';
 import { AuthRequest } from '../types';
+import { sendSuccess, sendError, sendCreated, sendDeleted } from '../utils/response';
 
 // ─── INVENTORY OVERVIEW ────────────────────────────────────────
 
@@ -307,8 +308,7 @@ const getInventoryOverview = async (
     // Sort insights by priority
     insights.sort((a, b) => a.priority - b.priority);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       overview: {
         // KPI Cards
         kpis: {
@@ -410,7 +410,7 @@ const getWarehouses = async (
 ): Promise<void> => {
   try {
     const warehouses = await Warehouse.find({}).sort({ name: 1 });
-    res.json({ success: true, warehouses });
+    sendSuccess(res, { warehouses });
   } catch (error) {
     next(error);
   }
@@ -423,7 +423,7 @@ const createWarehouse = async (
 ): Promise<void> => {
   try {
     const warehouse = await Warehouse.create(req.body);
-    res.status(201).json({ success: true, warehouse });
+    sendCreated(res, { warehouse });
   } catch (error) {
     next(error);
   }
@@ -441,10 +441,10 @@ const updateWarehouse = async (
       { new: true, runValidators: true }
     );
     if (!warehouse) {
-      res.status(404).json({ success: false, message: 'Warehouse not found' });
+      sendError(res, 'Warehouse not found', 404);
       return;
     }
-    res.json({ success: true, warehouse });
+    sendSuccess(res, { warehouse });
   } catch (error) {
     next(error);
   }
@@ -458,10 +458,10 @@ const deleteWarehouse = async (
   try {
     const warehouse = await Warehouse.findByIdAndDelete(req.params.id);
     if (!warehouse) {
-      res.status(404).json({ success: false, message: 'Warehouse not found' });
+      sendError(res, 'Warehouse not found', 404);
       return;
     }
-    res.json({ success: true, message: 'Warehouse deleted' });
+    sendDeleted(res);
   } catch (error) {
     next(error);
   }
@@ -478,7 +478,7 @@ const getSuppliers = async (
     const suppliers = await Supplier.find({})
       .populate('products', 'name price stock')
       .sort({ company: 1 });
-    res.json({ success: true, suppliers });
+    sendSuccess(res, { suppliers });
   } catch (error) {
     next(error);
   }
@@ -491,7 +491,7 @@ const createSupplier = async (
 ): Promise<void> => {
   try {
     const supplier = await Supplier.create(req.body);
-    res.status(201).json({ success: true, supplier });
+    sendCreated(res, { supplier });
   } catch (error) {
     next(error);
   }
@@ -509,10 +509,10 @@ const updateSupplier = async (
       { new: true, runValidators: true }
     );
     if (!supplier) {
-      res.status(404).json({ success: false, message: 'Supplier not found' });
+      sendError(res, 'Supplier not found', 404);
       return;
     }
-    res.json({ success: true, supplier });
+    sendSuccess(res, { supplier });
   } catch (error) {
     next(error);
   }
@@ -526,10 +526,10 @@ const deleteSupplier = async (
   try {
     const supplier = await Supplier.findByIdAndDelete(req.params.id);
     if (!supplier) {
-      res.status(404).json({ success: false, message: 'Supplier not found' });
+      sendError(res, 'Supplier not found', 404);
       return;
     }
-    res.json({ success: true, message: 'Supplier deleted' });
+    sendDeleted(res);
   } catch (error) {
     next(error);
   }
@@ -570,14 +570,13 @@ const getStockMovements = async (
         name: { $regex: escapedQuery, $options: 'i' },
       }).select('_id').lean();
       if (matchingProducts.length === 0) {
-        res.json({
-          success: true,
-          movements: [],
-          pagination: { page, limit, total: 0, pages: 0 },
-        });
-        return;
-      }
-      filter.product = { $in: matchingProducts.map(p => p._id.toString()) };
+    sendSuccess(res, {
+      movements: [],
+      pagination: { page, limit, total: 0, pages: 0 },
+    });
+    return;
+  }
+  filter.product = { $in: matchingProducts.map(p => p._id.toString()) };
     }
 
     const [movements, total] = await Promise.all([
@@ -591,8 +590,7 @@ const getStockMovements = async (
       StockMovement.countDocuments(filter),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       movements,
       pagination: {
         page,
@@ -633,8 +631,7 @@ const getPurchaseOrders = async (
       PurchaseOrder.countDocuments(filter),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       purchaseOrders: orders,
       pagination: {
         page,
@@ -658,7 +655,7 @@ const createPurchaseOrder = async (
       ...req.body,
       createdBy: req.user?.id,
     });
-    res.status(201).json({ success: true, purchaseOrder });
+    sendCreated(res, { purchaseOrder });
   } catch (error) {
     next(error);
   }
@@ -676,10 +673,10 @@ const updatePurchaseOrder = async (
       { new: true, runValidators: true }
     );
     if (!purchaseOrder) {
-      res.status(404).json({ success: false, message: 'Purchase order not found' });
+      sendError(res, 'Purchase order not found', 404);
       return;
     }
-    res.json({ success: true, purchaseOrder });
+    sendSuccess(res, { purchaseOrder });
   } catch (error) {
     next(error);
   }
@@ -694,7 +691,7 @@ const receivePurchaseOrder = async (
   try {
     const purchaseOrder = await PurchaseOrder.findById(req.params.id);
     if (!purchaseOrder) {
-      res.status(404).json({ success: false, message: 'Purchase order not found' });
+      sendError(res, 'Purchase order not found', 404);
       return;
     }
 
@@ -750,7 +747,7 @@ const receivePurchaseOrder = async (
       }
     }
 
-    res.json({ success: true, purchaseOrder });
+    sendSuccess(res, { purchaseOrder });
   } catch (error) {
     next(error);
   }

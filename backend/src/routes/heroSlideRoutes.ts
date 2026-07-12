@@ -8,8 +8,8 @@ import {
 } from '../controllers/heroSlideController';
 import { protect, authorize } from '../middlewares/auth';
 import { upload } from '../middlewares/upload';
-import { validate } from '../middlewares/validate';
-import { createHeroSlideSchema, updateHeroSlideSchema } from '../validators';
+import { validate, validateParams } from '../middlewares/validate';
+import { createHeroSlideSchema, updateHeroSlideSchema, mongoIdParam } from '../validators';
 
 const router = Router();
 
@@ -19,7 +19,7 @@ router.get('/', getHeroSlides);
 // Admin routes
 router.get('/all', protect, authorize('admin'), getAllHeroSlides);
 router.post('/', protect, authorize('admin'), upload.single('image'), validate(createHeroSlideSchema), createHeroSlide);
-router.put('/:id', protect, authorize('admin'), upload.single('image'), validate(updateHeroSlideSchema), updateHeroSlide);
-router.delete('/:id', protect, authorize('admin'), deleteHeroSlide);
+router.put('/:id', protect, authorize('admin'), upload.single('image'), validateParams(mongoIdParam), validate(updateHeroSlideSchema), updateHeroSlide);
+router.delete('/:id', protect, authorize('admin'), validateParams(mongoIdParam), deleteHeroSlide);
 
 export default router;

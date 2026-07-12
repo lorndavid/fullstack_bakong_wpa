@@ -16,7 +16,7 @@ import {
   receivePurchaseOrder,
 } from '../controllers/inventoryController';
 import { protect, authorize } from '../middlewares/auth';
-import { validate } from '../middlewares/validate';
+import { validate, validateParams, validateQuery } from '../middlewares/validate';
 import {
   createWarehouseSchema,
   updateWarehouseSchema,
@@ -25,6 +25,8 @@ import {
   createPurchaseOrderSchema,
   updatePurchaseOrderSchema,
   receivePurchaseOrderSchema,
+  mongoIdParam,
+  paginationQuery,
 } from '../validators';
 
 const router = Router();
@@ -36,24 +38,24 @@ router.use(protect, authorize('admin'));
 router.get('/overview', getInventoryOverview);
 
 // Warehouses
-router.get('/warehouses', getWarehouses);
+router.get('/warehouses', validateQuery(paginationQuery), getWarehouses);
 router.post('/warehouses', validate(createWarehouseSchema), createWarehouse);
-router.put('/warehouses/:id', validate(updateWarehouseSchema), updateWarehouse);
-router.delete('/warehouses/:id', deleteWarehouse);
+router.put('/warehouses/:id', validateParams(mongoIdParam), validate(updateWarehouseSchema), updateWarehouse);
+router.delete('/warehouses/:id', validateParams(mongoIdParam), deleteWarehouse);
 
 // Suppliers
-router.get('/suppliers', getSuppliers);
+router.get('/suppliers', validateQuery(paginationQuery), getSuppliers);
 router.post('/suppliers', validate(createSupplierSchema), createSupplier);
-router.put('/suppliers/:id', validate(updateSupplierSchema), updateSupplier);
-router.delete('/suppliers/:id', deleteSupplier);
+router.put('/suppliers/:id', validateParams(mongoIdParam), validate(updateSupplierSchema), updateSupplier);
+router.delete('/suppliers/:id', validateParams(mongoIdParam), deleteSupplier);
 
 // Stock Movements
-router.get('/movements', getStockMovements);
+router.get('/movements', validateQuery(paginationQuery), getStockMovements);
 
 // Purchase Orders
-router.get('/purchase-orders', getPurchaseOrders);
+router.get('/purchase-orders', validateQuery(paginationQuery), getPurchaseOrders);
 router.post('/purchase-orders', validate(createPurchaseOrderSchema), createPurchaseOrder);
-router.put('/purchase-orders/:id', validate(updatePurchaseOrderSchema), updatePurchaseOrder);
-router.post('/purchase-orders/:id/receive', validate(receivePurchaseOrderSchema), receivePurchaseOrder);
+router.put('/purchase-orders/:id', validateParams(mongoIdParam), validate(updatePurchaseOrderSchema), updatePurchaseOrder);
+router.post('/purchase-orders/:id/receive', validateParams(mongoIdParam), validate(receivePurchaseOrderSchema), receivePurchaseOrder);
 
 export default router;

@@ -4,6 +4,7 @@ import Settings from '../models/Settings';
 import { uploadToCloudinary, deleteFromCloudinary } from '../services/cloudinary';
 import { saveFileLocally, deleteLocalFile } from '../services/fileStorage';
 import { AuthRequest } from '../types';
+import { sendSuccess, sendError, sendCreated, sendDeleted } from '../utils/response';
 
 const getProducts = async (
   req: AuthRequest,
@@ -57,8 +58,7 @@ const getProducts = async (
       Product.countDocuments(filter),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       products,
       pagination: {
         page,
@@ -83,10 +83,10 @@ const getProduct = async (
       'name icon'
     );
     if (!product) {
-      res.status(404).json({ success: false, message: 'Product not found' });
+      sendError(res, 'Product not found', 404);
       return;
     }
-    res.json({ success: true, product });
+    sendSuccess(res, { product });
   } catch (error) {
     next(error);
   }
@@ -102,7 +102,7 @@ const getFeaturedProducts = async (
       .populate('category', 'name icon')
       .sort({ createdAt: -1 })
       .limit(10);
-    res.json({ success: true, products });
+    sendSuccess(res, { products });
   } catch (error) {
     next(error);
   }
@@ -116,13 +116,13 @@ const getFlashSaleProducts = async (
   try {
     const settings = await Settings.findOne();
     if (!settings || !settings.flashSale || !settings.flashSale.products) {
-      res.json({ success: true, products: [], endTime: null });
+      sendSuccess(res, { products: [], endTime: null });
       return;
     }
 
     // Only return products if the flash sale hasn't expired
     if (settings.flashSale.endTime && new Date(settings.flashSale.endTime) < new Date()) {
-      res.json({ success: true, products: [], endTime: settings.flashSale.endTime });
+      sendSuccess(res, { products: [], endTime: settings.flashSale.endTime });
       return;
     }
 
@@ -130,11 +130,7 @@ const getFlashSaleProducts = async (
       .populate('category', 'name icon')
       .limit(8);
       
-    res.json({ 
-      success: true, 
-      products, 
-      endTime: settings.flashSale.endTime 
-    });
+    sendSuccess(res, { products, endTime: settings.flashSale.endTime });
   } catch (error) {
     next(error);
   }
@@ -150,7 +146,7 @@ const getNewArrivals = async (
       .populate('category', 'name icon')
       .sort({ createdAt: -1 })
       .limit(10);
-    res.json({ success: true, products });
+    sendSuccess(res, { products });
   } catch (error) {
     next(error);
   }
@@ -194,7 +190,7 @@ const createProduct = async (
       featured: featured === true || featured === 'true',
     });
 
-    res.status(201).json({ success: true, product });
+    sendCreated(res, { product });
   } catch (error) {
     next(error);
   }
@@ -210,7 +206,7 @@ const updateProduct = async (
 
     const product = await Product.findById(req.params.id);
     if (!product) {
-      res.status(404).json({ success: false, message: 'Product not found' });
+      sendError(res, 'Product not found', 404);
       return;
     }
 
@@ -249,7 +245,7 @@ const updateProduct = async (
 
     await product.save();
 
-    res.json({ success: true, product });
+    sendSuccess(res, { product });
   } catch (error) {
     next(error);
   }
@@ -263,7 +259,7 @@ const deleteProduct = async (
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      res.status(404).json({ success: false, message: 'Product not found' });
+      sendError(res, 'Product not found', 404);
       return;
     }
 
@@ -277,7 +273,7 @@ const deleteProduct = async (
     }
 
     await product.deleteOne();
-    res.json({ success: true, message: 'Product deleted successfully' });
+    sendDeleted(res);
   } catch (error) {
     next(error);
   }
@@ -297,8 +293,7 @@ const getLowStockProducts = async (
       .sort({ stock: 1 })
       .limit(50);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       products,
       count: products.length,
       threshold,
@@ -316,7 +311,7 @@ const getRelatedProducts = async (
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      res.status(404).json({ success: false, message: 'Product not found' });
+      sendError(res, 'Product not found', 404);
       return;
     }
 
@@ -328,7 +323,7 @@ const getRelatedProducts = async (
       .sort({ rating: -1 })
       .limit(4);
 
-    res.json({ success: true, products: related });
+    sendSuccess(res, { products: related });
   } catch (error) {
     next(error);
   }

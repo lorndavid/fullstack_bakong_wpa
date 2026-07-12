@@ -41,12 +41,15 @@ export function validateParams(schema: z.ZodType<any, any, any>) {
       });
       return;
     }
+    // Replace params with parsed data (provides defaults from schema)
+    req.params = result.data;
     next();
   };
 }
 
 /**
  * Validate request query against a Zod schema.
+ * Also replaces req.query with parsed data to inject default values.
  */
 export function validateQuery(schema: z.ZodType<any, any, any>) {
   return (req: Request, res: Response, next: NextFunction): void => {
@@ -60,6 +63,8 @@ export function validateQuery(schema: z.ZodType<any, any, any>) {
       });
       return;
     }
+    // Replace query with parsed data (provides defaults like page=1, limit=20)
+    (req as any).query = result.data;
     next();
   };
 }

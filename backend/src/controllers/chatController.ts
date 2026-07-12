@@ -3,6 +3,7 @@ import { AuthRequest } from '../types';
 import { Conversation, Message } from '../models/Chat';
 import User from '../models/User';
 import { uploadToCloudinary } from '../services/cloudinary';
+import { sendSuccess, sendError, sendCreated } from '../utils/response';
 
 // ─── User: Get or create conversation ────────────────────────────
 export const getOrCreateConversation = async (
@@ -20,14 +21,14 @@ export const getOrCreateConversation = async (
     }).sort({ updatedAt: -1 });
 
     if (conversation) {
-      res.json({ success: true, conversation });
+      sendSuccess(res, { conversation });
       return;
     }
 
     // Get user info
     const user = await User.findById(userId);
     if (!user) {
-      res.status(404).json({ success: false, message: 'User not found' });
+      sendError(res, 'User not found', 404);
       return;
     }
 
@@ -40,7 +41,7 @@ export const getOrCreateConversation = async (
       status: 'waiting',
     });
 
-    res.status(201).json({ success: true, conversation });
+    sendCreated(res, { conversation });
   } catch (error) {
     next(error);
   }
@@ -57,7 +58,7 @@ export const getUserConversations = async (
       userId: req.user!.id,
     }).sort({ updatedAt: -1 });
 
-    res.json({ success: true, conversations });
+    sendSuccess(res, { conversations });
   } catch (error) {
     next(error);
   }
@@ -74,7 +75,7 @@ export const getMessages = async (
     const conversation = await Conversation.findById(id);
 
     if (!conversation) {
-      res.status(404).json({ success: false, message: 'Conversation not found' });
+      sendError(res, 'Conversation not found', 404);
       return;
     }
 
@@ -83,7 +84,7 @@ export const getMessages = async (
     const isAdmin = req.user!.role === 'admin';
 
     if (!isUser && !isAdmin) {
-      res.status(403).json({ success: false, message: 'Not authorized' });
+      sendError(res, 'Not authorized', 403);
       return;
     }
 
@@ -108,7 +109,7 @@ export const getMessages = async (
       .sort({ createdAt: 1 })
       .limit(200);
 
-    res.json({ success: true, messages });
+    sendSuccess(res, { messages });
   } catch (error) {
     next(error);
   }
@@ -126,19 +127,19 @@ export const sendMessage = async (
 
     const conversation = await Conversation.findById(id);
     if (!conversation) {
-      res.status(404).json({ success: false, message: 'Conversation not found' });
+      sendError(res, 'Conversation not found', 404);
       return;
     }
 
     if (conversation.status === 'closed') {
-      res.status(400).json({ success: false, message: 'Conversation is closed' });
+      sendError(res, 'Conversation is closed', 400);
       return;
     }
 
     const isUser = conversation.userId.toString() === req.user!.id;
     const isAdmin = req.user!.role === 'admin';
     if (!isUser && !isAdmin) {
-      res.status(403).json({ success: false, message: 'Not authorized' });
+      sendError(res, 'Not authorized', 403);
       return;
     }
 
@@ -168,7 +169,7 @@ export const sendMessage = async (
     }
     await conversation.save();
 
-    res.status(201).json({ success: true, message });
+    sendCreated(res, { message });
   } catch (error) {
     next(error);
   }
@@ -182,7 +183,7 @@ export const uploadFile = async (
 ): Promise<void> => {
   try {
     if (!req.file) {
-      res.status(400).json({ success: false, message: 'No file uploaded' });
+      sendError(res, 'No file uploaded', 400);
       return;
     }
 
@@ -200,8 +201,7 @@ export const uploadFile = async (
       fileUrl = localPath.secure_url;
     }
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       fileUrl,
       fileName,
     });
@@ -234,7 +234,7 @@ export const getAdminConversations = async (
       .sort({ lastMessageAt: -1, updatedAt: -1 })
       .lean();
 
-    res.json({ success: true, conversations });
+    sendSuccess(res, { conversations });
   } catch (error) {
     next(error);
   }
@@ -252,7 +252,7 @@ export const assignStaff = async (
 
     const admin = await User.findById(adminId || req.user!.id);
     if (!admin) {
-      res.status(404).json({ success: false, message: 'Admin not found' });
+      sendError(res, 'Admin not found', 404);
       return;
     }
 
@@ -266,7 +266,7 @@ export const assignStaff = async (
     );
 
     if (!conversation) {
-      res.status(404).json({ success: false, message: 'Conversation not found' });
+      sendError(res, 'Conversation not found', 404);
       return;
     }
 
@@ -281,7 +281,7 @@ export const assignStaff = async (
       read: false,
     });
 
-    res.json({ success: true, conversation });
+    sendSuccess(res, { conversation });
   } catch (error) {
     next(error);
   }
@@ -303,7 +303,7 @@ export const closeConversation = async (
     );
 
     if (!conversation) {
-      res.status(404).json({ success: false, message: 'Conversation not found' });
+      sendError(res, 'Conversation not found', 404);
       return;
     }
 
@@ -318,7 +318,7 @@ export const closeConversation = async (
       read: false,
     });
 
-    res.json({ success: true, conversation });
+    sendSuccess(res, { conversation });
   } catch (error) {
     next(error);
   }
@@ -344,8 +344,7 @@ export const getChatStats = async (
       createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) },
     });
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       stats: {
         total,
         active,

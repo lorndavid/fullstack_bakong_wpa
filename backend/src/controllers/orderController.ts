@@ -4,6 +4,7 @@ import Product from '../models/Product';
 import { AuthRequest } from '../types';
 import { createAndSendNotification } from '../services/notificationService';
 import Coupon from '../models/Coupon';
+import { sendSuccess, sendError, sendCreated, sendDeleted } from '../utils/response';
 
 const createOrder = async (
   req: AuthRequest,
@@ -14,10 +15,7 @@ const createOrder = async (
     const { products, shippingAddress, paymentMethod, promotionDiscount, appliedPromotions, coupon, discountAmount } = req.body;
 
     if (!products || products.length === 0) {
-      res.status(400).json({
-        success: false,
-        message: 'No order items',
-      });
+      sendError(res, 'No order items', 400);
       return;
     }
 
@@ -27,18 +25,12 @@ const createOrder = async (
     for (const item of products) {
       const product = await Product.findById(item.productId);
       if (!product) {
-        res.status(404).json({
-          success: false,
-          message: `Product ${item.productId} not found`,
-        });
+        sendError(res, `Product ${item.productId} not found`, 404);
         return;
       }
 
       if (product.stock < item.quantity) {
-        res.status(400).json({
-          success: false,
-          message: `Insufficient stock for ${product.name}`,
-        });
+        sendError(res, `Insufficient stock for ${product.name}`, 400);
         return;
       }
 
@@ -123,7 +115,7 @@ const createOrder = async (
       }).catch(() => {});
     }
 
-    res.status(201).json({ success: true, order });
+    sendCreated(res, { order });
   } catch (error) {
     next(error);
   }
@@ -148,8 +140,7 @@ const getMyOrders = async (
       Order.countDocuments(filter),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       orders,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
@@ -167,19 +158,16 @@ const getOrder = async (
     const order = await Order.findById(req.params.id);
 
     if (!order) {
-      res.status(404).json({ success: false, message: 'Order not found' });
+      sendError(res, 'Order not found', 404);
       return;
     }
 
     if (order.userId.toString() !== req.user!.id) {
-      res.status(403).json({
-        success: false,
-        message: 'Not authorized to view this order',
-      });
+      sendError(res, 'Not authorized to view this order', 403);
       return;
     }
 
-    res.json({ success: true, order });
+    sendSuccess(res, { order });
   } catch (error) {
     next(error);
   }
@@ -208,8 +196,7 @@ const getAllOrders = async (
       Order.countDocuments(filter),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       orders,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
@@ -228,10 +215,7 @@ const updateOrderStatus = async (
     const validStatuses = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled'];
 
     if (!validStatuses.includes(status)) {
-      res.status(400).json({
-        success: false,
-        message: `Invalid status. Valid: ${validStatuses.join(', ')}`,
-      });
+      sendError(res, `Invalid status. Valid: ${validStatuses.join(', ')}`, 400);
       return;
     }
 
@@ -242,7 +226,7 @@ const updateOrderStatus = async (
     );
 
     if (!order) {
-      res.status(404).json({ success: false, message: 'Order not found' });
+      sendError(res, 'Order not found', 404);
       return;
     }
 
@@ -291,7 +275,7 @@ const updateOrderStatus = async (
       }).catch(() => {});
     }
 
-    res.json({ success: true, order });
+    sendSuccess(res, { order });
   } catch (error) {
     next(error);
   }
@@ -306,7 +290,7 @@ const deleteOrder = async (
     const order = await Order.findById(req.params.id);
 
     if (!order) {
-      res.status(404).json({ success: false, message: 'Order not found' });
+      sendError(res, 'Order not found', 404);
       return;
     }
 
@@ -319,7 +303,7 @@ const deleteOrder = async (
 
     await Order.findByIdAndDelete(req.params.id);
 
-    res.json({ success: true, message: 'Order deleted successfully' });
+    sendDeleted(res);
   } catch (error) {
     next(error);
   }
@@ -334,23 +318,17 @@ const cancelOrder = async (
     const order = await Order.findById(req.params.id);
 
     if (!order) {
-      res.status(404).json({ success: false, message: 'Order not found' });
+      sendError(res, 'Order not found', 404);
       return;
     }
 
     if (order.userId.toString() !== req.user!.id) {
-      res.status(403).json({
-        success: false,
-        message: 'Not authorized to cancel this order',
-      });
+      sendError(res, 'Not authorized to cancel this order', 403);
       return;
     }
 
     if (!['pending', 'confirmed'].includes(order.status)) {
-      res.status(400).json({
-        success: false,
-        message: 'Order cannot be cancelled at this stage',
-      });
+      sendError(res, 'Order cannot be cancelled at this stage', 400);
       return;
     }
 
@@ -363,7 +341,7 @@ const cancelOrder = async (
       });
     }
 
-    res.json({ success: true, order });
+    sendSuccess(res, { order });
   } catch (error) {
     next(error);
   }
@@ -377,7 +355,7 @@ const bulkDeleteOrders = async (
   try {
     const { ids } = req.body;
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      res.status(400).json({ success: false, message: 'Order IDs array is required' });
+      sendError(res, 'Order IDs array is required', 400);
       return;
     }
 
@@ -391,7 +369,7 @@ const bulkDeleteOrders = async (
     }
     await Order.deleteMany({ _id: { $in: ids } });
 
-    res.json({ success: true, message: `${ids.length} orders deleted successfully` });
+    sendDeleted(res, `${ids.length} orders deleted successfully`);
   } catch (error) {
     next(error);
   }

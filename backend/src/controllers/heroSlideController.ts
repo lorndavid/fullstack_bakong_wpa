@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types';
 import HeroSlide from '../models/HeroSlide';
 import { uploadToCloudinary, deleteFromCloudinary } from '../services/cloudinary';
+import { sendSuccess, sendError, sendCreated, sendDeleted } from '../utils/response';
 
 const getHeroSlides = async (
   _req: AuthRequest,
@@ -10,7 +11,7 @@ const getHeroSlides = async (
 ): Promise<void> => {
   try {
     const slides = await HeroSlide.find({ active: true }).sort({ order: 1 });
-    res.json({ success: true, slides });
+    sendSuccess(res, { slides });
   } catch (error) {
     next(error);
   }
@@ -23,7 +24,7 @@ const getAllHeroSlides = async (
 ): Promise<void> => {
   try {
     const slides = await HeroSlide.find().sort({ order: 1 });
-    res.json({ success: true, slides });
+    sendSuccess(res, { slides });
   } catch (error) {
     next(error);
   }
@@ -45,17 +46,11 @@ const createHeroSlide = async (
         const result = await uploadToCloudinary(req.file, 'hero-slides');
         image = { public_id: result.public_id, secure_url: result.secure_url };
       } catch (uploadError: any) {
-        res.status(400).json({
-          success: false,
-          message: 'Image upload failed: ' + uploadError.message,
-        });
+        sendError(res, 'Image upload failed: ' + uploadError.message, 400);
         return;
       }
     } else {
-      res.status(400).json({
-        success: false,
-        message: 'Image file is required',
-      });
+      sendError(res, 'Image file is required', 400);
       return;
     }
 
@@ -69,7 +64,7 @@ const createHeroSlide = async (
       active: active === 'true' || active === true,
     });
 
-    res.status(201).json({ success: true, slide });
+    sendCreated(res, { slide });
   } catch (error) {
     next(error);
   }
@@ -83,7 +78,7 @@ const updateHeroSlide = async (
   try {
     const slide = await HeroSlide.findById(req.params.id);
     if (!slide) {
-      res.status(404).json({ success: false, message: 'Slide not found' });
+      sendError(res, 'Slide not found', 404);
       return;
     }
 
@@ -99,10 +94,7 @@ const updateHeroSlide = async (
         const result = await uploadToCloudinary(req.file, 'hero-slides');
         slide.image = { public_id: result.public_id, secure_url: result.secure_url };
       } catch (uploadError: any) {
-        res.status(400).json({
-          success: false,
-          message: 'Image upload failed: ' + uploadError.message,
-        });
+        sendError(res, 'Image upload failed: ' + uploadError.message, 400);
         return;
       }
     }
@@ -116,7 +108,7 @@ const updateHeroSlide = async (
 
     await slide.save();
 
-    res.json({ success: true, slide });
+    sendSuccess(res, { slide });
   } catch (error) {
     next(error);
   }
@@ -130,7 +122,7 @@ const deleteHeroSlide = async (
   try {
     const slide = await HeroSlide.findById(req.params.id);
     if (!slide) {
-      res.status(404).json({ success: false, message: 'Slide not found' });
+      sendError(res, 'Slide not found', 404);
       return;
     }
 
@@ -141,7 +133,7 @@ const deleteHeroSlide = async (
 
     await HeroSlide.findByIdAndDelete(req.params.id);
 
-    res.json({ success: true, message: 'Slide deleted successfully' });
+    sendDeleted(res);
   } catch (error) {
     next(error);
   }

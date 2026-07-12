@@ -8,6 +8,7 @@ import { AuthRequest } from '../types';
 import { createAndSendNotification } from '../services/notificationService';
 import { uploadToCloudinary } from '../services/cloudinary';
 import { saveFileLocally } from '../services/fileStorage';
+import { sendSuccess, sendError, sendCreated, sendDeleted } from '../utils/response';
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
@@ -73,8 +74,7 @@ const getCoupons = async (
       Coupon.countDocuments(filter),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       coupons,
       pagination: {
         page,
@@ -105,11 +105,11 @@ const getCoupon = async (
       .populate('applicableUsers', 'name email');
 
     if (!coupon) {
-      res.status(404).json({ success: false, message: 'Coupon not found' });
+      sendError(res, 'Coupon not found', 404);
       return;
     }
 
-    res.json({ success: true, coupon });
+    sendSuccess(res, { coupon });
   } catch (error) {
     next(error);
   }
@@ -164,28 +164,19 @@ const createCoupon = async (
     // Check for duplicate code
     const existing = await Coupon.findOne({ code: couponCode.toUpperCase() });
     if (existing) {
-      res.status(400).json({
-        success: false,
-        message: `Coupon code "${couponCode}" already exists`,
-      });
+      sendError(res, `Coupon code "${couponCode}" already exists`, 400);
       return;
     }
 
     // Validate dates
     if (new Date(endDate) <= new Date(startDate)) {
-      res.status(400).json({
-        success: false,
-        message: 'End date must be after start date',
-      });
+      sendError(res, 'End date must be after start date', 400);
       return;
     }
 
     // Validate percentage
     if (discountType === 'percentage' && (Number(discountValue) < 0 || Number(discountValue) > 100)) {
-      res.status(400).json({
-        success: false,
-        message: 'Percentage discount must be between 0 and 100',
-      });
+      sendError(res, 'Percentage discount must be between 0 and 100', 400);
       return;
     }
 
@@ -275,7 +266,7 @@ const createCoupon = async (
       }
     }
 
-    res.status(201).json({ success: true, coupon });
+    sendCreated(res, { coupon });
   } catch (error) {
     next(error);
   }
@@ -291,7 +282,7 @@ const updateCoupon = async (
   try {
     const coupon = await Coupon.findById(req.params.id);
     if (!coupon) {
-      res.status(404).json({ success: false, message: 'Coupon not found' });
+      sendError(res, 'Coupon not found', 404);
       return;
     }
 
@@ -327,7 +318,7 @@ const updateCoupon = async (
     if (code) {
       const existing = await Coupon.findOne({ code: code.toUpperCase(), _id: { $ne: coupon._id } });
       if (existing) {
-        res.status(400).json({ success: false, message: `Coupon code "${code}" already exists` });
+        sendError(res, `Coupon code "${code}" already exists`, 400);
         return;
       }
       coupon.code = code.toUpperCase();
@@ -372,13 +363,13 @@ const updateCoupon = async (
 
     // Validate end > start
     if (coupon.endDate <= coupon.startDate) {
-      res.status(400).json({ success: false, message: 'End date must be after start date' });
+      sendError(res, 'End date must be after start date', 400);
       return;
     }
 
     await coupon.save();
 
-    res.json({ success: true, coupon });
+    sendSuccess(res, { coupon });
   } catch (error) {
     next(error);
   }
@@ -394,11 +385,11 @@ const deleteCoupon = async (
   try {
     const coupon = await Coupon.findById(req.params.id);
     if (!coupon) {
-      res.status(404).json({ success: false, message: 'Coupon not found' });
+      sendError(res, 'Coupon not found', 404);
       return;
     }
     await coupon.deleteOne();
-    res.json({ success: true, message: 'Coupon deleted successfully' });
+    sendDeleted(res);
   } catch (error) {
     next(error);
   }
@@ -419,10 +410,10 @@ const updateCouponStatus = async (
       { new: true }
     );
     if (!coupon) {
-      res.status(404).json({ success: false, message: 'Coupon not found' });
+      sendError(res, 'Coupon not found', 404);
       return;
     }
-    res.json({ success: true, coupon });
+    sendSuccess(res, { coupon });
   } catch (error) {
     next(error);
   }
@@ -493,8 +484,7 @@ const getCouponAnalytics = async (
       .select('name code usedCount discountValue discountType createdAt')
       .lean();
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       analytics: {
         totalCoupons,
         activeCoupons,
@@ -524,7 +514,7 @@ const getSingleCouponAnalytics = async (
   try {
     const coupon = await Coupon.findById(req.params.id);
     if (!coupon) {
-      res.status(404).json({ success: false, message: 'Coupon not found' });
+      sendError(res, 'Coupon not found', 404);
       return;
     }
 
@@ -539,8 +529,7 @@ const getSingleCouponAnalytics = async (
     const totalRevenue = ordersWithCoupon.reduce((sum: number, o: any) => sum + (o.total || 0), 0);
     const totalDiscount = ordersWithCoupon.reduce((sum: number, o: any) => sum + (o.discountAmount || 0), 0);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       analytics: {
         coupon,
         totalOrders: ordersWithCoupon.length,
@@ -627,8 +616,7 @@ const getUserCoupons = async (
       }
     }
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       available,
       used,
       expired,
@@ -657,7 +645,7 @@ const getAutoApplyCoupons = async (
     })
       .sort({ priority: -1, discountValue: -1 });
 
-    res.json({ success: true, coupons });
+    sendSuccess(res, { coupons });
   } catch (error) {
     next(error);
   }
@@ -675,7 +663,7 @@ const validateCoupon = async (
     const now = new Date();
 
     if (!code) {
-      res.status(400).json({ success: false, message: 'Coupon code is required' });
+      sendError(res, 'Coupon code is required', 400);
       return;
     }
 
@@ -688,30 +676,30 @@ const validateCoupon = async (
     });
 
     if (!coupon) {
-      res.json({ success: false, valid: false, message: 'Invalid coupon code' });
+      sendSuccess(res, { valid: false, message: 'Invalid coupon code' });
       return;
     }
 
     // Check status
     if (coupon.status !== 'active') {
-      res.json({ success: false, valid: false, message: 'This coupon is no longer active' });
+      sendSuccess(res, { valid: false, message: 'This coupon is no longer active' });
       return;
     }
 
     // Check date range
     if (now < coupon.startDate) {
-      res.json({ success: false, valid: false, message: 'This coupon is not yet valid' });
+      sendSuccess(res, { valid: false, message: 'This coupon is not yet valid' });
       return;
     }
 
     if (now > coupon.endDate) {
-      res.json({ success: false, valid: false, message: 'This coupon has expired' });
+      sendSuccess(res, { valid: false, message: 'This coupon has expired' });
       return;
     }
 
     // Check usage limit
     if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
-      res.json({ success: false, valid: false, message: 'This coupon has reached its usage limit' });
+      sendSuccess(res, { valid: false, message: 'This coupon has reached its usage limit' });
       return;
     }
 
@@ -723,7 +711,7 @@ const validateCoupon = async (
         coupon: coupon.code,
       });
       if (coupon.limitPerUser > 0 && userOrderCount >= coupon.limitPerUser) {
-        res.json({ success: false, valid: false, message: 'You have already used this coupon the maximum number of times' });
+        sendSuccess(res, { valid: false, message: 'You have already used this coupon the maximum number of times' });
         return;
       }
     }
@@ -731,8 +719,7 @@ const validateCoupon = async (
     // Check minimum purchase
     const orderSubtotal = Number(subtotal) || 0;
     if (coupon.minimumPurchase > 0 && orderSubtotal < coupon.minimumPurchase) {
-      res.json({
-        success: false,
+      sendSuccess(res, {
         valid: false,
         message: `Minimum purchase of $${coupon.minimumPurchase.toFixed(2)} required`,
         minimumPurchase: coupon.minimumPurchase,
@@ -746,7 +733,7 @@ const validateCoupon = async (
         coupon.applicableProducts.some((ap: any) => ap.toString() === pid)
       );
       if (!hasEligible) {
-        res.json({ success: false, valid: false, message: 'This coupon is not applicable to the products in your cart' });
+        sendSuccess(res, { valid: false, message: 'This coupon is not applicable to the products in your cart' });
         return;
       }
     }
@@ -757,7 +744,7 @@ const validateCoupon = async (
         coupon.excludedProducts.some((ep: any) => ep.toString() === pid)
       );
       if (hasExcluded) {
-        res.json({ success: false, valid: false, message: 'This coupon cannot be applied to some products in your cart' });
+        sendSuccess(res, { valid: false, message: 'This coupon cannot be applied to some products in your cart' });
         return;
       }
     }
@@ -768,7 +755,7 @@ const validateCoupon = async (
         coupon.applicableCategories.some((ac: any) => ac.toString() === cid)
       );
       if (!hasEligibleCat) {
-        res.json({ success: false, valid: false, message: 'This coupon is not applicable to the categories in your cart' });
+        sendSuccess(res, { valid: false, message: 'This coupon is not applicable to the categories in your cart' });
         return;
       }
     }
@@ -779,7 +766,7 @@ const validateCoupon = async (
         coupon.excludedCategories.some((ec: any) => ec.toString() === cid)
       );
       if (hasExcludedCat) {
-        res.json({ success: false, valid: false, message: 'This coupon cannot be applied to some categories in your cart' });
+        sendSuccess(res, { valid: false, message: 'This coupon cannot be applied to some categories in your cart' });
         return;
       }
     }
@@ -788,7 +775,7 @@ const validateCoupon = async (
     if (coupon.newCustomerOnly && uid) {
       const orderCount = await Order.countDocuments({ userId: uid });
       if (orderCount > 0) {
-        res.json({ success: false, valid: false, message: 'This coupon is for new customers only' });
+        sendSuccess(res, { valid: false, message: 'This coupon is for new customers only' });
         return;
       }
     }
@@ -797,7 +784,7 @@ const validateCoupon = async (
     if (coupon.firstOrderOnly && uid) {
       const orderCount = await Order.countDocuments({ userId: uid });
       if (orderCount > 0) {
-        res.json({ success: false, valid: false, message: 'This coupon is for first order only' });
+        sendSuccess(res, { valid: false, message: 'This coupon is for first order only' });
         return;
       }
     }
@@ -825,8 +812,7 @@ const validateCoupon = async (
       discountAmount = orderSubtotal;
     }
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       valid: true,
       coupon: {
         _id: coupon._id,
@@ -862,12 +848,11 @@ const applyCoupon = async (
     const validation = await validateCouponInternal(code, products, subtotal, req.user?.id);
 
     if (!validation.valid) {
-      res.json({ success: false, ...validation });
+      sendSuccess(res, { ...validation });
       return;
     }
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       valid: true,
       coupon: validation.coupon,
       discountAmount: validation.discountAmount,
@@ -965,11 +950,11 @@ const getCouponByCode = async (
       .populate('applicableCategories', 'name icon');
 
     if (!coupon) {
-      res.status(404).json({ success: false, message: 'Coupon not found' });
+      sendError(res, 'Coupon not found', 404);
       return;
     }
 
-    res.json({ success: true, coupon });
+    sendSuccess(res, { coupon });
   } catch (error) {
     next(error);
   }
@@ -1113,8 +1098,7 @@ const findBestCoupon = async (
     const autoApplyCoupons = validCoupons.filter((c: any) => c.autoApply);
     const suggestions = validCoupons.slice(0, 5);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       bestCoupon,
       autoApplyCoupons,
       suggestions,
@@ -1143,7 +1127,7 @@ const getHighlightedCoupons = async (
       .sort({ priority: -1, createdAt: -1 })
       .limit(6);
 
-    res.json({ success: true, coupons });
+    sendSuccess(res, { coupons });
   } catch (error) {
     next(error);
   }

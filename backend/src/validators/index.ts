@@ -451,4 +451,4 @@ export const paginationQuery = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
   status: z.string().optional(),
   search: z.string().optional(),
-});
+}).passthrough();

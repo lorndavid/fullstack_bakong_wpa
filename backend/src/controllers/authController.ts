@@ -9,6 +9,7 @@ import {
 } from '../utils/generateToken';
 import { AuthRequest } from '../types';
 import { recordLoginEvent } from '../services/loginHistory';
+import { sendSuccess, sendError } from '../utils/response';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -21,45 +22,30 @@ const login = async (
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400).json({
-        success: false,
-        message: 'Email and password are required',
-      });
+      sendError(res, 'Email and password are required', 400);
       return;
     }
 
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      res.status(401).json({
-        success: false,
-        message: 'Invalid email or password',
-      });
+      sendError(res, 'Invalid email or password', 401);
       return;
     }
 
     if (!user.password) {
-      res.status(401).json({
-        success: false,
-        message: 'This account uses Google login. Please sign in with Google.',
-      });
+      sendError(res, 'This account uses Google login. Please sign in with Google.', 401);
       return;
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      res.status(401).json({
-        success: false,
-        message: 'Invalid email or password',
-      });
+      sendError(res, 'Invalid email or password', 401);
       return;
     }
 
     // Only admin users can login via this endpoint
     if (user.role !== 'admin') {
-      res.status(403).json({
-        success: false,
-        message: 'Unauthorized: Admin access only',
-      });
+      sendError(res, 'Unauthorized: Admin access only', 403);
       return;
     }
 
@@ -68,8 +54,7 @@ const login = async (
     // Record login event (fire-and-forget)
     recordLoginEvent(user._id.toString(), 'login', req);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       token,
       user: {
         id: user._id,
@@ -93,10 +78,7 @@ const googleLogin = async (
     const { credential } = req.body;
 
     if (!credential) {
-      res.status(400).json({
-        success: false,
-        message: 'Google credential token is required',
-      });
+      sendError(res, 'Google credential token is required', 400);
       return;
     }
 
@@ -108,19 +90,13 @@ const googleLogin = async (
 
     const payload = ticket.getPayload();
     if (!payload) {
-      res.status(401).json({
-        success: false,
-        message: 'Invalid Google token',
-      });
+      sendError(res, 'Invalid Google token', 401);
       return;
     }
 
     // Validate required fields
     if (!payload.email || !payload.sub) {
-      res.status(401).json({
-        success: false,
-        message: 'Google token missing required fields',
-      });
+      sendError(res, 'Google token missing required fields', 401);
       return;
     }
 
@@ -155,8 +131,7 @@ const googleLogin = async (
     // Record Google login event (fire-and-forget)
     recordLoginEvent(user._id.toString(), 'google_login', req);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       accessToken,
       refreshToken,
       user: {
@@ -170,10 +145,7 @@ const googleLogin = async (
   } catch (error: any) {
     // Handle duplicate key error
     if (error.code === 11000) {
-      res.status(409).json({
-        success: false,
-        message: 'An account with this Google profile already exists',
-      });
+      sendError(res, 'An account with this Google profile already exists', 409);
       return;
     }
 
@@ -186,10 +158,7 @@ const googleLogin = async (
       error.message?.includes('audience') ||
       error.name === 'VerifyIdTokenError'
     ) {
-      res.status(401).json({
-        success: false,
-        message: 'Invalid or expired Google credential. Please try signing in again.',
-      });
+      sendError(res, 'Invalid or expired Google credential. Please try signing in again.', 401);
       return;
     }
 
@@ -200,10 +169,7 @@ const googleLogin = async (
       error.message?.includes('connect') ||
       error.message?.includes('ECONNREFUSED')
     ) {
-      res.status(503).json({
-        success: false,
-        message: 'Database connection unavailable. Please ensure MongoDB is running and try again.',
-      });
+      sendError(res, 'Database connection unavailable. Please ensure MongoDB is running and try again.', 503);
       return;
     }
 
@@ -220,10 +186,7 @@ const refreshToken = async (
     const { refreshToken: token } = req.body;
 
     if (!token) {
-      res.status(400).json({
-        success: false,
-        message: 'Refresh token is required',
-      });
+      sendError(res, 'Refresh token is required', 400);
       return;
     }
 
@@ -232,20 +195,14 @@ const refreshToken = async (
     try {
       decoded = verifyRefreshToken(token);
     } catch {
-      res.status(401).json({
-        success: false,
-        message: 'Invalid or expired refresh token',
-      });
+      sendError(res, 'Invalid or expired refresh token', 401);
       return;
     }
 
     // Check user still exists
     const user = await User.findById(decoded.id);
     if (!user) {
-      res.status(401).json({
-        success: false,
-        message: 'User not found',
-      });
+      sendError(res, 'User not found', 401);
       return;
     }
 
@@ -253,8 +210,7 @@ const refreshToken = async (
     const accessToken = generateAccessToken(user._id.toString(), user.name);
     const newRefreshToken = generateRefreshToken(user._id.toString());
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       accessToken,
       refreshToken: newRefreshToken,
     });
@@ -273,10 +229,7 @@ const logout = async (
   }
 
   // With stateless JWT, logout is handled client-side by deleting tokens.
-  res.json({
-    success: true,
-    message: 'Logged out successfully',
-  });
+  sendSuccess(res, null, 'Logged out successfully');
 };
 
 const getMe = async (
@@ -287,15 +240,11 @@ const getMe = async (
   try {
     const user = await User.findById(req.user!.id);
     if (!user) {
-      res.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
+      sendError(res, 'User not found', 404);
       return;
     }
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       user: {
         _id: user._id,
         googleId: user.googleId,

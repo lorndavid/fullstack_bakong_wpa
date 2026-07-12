@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import Category from '../models/Category';
 import Product from '../models/Product';
 import { AuthRequest } from '../types';
+import { sendSuccess, sendError, sendCreated, sendDeleted, sendPaginated } from '../utils/response';
 
 
 const getCategories = async (
@@ -31,7 +32,7 @@ const getCategories = async (
         },
       },
     ]);
-    res.json({ success: true, categories });
+    sendSuccess(res, { categories });
   } catch (error) {
     next(error);
   }
@@ -45,10 +46,10 @@ const getCategory = async (
   try {
     const category = await Category.findById(req.params.id);
     if (!category) {
-      res.status(404).json({ success: false, message: 'Category not found' });
+      sendError(res, 'Category not found', 404);
       return;
     }
-    res.json({ success: true, category });
+    sendSuccess(res, { category });
   } catch (error) {
     next(error);
   }
@@ -62,7 +63,7 @@ const createCategory = async (
   try {
     const { name, icon } = req.body;
     const category = await Category.create({ name, icon });
-    res.status(201).json({ success: true, category });
+    sendCreated(res, { category });
   } catch (error) {
     next(error);
   }
@@ -81,10 +82,10 @@ const updateCategory = async (
       { new: true, runValidators: true }
     );
     if (!category) {
-      res.status(404).json({ success: false, message: 'Category not found' });
+      sendError(res, 'Category not found', 404);
       return;
     }
-    res.json({ success: true, category });
+    sendSuccess(res, { category });
   } catch (error) {
     next(error);
   }
@@ -100,19 +101,16 @@ const deleteCategory = async (
       category: req.params.id,
     });
     if (productsCount > 0) {
-      res.status(400).json({
-        success: false,
-        message: `Cannot delete category. ${productsCount} product(s) are using it. Remove or reassign them first.`,
-      });
+      sendError(res, `Cannot delete category. ${productsCount} product(s) are using it. Remove or reassign them first.`, 400);
       return;
     }
 
     const category = await Category.findByIdAndDelete(req.params.id);
     if (!category) {
-      res.status(404).json({ success: false, message: 'Category not found' });
+      sendError(res, 'Category not found', 404);
       return;
     }
-    res.json({ success: true, message: 'Category deleted successfully' });
+    sendDeleted(res);
   } catch (error) {
     next(error);
   }
@@ -126,7 +124,7 @@ const getCategoryProducts = async (
   try {
     const category = await Category.findById(req.params.id);
     if (!category) {
-      res.status(404).json({ success: false, message: 'Category not found' });
+      sendError(res, 'Category not found', 404);
       return;
     }
 
@@ -159,8 +157,7 @@ const getCategoryProducts = async (
       Product.countDocuments(filter),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       category,
       products,
       totalPages: Math.ceil(total / limit),

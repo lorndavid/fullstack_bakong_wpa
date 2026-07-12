@@ -13,18 +13,18 @@ import {
 } from '../controllers/productController';
 import { protect, authorize } from '../middlewares/auth';
 import { upload } from '../middlewares/upload';
-import { validate } from '../middlewares/validate';
-import { createProductSchema, updateProductSchema } from '../validators';
+import { validate, validateParams, validateQuery } from '../middlewares/validate';
+import { createProductSchema, updateProductSchema, mongoIdParam, paginationQuery } from '../validators';
 
 const router = Router();
 
-router.get('/', getProducts);
+router.get('/', validateQuery(paginationQuery), getProducts);
 router.get('/featured', getFeaturedProducts);
 router.get('/flash-sale', getFlashSaleProducts);
 router.get('/new-arrivals', getNewArrivals);
-router.get('/:id', getProduct);
-router.get('/:id/related', getRelatedProducts);
-router.get('/low-stock/overview', getLowStockProducts);
+router.get('/:id', validateParams(mongoIdParam), getProduct);
+router.get('/:id/related', validateParams(mongoIdParam), getRelatedProducts);
+router.get('/low-stock/overview', validateQuery(paginationQuery), getLowStockProducts);
 router.post(
   '/',
   protect,
@@ -38,9 +38,10 @@ router.put(
   protect,
   authorize('admin'),
   upload.array('images', 5),
+  validateParams(mongoIdParam),
   validate(updateProductSchema),
   updateProduct
 );
-router.delete('/:id', protect, authorize('admin'), deleteProduct);
+router.delete('/:id', protect, authorize('admin'), validateParams(mongoIdParam), deleteProduct);
 
 export default router;

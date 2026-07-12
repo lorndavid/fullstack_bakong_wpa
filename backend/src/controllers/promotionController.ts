@@ -4,6 +4,7 @@ import Product from '../models/Product';
 import { AuthRequest } from '../types';
 import { uploadToCloudinary } from '../services/cloudinary';
 import { saveFileLocally } from '../services/fileStorage';
+import { sendSuccess, sendError, sendCreated, sendDeleted } from '../utils/response';
 
 const getPromotions = async (
   _req: AuthRequest,
@@ -15,7 +16,7 @@ const getPromotions = async (
       .populate('selectedProducts', 'name price images')
       .populate('selectedCategories', 'name icon')
       .sort({ createdAt: -1 });
-    res.json({ success: true, promotions });
+    sendSuccess(res, { promotions });
   } catch (error) {
     next(error);
   }
@@ -36,7 +37,7 @@ const getActivePromotions = async (
       .populate('selectedProducts', 'name price images discount')
       .populate('selectedCategories', 'name icon')
       .sort({ createdAt: -1 });
-    res.json({ success: true, promotions });
+    sendSuccess(res, { promotions });
   } catch (error) {
     next(error);
   }
@@ -52,10 +53,10 @@ const getPromotion = async (
       .populate('selectedProducts', 'name price images discount stock')
       .populate('selectedCategories', 'name icon');
     if (!promotion) {
-      res.status(404).json({ success: false, message: 'Promotion not found' });
+      sendError(res, 'Promotion not found', 404);
       return;
     }
-    res.json({ success: true, promotion });
+    sendSuccess(res, { promotion });
   } catch (error) {
     next(error);
   }
@@ -81,10 +82,7 @@ const createPromotion = async (
 
     // Validate dates
     if (new Date(endDate) <= new Date(startDate)) {
-      res.status(400).json({
-        success: false,
-        message: 'End date must be after start date',
-      });
+      sendError(res, 'End date must be after start date', 400);
       return;
     }
 
@@ -124,7 +122,7 @@ const createPromotion = async (
 
     const promotion = await Promotion.create(promotionData);
 
-    res.status(201).json({ success: true, promotion });
+    sendCreated(res, { promotion });
   } catch (error) {
     next(error);
   }
@@ -138,7 +136,7 @@ const updatePromotion = async (
   try {
     const promotion = await Promotion.findById(req.params.id);
     if (!promotion) {
-      res.status(404).json({ success: false, message: 'Promotion not found' });
+      sendError(res, 'Promotion not found', 404);
       return;
     }
 
@@ -187,16 +185,13 @@ const updatePromotion = async (
 
     // Validate dates
     if (promotion.endDate <= promotion.startDate) {
-      res.status(400).json({
-        success: false,
-        message: 'End date must be after start date',
-      });
+      sendError(res, 'End date must be after start date', 400);
       return;
     }
 
     await promotion.save();
 
-    res.json({ success: true, promotion });
+    sendSuccess(res, { promotion });
   } catch (error) {
     next(error);
   }
@@ -210,11 +205,11 @@ const deletePromotion = async (
   try {
     const promotion = await Promotion.findById(req.params.id);
     if (!promotion) {
-      res.status(404).json({ success: false, message: 'Promotion not found' });
+      sendError(res, 'Promotion not found', 404);
       return;
     }
     await promotion.deleteOne();
-    res.json({ success: true, message: 'Promotion deleted successfully' });
+    sendDeleted(res);
   } catch (error) {
     next(error);
   }
@@ -235,7 +230,7 @@ const getPromotionProducts = async (
     const products = await Product.find(filter)
       .populate('category', 'name icon')
       .sort({ name: 1 });
-    res.json({ success: true, products });
+    sendSuccess(res, { products });
   } catch (error) {
     next(error);
   }

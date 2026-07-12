@@ -6,6 +6,7 @@ import QRCode from 'qrcode';
 import { createKHQR, checkTransactionStatus } from '../services/bakong';
 import { confirmPayment, paymentEvents } from '../services/paymentWatcher';
 import { createPayment as serviceCreatePayment, checkPaymentByTransaction, confirmPayment as serviceConfirmPayment } from '../modules/payment/payment.service';
+import { sendSuccess, sendError, sendCreated, sendDeleted } from '../utils/response';
 import { AuthRequest } from '../types';
 
 /**
@@ -21,11 +22,11 @@ const createPayment = async (
     const { amount, orderId, provider } = req.body;
 
     if (!amount || amount <= 0) {
-      res.status(400).json({ success: false, message: 'Invalid amount' });
+      sendError(res, 'Invalid amount', 400);
       return;
     }
     if (!orderId) {
-      res.status(400).json({ success: false, message: 'Order ID is required' });
+      sendError(res, 'Order ID is required', 400);
       return;
     }
 
@@ -36,11 +37,11 @@ const createPayment = async (
       const settings = await Settings.getSingleton();
       const p = settings.payment;
       if (paymentProvider === 'ABA_PAYWAY' && p?.abaEnabled === false) {
-        res.status(400).json({ success: false, message: 'ABA PayWay is currently disabled by the merchant.' });
+        sendError(res, 'ABA PayWay is currently disabled by the merchant.', 400);
         return;
       }
       if (paymentProvider === 'BAKONG' && p?.bakongEnabled === false) {
-        res.status(400).json({ success: false, message: 'Bakong KHQR is currently disabled by the merchant.' });
+        sendError(res, 'Bakong KHQR is currently disabled by the merchant.', 400);
         return;
       }
     } catch {
@@ -60,8 +61,7 @@ const createPayment = async (
         });
       } catch {}
 
-      res.status(201).json({
-        success: true,
+      sendCreated(res, {
         provider: 'ABA_PAYWAY',
         qr: qrImage,
         qrString: result.paymentResult.qrString,
@@ -87,8 +87,7 @@ const createPayment = async (
       expireAt: new Date(Date.now() + 180 * 1000),
     });
 
-    res.status(201).json({
-      success: true,
+    sendCreated(res, {
       provider: 'BAKONG',
       qr: transaction.qr,
       tran: transaction.tran,
@@ -117,7 +116,7 @@ const checkPaymentStatus = async (
     const identifier = md5 || tranId;
 
     if (!identifier) {
-      res.status(400).json({ success: false, message: 'Transaction identifier (tranId or md5) is required' });
+      sendError(res, 'Transaction identifier (tranId or md5) is required', 400);
       return;
     }
 
@@ -128,15 +127,14 @@ const checkPaymentStatus = async (
     }
 
     if (!transaction) {
-      res.status(404).json({ success: false, message: 'Transaction not found' });
+      sendError(res, 'Transaction not found', 404);
       return;
     }
 
     const result = await checkPaymentByTransaction(transaction);
 
     if (result.success && result.status === 'PAID') {
-      res.json({
-        success: true,
+      sendSuccess(res, {
         status: 'PAID',
         amount: transaction.amount,
         transactionId: transaction._id,
@@ -146,21 +144,20 @@ const checkPaymentStatus = async (
     }
 
     if (result.status === 'EXPIRED') {
-      res.json({ success: false, status: 'EXPIRED' });
+      sendSuccess(res, { status: 'EXPIRED' });
       return;
     }
 
     // For ABA, also return meta for status indicators
     if (transaction.provider === 'ABA_PAYWAY' && result.meta) {
-      res.json({
-        success: false,
+      sendSuccess(res, {
         status: 'PENDING',
         meta: result.meta,
       });
       return;
     }
 
-    res.json({ success: false, status: 'PENDING' });
+    sendSuccess(res, { status: 'PENDING' });
   } catch (error: any) {
     next(error);
   }
@@ -178,7 +175,7 @@ const saveTransaction = async (
   try {
     const { orderId, amount, md5, tran, qr } = req.body;
     if (!orderId || !amount || !md5 || !tran || !qr) {
-      res.status(400).json({ success: false, message: 'Missing required fields' });
+      sendError(res, 'Missing required fields', 400);
       return;
     }
     await Transaction.updateMany({ orderId, status: 'PENDING' }, { status: 'EXPIRED' });
@@ -188,8 +185,7 @@ const saveTransaction = async (
       status: 'PENDING',
       expireAt: new Date(Date.now() + 180 * 1000),
     });
-    res.status(201).json({
-      success: true,
+    sendCreated(res, {
       _id: transaction._id, orderId: transaction.orderId,
       amount: transaction.amount, md5: transaction.md5,
       tran: transaction.tran, qr: transaction.qr,
@@ -210,19 +206,19 @@ const updatePaymentStatus = async (
   try {
     const { md5 } = req.params;
     const { status: newStatus } = req.body;
-    if (!md5) { res.status(400).json({ success: false, message: 'MD5 hash is required' }); return; }
+    if (!md5) { sendError(res, 'MD5 hash is required', 400); return; }
     if (!newStatus || !['PAID', 'EXPIRED'].includes(newStatus)) {
-      res.status(400).json({ success: false, message: 'Status must be PAID or EXPIRED' }); return;
+      sendError(res, 'Status must be PAID or EXPIRED', 400); return;
     }
     const transaction = await Transaction.findOne({ md5 });
-    if (!transaction) { res.status(404).json({ success: false, message: 'Transaction not found' }); return; }
-    if (transaction.status === 'PAID') { res.json({ success: true, status: 'already_paid' }); return; }
+    if (!transaction) { sendError(res, 'Transaction not found', 404); return; }
+    if (transaction.status === 'PAID') { sendSuccess(res, { status: 'already_paid' }); return; }
     transaction.status = newStatus;
     await transaction.save();
     if (newStatus === 'PAID') {
       await confirmPayment(transaction);
     }
-    res.json({ success: true, status: newStatus, _id: transaction._id, orderId: transaction.orderId, updatedAt: transaction.updatedAt });
+    sendSuccess(res, { status: newStatus, _id: transaction._id, orderId: transaction.orderId, updatedAt: transaction.updatedAt });
   } catch (error: any) { next(error); }
 };
 
@@ -290,7 +286,7 @@ const subscribePayment = async (
   const identifier = req.params.tranId || req.params.md5;
 
   if (!identifier) {
-    res.status(400).json({ success: false, message: 'Transaction ID is required' });
+    sendError(res, 'Transaction ID is required', 400);
     return;
   }
 
@@ -361,11 +357,11 @@ const deleteTransaction = async (
   try {
     const transaction = await Transaction.findById(req.params.id);
     if (!transaction) {
-      res.status(404).json({ success: false, message: 'Transaction not found' });
+      sendError(res, 'Transaction not found', 404);
       return;
     }
     await Transaction.findByIdAndDelete(req.params.id);
-    res.json({ success: true, message: 'Transaction deleted successfully' });
+    sendDeleted(res);
   } catch (error: any) {
     next(error);
   }
@@ -407,8 +403,7 @@ const getAllTransactions = async (
       Transaction.countDocuments(filter),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       transactions,
       pagination: {
         page,

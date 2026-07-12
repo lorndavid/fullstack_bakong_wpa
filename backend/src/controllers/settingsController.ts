@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import Settings from '../models/Settings';
 import { uploadToCloudinary, deleteFromCloudinary } from '../services/cloudinary';
 import { AuthRequest } from '../types';
+import { sendSuccess, sendError } from '../utils/response';
 
 const getSettings = async (
   _req: AuthRequest,
@@ -10,7 +11,7 @@ const getSettings = async (
 ): Promise<void> => {
   try {
     const settings = await Settings.getSingleton();
-    res.json({ success: true, settings });
+    sendSuccess(res, { settings });
   } catch (error) {
     next(error);
   }
@@ -132,10 +133,7 @@ const updateSettings = async (
           secure_url: result.secure_url,
         };
       } catch (uploadError: any) {
-        res.status(400).json({
-          success: false,
-          message: 'Logo upload failed: ' + uploadError.message,
-        });
+        sendError(res, 'Logo upload failed: ' + uploadError.message, 400);
         return;
       }
     }

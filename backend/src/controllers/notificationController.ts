@@ -7,6 +7,7 @@ import {
   markAllAsRead,
   getUnreadCount,
 } from '../services/notificationService';
+import { sendSuccess, sendError, sendCreated } from '../utils/response';
 
 // ─── User: Get my notifications ────────────────────────────────
 const getMyNotifications = async (
@@ -33,8 +34,7 @@ const getMyNotifications = async (
       getUnreadCount(req.user!.id),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       notifications,
       unreadCount: unread,
       pagination: {
@@ -57,7 +57,7 @@ const getUnreadCountHandler = async (
 ): Promise<void> => {
   try {
     const count = await getUnreadCount(req.user!.id);
-    res.json({ success: true, unreadCount: count });
+    sendSuccess(res, { unreadCount: count });
   } catch (error) {
     next(error);
   }
@@ -72,10 +72,10 @@ const markNotificationRead = async (
   try {
     const success = await markAsRead(req.params.id, req.user!.id);
     if (!success) {
-      res.status(404).json({ success: false, message: 'Notification not found' });
+      sendError(res, 'Notification not found', 404);
       return;
     }
-    res.json({ success: true, message: 'Marked as read' });
+    sendSuccess(res, null, 'Marked as read');
   } catch (error) {
     next(error);
   }
@@ -89,7 +89,7 @@ const markAllRead = async (
 ): Promise<void> => {
   try {
     await markAllAsRead(req.user!.id);
-    res.json({ success: true, message: 'All notifications marked as read' });
+    sendSuccess(res, null, 'All notifications marked as read');
   } catch (error) {
     next(error);
   }
@@ -107,10 +107,10 @@ const deleteNotification = async (
       user: req.user!.id,
     });
     if (!notif) {
-      res.status(404).json({ success: false, message: 'Notification not found' });
+      sendError(res, 'Notification not found', 404);
       return;
     }
-    res.json({ success: true, message: 'Notification deleted' });
+    sendSuccess(res, null, 'Notification deleted');
   } catch (error) {
     next(error);
   }
@@ -141,8 +141,7 @@ const getAllNotifications = async (
       Notification.countDocuments(filter),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       notifications,
       pagination: {
         page,
@@ -177,8 +176,7 @@ const getNotificationStats = async (
       sentAt: null,
     });
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       stats: {
         total,
         unread,
@@ -213,7 +211,7 @@ const createNotification = async (
     } = req.body;
 
     if (!title || !message) {
-      res.status(400).json({ success: false, message: 'Title and message are required' });
+      sendError(res, 'Title and message are required', 400);
       return;
     }
 
@@ -225,7 +223,7 @@ const createNotification = async (
         break;
       case 'single_user':
         if (!userId) {
-          res.status(400).json({ success: false, message: 'userId is required for single_user audience' });
+          sendError(res, 'userId is required for single_user audience', 400);
           return;
         }
         recipient = { userId };
@@ -246,11 +244,7 @@ const createNotification = async (
       expiresAt: expiresAt ? new Date(expiresAt) : undefined,
     });
 
-    res.status(201).json({
-      success: true,
-      message: `Notification sent to ${notifications.length} user(s)`,
-      count: notifications.length,
-    });
+    sendCreated(res, { count: notifications.length }, `Notification sent to ${notifications.length} user(s)`);
   } catch (error) {
     next(error);
   }
@@ -265,10 +259,10 @@ const adminDeleteNotification = async (
   try {
     const notif = await Notification.findByIdAndDelete(req.params.id);
     if (!notif) {
-      res.status(404).json({ success: false, message: 'Notification not found' });
+      sendError(res, 'Notification not found', 404);
       return;
     }
-    res.json({ success: true, message: 'Notification deleted' });
+    sendSuccess(res, null, 'Notification deleted');
   } catch (error) {
     next(error);
   }

@@ -4,6 +4,7 @@ import Order from '../models/Order';
 import Product from '../models/Product';
 import LoginHistory from '../models/LoginHistory';
 import { AuthRequest } from '../types';
+import { sendSuccess, sendError, sendCreated, sendDeleted } from '../utils/response';
 
 const getUsers = async (
   _req: AuthRequest,
@@ -43,8 +44,7 @@ const getUsers = async (
       ]),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       users,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
@@ -61,7 +61,7 @@ const getUser = async (
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (!user) {
-      res.status(404).json({ success: false, message: 'User not found' });
+      sendError(res, 'User not found', 404);
       return;
     }
 
@@ -75,8 +75,7 @@ const getUser = async (
 
     const totalSpent = totalSpentResult[0]?.total || 0;
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       user,
       ordersCount,
       totalSpent,
@@ -105,11 +104,11 @@ const updateUser = async (
     ).select('-password');
 
     if (!user) {
-      res.status(404).json({ success: false, message: 'User not found' });
+      sendError(res, 'User not found', 404);
       return;
     }
 
-    res.json({ success: true, user });
+    sendSuccess(res, { user });
   } catch (error) {
     next(error);
   }
@@ -129,7 +128,7 @@ const getUserOrders = async (
     // Verify user exists
     const user = await User.findById(id);
     if (!user) {
-      res.status(404).json({ success: false, message: 'User not found' });
+      sendError(res, 'User not found', 404);
       return;
     }
 
@@ -141,8 +140,7 @@ const getUserOrders = async (
       Order.countDocuments({ userId: id }),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       orders,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
@@ -159,13 +157,13 @@ const deleteUser = async (
   try {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) {
-      res.status(404).json({ success: false, message: 'User not found' });
+      sendError(res, 'User not found', 404);
       return;
     }
 
     await Order.deleteMany({ userId: user._id });
 
-    res.json({ success: true, message: 'User deleted successfully' });
+    sendDeleted(res);
   } catch (error) {
     next(error);
   }
@@ -229,8 +227,7 @@ const getDashboardStats = async (
       orderStatusCounts[s._id] = s.count;
     });
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       stats: {
         totalUsers,
         totalOrders,
@@ -261,7 +258,7 @@ const getUserLoginHistory = async (
     // Verify user exists
     const user = await User.findById(id);
     if (!user) {
-      res.status(404).json({ success: false, message: 'User not found' });
+      sendError(res, 'User not found', 404);
       return;
     }
 
@@ -273,8 +270,7 @@ const getUserLoginHistory = async (
       LoginHistory.countDocuments({ userId: id }),
     ]);
 
-    res.json({
-      success: true,
+    sendSuccess(res, {
       events,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
@@ -292,13 +288,13 @@ const createAdminUser = async (
     const { name, email, password, permissions } = req.body;
 
     if (!name || !email || !password) {
-      res.status(400).json({ success: false, message: 'Name, email, and password are required' });
+      sendError(res, 'Name, email, and password are required', 400);
       return;
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      res.status(409).json({ success: false, message: 'A user with this email already exists' });
+      sendError(res, 'A user with this email already exists', 409);
       return;
     }
 
@@ -312,8 +308,7 @@ const createAdminUser = async (
       permissions: permissions || [],
     });
 
-    res.status(201).json({
-      success: true,
+    sendCreated(res, {
       user: {
         _id: user._id,
         name: user.name,
@@ -336,7 +331,7 @@ const bulkDeleteUsers = async (
   try {
     const { ids } = req.body;
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      res.status(400).json({ success: false, message: 'User IDs array is required' });
+      sendError(res, 'User IDs array is required', 400);
       return;
     }
 
@@ -345,7 +340,7 @@ const bulkDeleteUsers = async (
 
     await User.deleteMany({ _id: { $in: filteredIds } });
 
-    res.json({ success: true, message: `${filteredIds.length} users deleted successfully` });
+    sendDeleted(res, `${filteredIds.length} users deleted successfully`);
   } catch (error) {
     next(error);
   }
@@ -369,7 +364,7 @@ const getPermissionsList = async (
       { resource: 'settings', label: 'Settings', description: 'Manage site settings' },
     ];
 
-    res.json({ success: true, permissions: permissionDefs });
+    sendSuccess(res, { permissions: permissionDefs });
   } catch (error) {
     next(error);
   }
