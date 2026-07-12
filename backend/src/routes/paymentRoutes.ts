@@ -11,19 +11,26 @@ import {
   paymentStream,
 } from '../controllers/paymentController';
 import { protect, authorize } from '../middlewares/auth';
+import { validate } from '../middlewares/validate';
+import {
+  createPaymentSchema,
+  checkPaymentSchema,
+  saveTransactionSchema,
+  updatePaymentStatusSchema,
+} from '../validators';
 
 const router = Router();
 
 // POST /api/payment/create - Create a payment (Bakong KHQR or ABA PayWay) (public)
-router.post('/create', createPayment);
+router.post('/create', validate(createPaymentSchema), createPayment);
 
 // POST /api/payment/check - Check payment status by tranId/md5 + provider (public)
-router.post('/check', checkPaymentStatus);
+router.post('/check', validate(checkPaymentSchema), checkPaymentStatus);
 
 // Backward-compatible Bakong routes (keep for existing frontend)
 router.get('/status/:md5', checkPaymentStatus);
-router.post('/save', saveTransaction);
-router.put('/status/:md5', updatePaymentStatus);
+router.post('/save', validate(saveTransactionSchema), saveTransaction);
+router.put('/status/:md5', validate(updatePaymentStatusSchema), updatePaymentStatus);
 router.get('/subscribe/:md5', subscribePayment);
 
 // GET /api/payment/subscribe/:tranId - SSE for frontend payment push (public)

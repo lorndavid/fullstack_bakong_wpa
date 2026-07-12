@@ -13,6 +13,8 @@ import {
 } from '../controllers/productController';
 import { protect, authorize } from '../middlewares/auth';
 import { upload } from '../middlewares/upload';
+import { validate } from '../middlewares/validate';
+import { createProductSchema, updateProductSchema } from '../validators';
 
 const router = Router();
 
@@ -28,6 +30,7 @@ router.post(
   protect,
   authorize('admin'),
   upload.array('images', 5),
+  validate(createProductSchema),
   createProduct
 );
 router.put(
@@ -35,6 +38,7 @@ router.put(
   protect,
   authorize('admin'),
   upload.array('images', 5),
+  validate(updateProductSchema),
   updateProduct
 );
 router.delete('/:id', protect, authorize('admin'), deleteProduct);
