@@ -1,6 +1,6 @@
 # MY SHOP — Cambodian E-commerce Platform
 
-A production-ready e-commerce platform built for Cambodia with **Bakong KHQR** payment integration. Features a user-facing **Progressive Web App (PWA)** , an **admin dashboard**, and a **Node.js + Express API** backed by MongoDB — with **fully automated CI/CD** via GitHub Actions.
+A production-ready e-commerce platform built for Cambodia with **Bakong KHQR** payment integration. Features a user-facing **Progressive Web App (PWA)** , an **admin dashboard**, and a **Node.js + Express API** backed by MongoDB altas link SRV — with **fully automated CI/CD** via GitHub Actions.
 
 ---
 
