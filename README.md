@@ -486,7 +486,7 @@ cd backend
 # Check deployment status
 ./deploy.sh --status
 
-# Rollback if needed
+# Rollback if needed be for deploy automatic
 ./deploy.sh --rollback
 
 # View PM2 logs
